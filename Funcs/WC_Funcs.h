@@ -7,18 +7,19 @@ namespace wc {
 
 // Simple selection for finding muon 
 int SimpleMuonSelection(const Int_t& ntracks,const Int_t pdg[],const Int_t mother[],const Float_t mom[][4], const Float_t endxyzt[][4]){
-  double min_E = sqrt(thresholds.at(13).first*thresholds.at(13).first+ml*ml);
+  //double min_E = sqrt(thresholds.at(13).first*thresholds.at(13).first+ml*ml);
+  double min_E = 0;
   double max_E = sqrt(thresholds.at(13).second*thresholds.at(13).second+ml*ml);
   int longest_idx = -1;
   int n = 0;
   for(size_t i_tr=0;i_tr<ntracks;i_tr++){
-    if(mother[i_tr] == 0 && abs(pdg[i_tr]) == 13 && mom[i_tr][3] > min_E && mom[i_tr][3] < max_E){
+    if(mother[i_tr] == 0 && abs(pdg[i_tr]) == 13 && mom[i_tr][3] > min_E){
       min_E = mom[i_tr][3];
       longest_idx = i_tr;
       n++;
     }
   }
-  if(n > 1) return -1;
+  //if(n > 1) return -1;
   return longest_idx;
 }
 

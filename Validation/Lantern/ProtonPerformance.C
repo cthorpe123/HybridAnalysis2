@@ -12,7 +12,7 @@ void ProtonPerformance(){
   const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
-  LoadTree(file,f_in,t_in,false);
+  LoadTree(file,f_in,t_in,false,false);
 
   TH1D* h_true_proton_mom = new TH1D("h_true_proton_mom",";True Proton Momentum (GeV);Events",40,0.0,2.0);
   TH1D* h_selected_true_proton_mom = new TH1D("h_selected_true_proton_mom",";True Proton Momentum (GeV);Events",40,0.0,2.0);
@@ -25,16 +25,19 @@ void ProtonPerformance(){
 
   TH1D* h_proton_mom_error = new TH1D("h_proton_mom_error",";(Reco - True)/True;Events",100,-1,1);
 
+  int ctr = 0;
+
   for(Long64_t ientry=0;ientry<t_in->GetEntries();ientry++){
 
     t_in->GetEntry(ientry);
-    //if(ientry > 20000) break;
+    if(ientry > 100) break;
     if(ientry % 50000 == 0) std::cout << ientry << "/" << t_in->GetEntries() << std::endl;
 
     if(abs(trueNuPDG) != 14 || trueNuCCNC != 0) continue;
     if(!inActiveTPC(trueVtxX,trueVtxY,trueVtxZ)) continue; 
 
     int true_proton = lt::FindLeadingTruePart(nTruePrimParts,truePrimPartPDG,truePrimPartPx,truePrimPartPy,truePrimPartPz,2212);
+
     if(true_proton == -1) continue;
     TVector3 true_proton_mom(truePrimPartPx[true_proton],truePrimPartPy[true_proton],truePrimPartPz[true_proton]);
 
@@ -43,6 +46,8 @@ void ProtonPerformance(){
 
     // Demand event has reco'd vertex
     if(!foundVertex || !inActiveTPC(vtxX,vtxY,vtxZ)) continue;
+
+     ctr++;
 
     int reco_proton = -1; 
     double leading_reco_proton_e = -1; 
@@ -56,6 +61,7 @@ void ProtonPerformance(){
 
     if(reco_proton == -1) continue;
     if(abs(trackTruePID[reco_proton]) != 2212) continue;
+    std::cout << run << " " << subrun <<  " "<< event << " " << reco_proton << std::endl;
 
     double mom = sqrt(trackRecoE[reco_proton]*trackRecoE[reco_proton]/1e6 + 2*0.938*trackRecoE[reco_proton]/1e3);
     TVector3 reco_proton_mom(mom*trackStartDirX[reco_proton],mom*trackStartDirY[reco_proton],mom*trackStartDirZ[reco_proton]);
@@ -69,6 +75,8 @@ void ProtonPerformance(){
     h_proton_mom_error->Fill((reco_proton_mom.Mag()-true_proton_mom.Mag())/true_proton_mom.Mag());
 
   }
+
+  std::cout << ctr << std::endl;
 
   gSystem->Exec("mkdir -p Plots/ProtonEfficiency/");
   TCanvas* c = new TCanvas("c","c");

@@ -3,12 +3,15 @@
 
 void MergeNtuple(){
 
-  bool is_data = true;  
+  bool is_data = false;  
+  bool save_syst = false; 
+
+   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
+   //std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lyr_surprise_reco2_hist.root";
+   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
   std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
-  //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
-
+  std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
   std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
   // Open the two files and setup branches to read the RSE numbers
@@ -36,7 +39,7 @@ void MergeNtuple(){
   // Make maps between rse, and entry for all three trees
   std::map<std::pair<int,int>,std::map<int,int>> pd_m;
   for(Long64_t pd_ientry=0;pd_ientry<pd_t_in->GetEntries();pd_ientry++){
-     pd_t_in->GetEntry(pd_ientry);
+    pd_t_in->GetEntry(pd_ientry);
     std::pair<int,int> rs = std::make_pair(pd_rse[0],pd_rse[1]);
     if(pd_m.find(rs) == pd_m.end()) pd_m[rs] = std::map<int,int>();
     pd_m.at(rs)[pd_rse[2]] = pd_ientry;
@@ -44,7 +47,7 @@ void MergeNtuple(){
 
   std::map<std::pair<int,int>,std::map<int,int>> wc_m;
   for(Long64_t wc_ientry=0;wc_ientry<wc_t_in->GetEntries();wc_ientry++){
-     wc_t_in->GetEntry(wc_ientry);
+    wc_t_in->GetEntry(wc_ientry);
     std::pair<int,int> rs = std::make_pair(wc_rse[0],wc_rse[1]);
     if(wc_m.find(rs) == wc_m.end()) wc_m[rs] = std::map<int,int>();
     wc_m.at(rs)[wc_rse[2]] = wc_ientry;
@@ -52,12 +55,14 @@ void MergeNtuple(){
 
   std::map<std::pair<int,int>,std::map<int,int>> lt_m;
   for(Long64_t lt_ientry=0;lt_ientry<lt_t_in->GetEntries();lt_ientry++){
-     lt_t_in->GetEntry(lt_ientry);
+    lt_t_in->GetEntry(lt_ientry);
     std::pair<int,int> rs = std::make_pair(lt_rse[0],lt_rse[1]);
     if(lt_m.find(rs) == lt_m.end()) lt_m[rs] = std::map<int,int>();
     lt_m.at(rs)[lt_rse[2]] = lt_ientry;
   }
- 
+
+  std::cout << pd_m.size() << " " << wc_m.size() << " " << lt_m.size() << std::endl;
+
   // Pandora branches 
   std::vector<int>* mc_pdg=0;
   std::vector<double>* mc_E=0;
@@ -72,6 +77,7 @@ void MergeNtuple(){
   int nu_pdg,ccnc,interaction;
   float nu_e; 
   std::vector<unsigned short>* weightsGenie=0; 
+  std::vector<unsigned short>* weightsReint=0; 
   std::vector<unsigned short>* weightsFlux=0; 
 
   std::vector<float>* trk_len_v=0;
@@ -112,8 +118,11 @@ void MergeNtuple(){
     pd_t_in->SetBranchAddress("interaction",&interaction);
     pd_t_in->SetBranchAddress("ccnc",&ccnc);
     pd_t_in->SetBranchAddress("nu_e",&nu_e); 
-    pd_t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
-    pd_t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    if(save_syst){
+      pd_t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
+      pd_t_in->SetBranchAddress("weightsReint",&weightsReint); 
+      pd_t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    }
   }
 
   pd_t_in->SetBranchAddress("trk_len_v",&trk_len_v);
@@ -319,9 +328,11 @@ void MergeNtuple(){
     t_out->Branch("interaction",&interaction);
     t_out->Branch("ccnc",&ccnc);
     t_out->Branch("nu_e",&nu_e); 
-    t_out->Branch("weightsGenie",&weightsGenie); 
-    t_out->Branch("weightsFlux",&weightsFlux); 
-    t_out->Branch("backtracked_pdg",&backtracked_pdg);
+    if(save_syst){
+      t_out->Branch("weightsGenie",&weightsGenie); 
+      t_out->Branch("weightsReint",&weightsReint); 
+      t_out->Branch("weightsFlux",&weightsFlux); 
+    }
   }
 
   t_out->Branch("trk_len_v",&trk_len_v);
@@ -340,6 +351,7 @@ void MergeNtuple(){
   t_out->Branch("reco_nu_vtx_x",&reco_nu_vtx_x);
   t_out->Branch("reco_nu_vtx_y",&reco_nu_vtx_y);
   t_out->Branch("reco_nu_vtx_z",&reco_nu_vtx_z);
+  if(!is_data) t_out->Branch("backtracked_pdg",&backtracked_pdg);
 
   t_out->Branch("shr_px_v",&shr_px_v);
   t_out->Branch("shr_py_v",&shr_py_v);
@@ -453,6 +465,8 @@ void MergeNtuple(){
         // erase rs from map if empty
         if(!wc_m.at(rs).size()) wc_m.erase(rs);
         if(!lt_m.at(rs).size()) lt_m.erase(rs);
+
+        //std::cout << wc_m.size() << "  " << lt_m.size() << std::endl;
 
       }
     }   

@@ -21,12 +21,14 @@ enum methds_e {kpd,kwc,klt,kh1,kh2,kh3,kh4,kh5,kh6,kMethMAX};
 
 void CalcW2(){
 
+  const double FOM_Cut = 0.15;
+
   const double data_POT = 1.5e21;
 
   const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
-  LoadTreeFiltered(file,f_in,t_in,false);
+  LoadTreeFiltered(file,f_in,t_in,false,false);
   const double POT = 7.88166e+20;
 
   TH1D* h_TrueW = new TH1D("h_TrueW",";True W (GeV);Events",40,0.9,5.0);
@@ -106,9 +108,9 @@ void CalcW2(){
         h_ShowerMass_v.at(i)->Fill(shower_p4_v.at(i)->M());
         if(npi0_t == 1) h_PiZero_ErrorW_v.at(i)->Fill((W_v.at(i) - W_t)/W_t);   
         h_Selected_v.at(i)->Fill(W_t);
-        if(abs(W_v.at(i) - W_t)/W_t < 0.1) h_SelectedCorr_v.at(i)->Fill(W_t);
+        if(abs(W_v.at(i) - W_t)/W_t < FOM_Cut) h_SelectedCorr_v.at(i)->Fill(W_t);
         h_Selected_RecoW_v.at(i)->Fill(W_v.at(i));
-        if(abs(W_v.at(i) - W_t)/W_t < 0.1) h_SelectedCorr_RecoW_v.at(i)->Fill(W_v.at(i));
+        if(abs(W_v.at(i) - W_t)/W_t < FOM_Cut) h_SelectedCorr_RecoW_v.at(i)->Fill(W_v.at(i));
       }
       else {
         h_SelectedBG_RecoW_v.at(i)->Fill(W_v.at(i));
@@ -151,6 +153,7 @@ void CalcW2(){
   THStack* hs_ErrorW = new THStack("hs_ErrorW",";(Reco - True)/True;Events");
 
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_v.at(i)->Scale(data_POT/POT);
     h_ErrorW_v.at(i)->SetLineWidth(2);
     h_ErrorW_v.at(i)->SetLineColor(i+1);
@@ -168,6 +171,7 @@ void CalcW2(){
   THStack* hs_Normalised_ErrorW = new THStack("hs_Normalised_ErrorW",";(Reco - True)/True;");
 
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_v.at(i)->Scale(1.0/h_ErrorW_v.at(i)->Integral());
     h_ErrorW_v.at(i)->SetLineWidth(2);
     h_ErrorW_v.at(i)->SetLineColor(i+1);
@@ -185,6 +189,7 @@ void CalcW2(){
   THStack* hs_ErrorW_HighW = new THStack("hs_ErrorW_HighW",";(Reco - True)/True;");
 
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_HighW_v.at(i)->Scale(data_POT/POT);
     h_ErrorW_HighW_v.at(i)->SetLineWidth(2);
     h_ErrorW_HighW_v.at(i)->SetLineColor(i+1);
@@ -201,6 +206,7 @@ void CalcW2(){
   THStack* hs_Normalised_ErrorW_HighW = new THStack("hs_Normalised_ErrorW_HighW",";(Reco - True)/True;");
 
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_HighW_v.at(i)->Scale(1.0/h_ErrorW_HighW_v.at(i)->Integral());
     h_ErrorW_HighW_v.at(i)->SetLineWidth(2);
     h_ErrorW_HighW_v.at(i)->SetLineColor(i+1);
@@ -299,6 +305,7 @@ void CalcW2(){
   THStack* hs_Eff = new THStack("hs_Eff",";True W (GeV);");
   std::vector<TH1D*> h_Eff_v(kMethMAX);
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_Eff_v.at(i) = static_cast<TH1D*>(h_Selected_v.at(i)->Clone(("h_Eff_"+methods_str.at(i)).c_str()));
     h_Eff_v.at(i)->Scale(data_POT/POT);
     h_Eff_v.at(i)->Divide(h_TrueW);
@@ -373,14 +380,15 @@ void CalcW2(){
   l->Clear();
    
   // Calculate signal/sqrt(signal + BG) in reco space
-  THStack* hs_SSB_RecoW = new THStack("hs_SSB_RecoW",";Reco W (GeV);S/#sqrt{S+B}");
+  //THStack* hs_SSB_RecoW = new THStack("hs_SSB_RecoW",";Reco W (GeV);S/#sqrt{S+B}");
+  THStack* hs_SSB_RecoW = new THStack("hs_SSB_RecoW",";Reco W (GeV);FOM");
   
   for(int i=0;i<kMethMAX;i++){
+    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_Selected_RecoW_v.at(i)->Scale(data_POT/POT);
     h_SelectedCorr_RecoW_v.at(i)->Scale(data_POT/POT);
     h_SelectedBG_RecoW_v.at(i)->Scale(data_POT/POT);     
     h_Selected_RecoW_v.at(i)->Add(h_SelectedBG_RecoW_v.at(i));
-    std::cout << methods_str.at(i) << std::endl;
     for(int b=1;b<h_Selected_RecoW_v.at(i)->GetNbinsX()+1;b++){
       if(h_Selected_RecoW_v.at(i)->GetBinContent(b) > 0){
 

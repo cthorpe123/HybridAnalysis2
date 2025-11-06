@@ -17,6 +17,7 @@ float true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z;
 int nu_pdg,ccnc,interaction;
 float nu_e; 
 std::vector<unsigned short>* weightsGenie=0; 
+std::vector<unsigned short>* weightsReint=0; 
 std::vector<unsigned short>* weightsFlux=0; 
 
 std::vector<float>* trk_len_v=0;
@@ -117,7 +118,7 @@ Float_t         showerRecoE[100];   //[nShowers]
 Int_t           showerTruePID[100];   //[nShowers]
 
 
-void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data){
+void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool load_syst){
 
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("MergedNtuple"));
@@ -143,8 +144,11 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data){
     t_in->SetBranchAddress("interaction",&interaction);
     t_in->SetBranchAddress("ccnc",&ccnc);
     t_in->SetBranchAddress("nu_e",&nu_e); 
-    t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
-    t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    if(load_syst){
+      t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
+      t_in->SetBranchAddress("weightsReint",&weightsReint); 
+      t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    }
   }
 
   t_in->SetBranchAddress("trk_len_v",&trk_len_v);
@@ -255,6 +259,10 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data){
 }
 
 // Branches used in filtered ntuple
+Bool_t          is_data;
+Bool_t          is_ext;
+Bool_t          is_dirt;
+Int_t           category;
 Bool_t          is_signal_t;
 Bool_t          in_tpc_t;
 Bool_t          has_muon_t;
@@ -312,7 +320,21 @@ TLorentzVector  *pion_p4_lt=0;
 TLorentzVector  *shower_p4_lt=0;
 std::vector<double>* est_nu_e_lt=0;
 
-void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data){
+Bool_t          sel_h8;
+Bool_t          in_tpc_h8;
+Bool_t          has_muon_h8;
+TVector3        *muon_mom_h8=0;
+Bool_t          muon_contained_h8;
+Double_t        W_h8;
+Int_t           nprot_h8;
+Int_t           npi_h8;
+Int_t           nsh_h8;
+TLorentzVector  *proton_p4_h8=0;
+TLorentzVector  *pion_p4_h8=0;
+TLorentzVector  *shower_p4_h8=0;
+std::vector<double>* est_nu_e_h8=0;
+
+void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool load_syst){
 
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("DISNtuple"));
@@ -320,6 +342,10 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
   t_in->SetBranchAddress("run",&run);
   t_in->SetBranchAddress("subrun",&subrun);
   t_in->SetBranchAddress("event",&event);
+  t_in->SetBranchAddress("is_data",&is_data);
+  t_in->SetBranchAddress("is_ext",&is_ext);
+  t_in->SetBranchAddress("is_dirt",&is_dirt);
+  t_in->SetBranchAddress("category",&category);
 
   if(!is_data){
     t_in->SetBranchAddress("mc_pdg",&mc_pdg);
@@ -337,8 +363,11 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
     t_in->SetBranchAddress("interaction",&interaction);
     t_in->SetBranchAddress("ccnc",&ccnc);
     t_in->SetBranchAddress("nu_e",&nu_e); 
-    t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
-    t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    if(load_syst){
+      t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
+      t_in->SetBranchAddress("weightsReint",&weightsReint); 
+      t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    }
     t_in->SetBranchAddress("is_signal_t", &is_signal_t);
     t_in->SetBranchAddress("in_tpc_t", &in_tpc_t);
     t_in->SetBranchAddress("has_muon_t", &has_muon_t);
@@ -397,6 +426,23 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
   t_in->SetBranchAddress("shower_p4_lt", &shower_p4_lt);
   t_in->SetBranchAddress("est_nu_e_lt",&est_nu_e_lt);
 
+  t_in->SetBranchAddress("sel_h8", &sel_h8);
+  t_in->SetBranchAddress("in_tpc_h8", &in_tpc_h8);
+  t_in->SetBranchAddress("has_muon_h8", &has_muon_h8);
+  t_in->SetBranchAddress("muon_mom_h8", &muon_mom_h8);
+  t_in->SetBranchAddress("muon_contained_h8", &muon_contained_h8);
+  t_in->SetBranchAddress("W_h8", &W_h8);
+  t_in->SetBranchAddress("nprot_h8", &nprot_h8);
+  t_in->SetBranchAddress("npi_h8", &npi_h8);
+  t_in->SetBranchAddress("nsh_h8", &nsh_h8);
+  t_in->SetBranchAddress("proton_p4_h8", &proton_p4_h8);
+  t_in->SetBranchAddress("pion_p4_h8", &pion_p4_h8);
+  t_in->SetBranchAddress("shower_p4_h8", &shower_p4_h8);
+  t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
+
 }
+
+const std::vector<std::string> categories = {"Signal","BG","Nue","OutFV","Dirt","EXT","Data"};
+enum e_cat {kSignal,kBG,kNue,kOutFV,kDirt,kEXT,kData};
 
 #endif

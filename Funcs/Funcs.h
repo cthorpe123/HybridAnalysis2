@@ -3,6 +3,9 @@
 
 #include <vector>
 
+///////////////////////////////////////////////////////////////////////
+// Fiducial volume definitions
+
 const double FVxmin = 0.0;
 const double FVxmax = 256.35;
 const double FVymin = -115.53;
@@ -28,6 +31,9 @@ bool isContained(double x, double y, double z){
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////
+// Particle thresholds/kinematics 
+
 const double Mp = 0.935;
 const double Mn = 0.938;
 const double Eb = 0.03;
@@ -38,11 +44,14 @@ const double MA = 22*Mn + 18*Mp - 0.34381;
 const double MA1 = MA - Mn;
 
 std::map<int,std::pair<double,double>> thresholds = {
-  {13,{0.1,5.0}},
+  {13,{0.1,100.0}},
   {2212,{0.3,5.0}},
   {211,{0.1,5.0}},
   {111,{0.0,5.0}}
 };
+
+///////////////////////////////////////////////////////////////////////
+// Take 2D hist and normalise each vertical strip to 1 
 
 void Normalise(TH2D* h){
   for(int i_x=1;i_x<h->GetNbinsX()+1;i_x++){
@@ -54,6 +63,10 @@ void Normalise(TH2D* h){
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////
+// Calculate bias/variance in reconstructed variable afo true variable 
+// given their joint dist 
 
 void GetBiasVariance(const TH2D* h_Data,TH1D*& h_Bias,TH1D*& h_Variance){
 
@@ -79,7 +92,7 @@ void GetBiasVariance(const TH2D* h_Data,TH1D*& h_Bias,TH1D*& h_Variance){
     }
 
     var /= events;    
-    
+
     h_Variance->SetBinContent(i,var/mean/mean);
     if(events == 0.0) h_Variance->SetBinContent(i,0);
 
@@ -87,6 +100,8 @@ void GetBiasVariance(const TH2D* h_Data,TH1D*& h_Bias,TH1D*& h_Variance){
 
 }
 
+///////////////////////////////////////////////////////////////////////
+// TLorentzVector manipulation funcs
 
 void SortTLorentzVector(std::vector<TLorentzVector>& p){
   std::sort(p.begin(),p.end(),[](const TLorentzVector &a, const TLorentzVector &b)
@@ -100,5 +115,8 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
   for(TLorentzVector p : p_v) p_tot += p;
   return p_tot;
 }
+
+//
+
 
 #endif
