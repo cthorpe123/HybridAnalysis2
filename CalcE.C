@@ -114,7 +114,7 @@ void CalcE(){
   gSystem->Exec("mkdir -p Plots/CalcE/"); 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
-  l->SetNColumns(3);
+  l->SetNColumns(2);
 
   h_TrueE->Scale(data_POT/POT);
   h_TrueE->SetLineWidth(2);
@@ -130,7 +130,7 @@ void CalcE(){
     h_EstE_v.at(i_e)->SetLineWidth(2);
     h_EstE_v.at(i_e)->SetLineColor(ee::colors.at(i_e));
     hs_EstE->Add(h_EstE_v.at(i_e)); 
-    l->AddEntry(h_EstE_v.at(i_e),ee::estimators_str.at(i_e).c_str(),"L");
+    l->AddEntry(h_EstE_v.at(i_e),ee::estimators_leg.at(i_e).c_str(),"L");
   }
 
   hs_EstE->Draw("nostack HIST");

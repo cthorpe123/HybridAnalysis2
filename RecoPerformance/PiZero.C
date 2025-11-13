@@ -7,8 +7,11 @@
 
 void PiZero(){
 
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+ // const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+ // const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
 
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
@@ -25,14 +28,14 @@ void PiZero(){
   TH1D* h_selected_true_pizero_costheta_pd = new TH1D("h_selected_true_pizero_costheta_pd",";True Muon Cos(#theta);Events",30,-1.0,1.0);
   TH2D* h_selected_true_pizero_mom_reco_pizero_mom_pd = new TH2D("h_selected_true_pizero_mom_reco_pizero_mom_pd",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",30,0.0,1.0,30,0.0,1.0);
   TH2D* h_selected_true_pizero_costheta_reco_pizero_costheta_pd = new TH2D("h_selected_true_pizero_costheta_reco_pizero_costheta_pd",";True Muon Cos(#theta);Reco Muon Cos(#theta);",30,-1.0,1.0,30,-1.0,1.0);
-  TH1D* h_pizero_mom_error_pd = new TH1D("h_pizero_mom_error_pd",";(Reco - True)/True;Events",100,-1,1);
+  TH1D* h_pizero_mom_error_pd = new TH1D("h_pizero_mom_error_pd",";(Reco - True)/True;Events",50,-1,1);
   TH1D* h_diphoton_mass_pd = new TH1D("h_diphoton_mass_pd",";W (GeV);Events",50,0.0,0.6);
 
   TH1D* h_selected_true_pizero_mom_wc = new TH1D("h_selected_true_pizero_mom_wc",";True Muon Momentum (GeV);Events",30,0.0,1.0);
   TH1D* h_selected_true_pizero_costheta_wc = new TH1D("h_selected_true_pizero_costheta_wc",";True Muon Cos(#theta);Events",30,-1.0,1.0);
   TH2D* h_selected_true_pizero_mom_reco_pizero_mom_wc = new TH2D("h_selected_true_pizero_mom_reco_pizero_mom_wc",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",30,0.0,1.0,30,0.0,1.0);
   TH2D* h_selected_true_pizero_costheta_reco_pizero_costheta_wc = new TH2D("h_selected_true_pizero_costheta_reco_pizero_costheta_wc",";True Muon Cos(#theta);Reco Muon Cos(#theta);",30,-1.0,1.0,30,-1.0,1.0);
-  TH1D* h_pizero_mom_error_wc = new TH1D("h_pizero_mom_error_wc",";(Reco - True)/True;Events",100,-1,1);
+  TH1D* h_pizero_mom_error_wc = new TH1D("h_pizero_mom_error_wc",";(Reco - True)/True;Events",50,-1,1);
   TH1D* h_diphoton_mass_wc = new TH1D("h_diphoton_mass_wc",";W (GeV);Events",50,0.0,0.6);
 
 
@@ -40,7 +43,7 @@ void PiZero(){
   TH1D* h_selected_true_pizero_costheta_lt = new TH1D("h_selected_true_pizero_costheta_lt",";True Muon Cos(#theta);Events",30,-1.0,1.0);
   TH2D* h_selected_true_pizero_mom_reco_pizero_mom_lt = new TH2D("h_selected_true_pizero_mom_reco_pizero_mom_lt",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",30,0.0,1.0,30,0.0,1.0);
   TH2D* h_selected_true_pizero_costheta_reco_pizero_costheta_lt = new TH2D("h_selected_true_pizero_costheta_reco_pizero_costheta_lt",";True Muon Cos(#theta);Reco Muon Cos(#theta);",30,-1.0,1.0,30,-1.0,1.0);
-  TH1D* h_pizero_mom_error_lt = new TH1D("h_pizero_mom_error_lt",";(Reco - True)/True;Events",100,-1,1);
+  TH1D* h_pizero_mom_error_lt = new TH1D("h_pizero_mom_error_lt",";(Reco - True)/True;Events",50,-1,1);
   TH1D* h_diphoton_mass_lt = new TH1D("h_diphoton_mass_lt",";W (GeV);Events",50,0.0,0.6);
 
   for(Long64_t ievent=0;ievent<t_in->GetEntries();ievent++){

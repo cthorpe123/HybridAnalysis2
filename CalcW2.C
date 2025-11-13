@@ -150,7 +150,7 @@ void CalcW2(){
   l->Clear();
 
   // Draw the W Error 
-  THStack* hs_ErrorW = new THStack("hs_ErrorW",";(Reco - True)/True;Events");
+  THStack* hs_ErrorW = new THStack("hs_ErrorW",";(W_{Reco} - W_{True})/W_{True};Events");
 
   for(int i=0;i<kMethMAX;i++){
     if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
@@ -168,7 +168,7 @@ void CalcW2(){
   l->Clear();
 
   // Draw the W Error 
-  THStack* hs_Normalised_ErrorW = new THStack("hs_Normalised_ErrorW",";(Reco - True)/True;");
+  THStack* hs_Normalised_ErrorW = new THStack("hs_Normalised_ErrorW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
     if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
@@ -186,7 +186,7 @@ void CalcW2(){
   l->Clear();
 
   // Draw the W Error in high W only 
-  THStack* hs_ErrorW_HighW = new THStack("hs_ErrorW_HighW",";(Reco - True)/True;");
+  THStack* hs_ErrorW_HighW = new THStack("hs_ErrorW_HighW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
     if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
@@ -203,7 +203,7 @@ void CalcW2(){
   c->Clear();
   l->Clear();
 
-  THStack* hs_Normalised_ErrorW_HighW = new THStack("hs_Normalised_ErrorW_HighW",";(Reco - True)/True;");
+  THStack* hs_Normalised_ErrorW_HighW = new THStack("hs_Normalised_ErrorW_HighW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
     if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
@@ -221,7 +221,7 @@ void CalcW2(){
   l->Clear();
 
   // Draw the W Error 
-  THStack* hs_ShowerMass = new THStack("hs_ShowerMass",";(Reco - True)/True;");
+  THStack* hs_ShowerMass = new THStack("hs_ShowerMass",";(W_{Reco} - W_{True})/True;");
 
   for(int i=0;i<kMethMAX;i++){
     h_ShowerMass_v.at(i)->Scale(data_POT/POT);
@@ -238,7 +238,7 @@ void CalcW2(){
   l->Clear();
 
   // Draw the W Error 
-  THStack* hs_PiZero_ErrorW = new THStack("hs_PiZero_ErrorW",";(Reco - True)/True;");
+  THStack* hs_PiZero_ErrorW = new THStack("hs_PiZero_ErrorW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
     h_PiZero_ErrorW_v.at(i)->Scale(data_POT/POT);

@@ -15,15 +15,18 @@ void Filter(){
   is_data = false;
   is_ext = false;
   is_dirt = false;
-  bool load_syst = false;
+  bool load_syst = true;
 
-  std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
-  const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root";
+  //std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
+  //const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root";
 
-  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  //const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
 
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
@@ -45,7 +48,7 @@ void Filter(){
   t_out->Branch("is_dirt",&is_dirt);
   t_out->Branch("category",&category);
 
-  if(!is_data){
+  if(!is_data && !is_ext){
     t_out->Branch("true_nu_vtx_x",&true_nu_vtx_x);
     t_out->Branch("true_nu_vtx_y",&true_nu_vtx_y);
     t_out->Branch("true_nu_vtx_z",&true_nu_vtx_z);
@@ -78,7 +81,7 @@ void Filter(){
   int npi0_t; 
   std::vector<double> est_nu_e_t;
 
-  if(!is_data){
+  if(!is_data && !is_ext){
     t_out->Branch("is_signal_t",&is_signal_t);
     t_out->Branch("in_tpc_t",&in_tpc_t);
     t_out->Branch("has_muon_t",&has_muon_t);
@@ -214,10 +217,15 @@ void Filter(){
   t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
 
   // Systematics 
-  if(!is_data){
-    t_out->Branch("weightsGenie",&weightsGenie);
-    t_out->Branch("weightsReint",&weightsReint);
-    t_out->Branch("weightsFlux",&weightsFlux);
+  if(!is_data && !is_ext && !is_dirt && load_syst){
+    t_out->Branch("weightsGenie",&weightsGenie); 
+    t_out->Branch("weightsReint",&weightsReint); 
+    t_out->Branch("weightsFlux",&weightsFlux); 
+  }
+  if(!is_data && !is_ext){
+    t_out->Branch("weightSpline",&weightSpline); 
+    t_out->Branch("weightTune",&weightTune); 
+    t_out->Branch("weightSplineTimesTune",&weightSplineTimesTune); 
   }
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){

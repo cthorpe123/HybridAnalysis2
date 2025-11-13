@@ -6,8 +6,12 @@
 
 void ProtonEfficiency(){
 
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+ // const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+ // const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
+
 
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;

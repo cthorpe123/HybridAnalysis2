@@ -19,6 +19,10 @@ float nu_e;
 std::vector<unsigned short>* weightsGenie=0; 
 std::vector<unsigned short>* weightsReint=0; 
 std::vector<unsigned short>* weightsFlux=0; 
+Float_t weightSpline = 1.0;
+Float_t weightSplineTimesTune = 1.0;
+Float_t weightTune = 1.0;
+
 
 std::vector<float>* trk_len_v=0;
 std::vector<float>* trk_dir_x_v=0;
@@ -123,6 +127,10 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool l
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("MergedNtuple"));
 
+  weightSpline = 1.0;
+  weightSplineTimesTune = 1.0;
+  weightTune = 1.0;
+
   t_in->SetBranchAddress("run",&run);
   t_in->SetBranchAddress("sub",&subrun);
   t_in->SetBranchAddress("evt",&event);
@@ -149,6 +157,9 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool l
       t_in->SetBranchAddress("weightsReint",&weightsReint); 
       t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
     }
+    t_in->SetBranchAddress("weightSpline",&weightSpline); 
+    t_in->SetBranchAddress("weightTune",&weightTune); 
+    t_in->SetBranchAddress("weightSplineTimesTune",&weightSplineTimesTune); 
   }
 
   t_in->SetBranchAddress("trk_len_v",&trk_len_v);
@@ -339,6 +350,10 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("DISNtuple"));
 
+  weightSpline = 1.0;
+  weightSplineTimesTune = 1.0;
+  weightTune = 1.0;
+
   t_in->SetBranchAddress("run",&run);
   t_in->SetBranchAddress("subrun",&subrun);
   t_in->SetBranchAddress("event",&event);
@@ -363,11 +378,6 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
     t_in->SetBranchAddress("interaction",&interaction);
     t_in->SetBranchAddress("ccnc",&ccnc);
     t_in->SetBranchAddress("nu_e",&nu_e); 
-    if(load_syst){
-      t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
-      t_in->SetBranchAddress("weightsReint",&weightsReint); 
-      t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
-    }
     t_in->SetBranchAddress("is_signal_t", &is_signal_t);
     t_in->SetBranchAddress("in_tpc_t", &in_tpc_t);
     t_in->SetBranchAddress("has_muon_t", &has_muon_t);
@@ -381,6 +391,16 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
     t_in->SetBranchAddress("pion_p4_t", &pion_p4_t);
     t_in->SetBranchAddress("shower_p4_t", &shower_p4_t);
     t_in->SetBranchAddress("est_nu_e_t",&est_nu_e_t);
+    if(load_syst){
+      t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
+      t_in->SetBranchAddress("weightsReint",&weightsReint); 
+      t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+    }
+
+    t_in->SetBranchAddress("weightSpline",&weightSpline); 
+    t_in->SetBranchAddress("weightTune",&weightTune); 
+    t_in->SetBranchAddress("weightSplineTimesTune",&weightSplineTimesTune); 
+
   }
 
   t_in->SetBranchAddress("sel_pd", &sel_pd);
