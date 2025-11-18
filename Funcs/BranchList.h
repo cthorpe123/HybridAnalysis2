@@ -71,6 +71,10 @@ Float_t reco_endXYZT[1000][4];
 Int_t reco_id[1000];   //[reco_Ntrack]
 Int_t reco_truthMatch_pdg[1000];   //[reco_Ntrack]
 Int_t reco_truthMatch_id[1000];   //[reco_Ntrack]
+Double_t mcs_mu_tracklen;
+Double_t mcs_emu_tracklen;
+Double_t mcs_emu_MCS;
+Double_t mcs_ambiguity_MCS;
 
 // Lantern Branches
 Float_t         trueNuE;
@@ -214,6 +218,11 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool l
     t_in->SetBranchAddress("reco_truthMatch_pdg",reco_truthMatch_pdg);
     t_in->SetBranchAddress("reco_truthMatch_id",reco_truthMatch_id);
   }
+  t_in->SetBranchAddress("mcs_mu_tracklen", &mcs_mu_tracklen);
+  t_in->SetBranchAddress("mcs_emu_tracklen", &mcs_emu_tracklen);
+  t_in->SetBranchAddress("mcs_emu_MCS", &mcs_emu_MCS);
+  t_in->SetBranchAddress("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
+
 
   // Lantern branches
   if(!is_data){
@@ -307,6 +316,8 @@ Bool_t          sel_wc;
 Bool_t          in_tpc_wc;
 Bool_t          has_muon_wc;
 TVector3        *muon_mom_wc=0;
+TVector3        *muon_mom_len_wc=0;
+TVector3        *muon_mom_mcs_wc=0;
 Bool_t          muon_contained_wc;
 Double_t        W_wc;
 Int_t           nprot_wc;
@@ -422,6 +433,8 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
   t_in->SetBranchAddress("in_tpc_wc", &in_tpc_wc);
   t_in->SetBranchAddress("has_muon_wc", &has_muon_wc);
   t_in->SetBranchAddress("muon_mom_wc", &muon_mom_wc);
+  t_in->SetBranchAddress("muon_mom_mcs_wc", &muon_mom_mcs_wc);
+  t_in->SetBranchAddress("muon_mom_len_wc", &muon_mom_len_wc);
   t_in->SetBranchAddress("muon_contained_wc", &muon_contained_wc);
   t_in->SetBranchAddress("W_wc", &W_wc);
   t_in->SetBranchAddress("nprot_wc", &nprot_wc);

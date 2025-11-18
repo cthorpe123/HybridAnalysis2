@@ -1,17 +1,18 @@
 // Merge the three trees from surprise into one enabling
 // event by event combining of information from each reconstruction
 
-void MergeNtuple(){
+void SpeedyMergeNtuple(){
 
   bool is_data = false;  
   bool save_syst = false; 
 
-   std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
-   std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root";
-   std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
+  std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
   //std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
+  //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
@@ -41,32 +42,8 @@ void MergeNtuple(){
   lt_t_in->SetBranchAddress("subrun",&lt_rse[1]);
   lt_t_in->SetBranchAddress("event",&lt_rse[2]);
 
-  // Make maps between rse, and entry for all three trees
-  std::map<std::pair<int,int>,std::map<int,int>> pd_m;
-  for(Long64_t pd_ientry=0;pd_ientry<pd_t_in->GetEntries();pd_ientry++){
-    pd_t_in->GetEntry(pd_ientry);
-    std::pair<int,int> rs = std::make_pair(pd_rse[0],pd_rse[1]);
-    if(pd_m.find(rs) == pd_m.end()) pd_m[rs] = std::map<int,int>();
-    pd_m.at(rs)[pd_rse[2]] = pd_ientry;
-  }
-
-  std::map<std::pair<int,int>,std::map<int,int>> wc_m;
-  for(Long64_t wc_ientry=0;wc_ientry<wc_t_in->GetEntries();wc_ientry++){
-    wc_t_in->GetEntry(wc_ientry);
-    std::pair<int,int> rs = std::make_pair(wc_rse[0],wc_rse[1]);
-    if(wc_m.find(rs) == wc_m.end()) wc_m[rs] = std::map<int,int>();
-    wc_m.at(rs)[wc_rse[2]] = wc_ientry;
-  }
-
-  std::map<std::pair<int,int>,std::map<int,int>> lt_m;
-  for(Long64_t lt_ientry=0;lt_ientry<lt_t_in->GetEntries();lt_ientry++){
-    lt_t_in->GetEntry(lt_ientry);
-    std::pair<int,int> rs = std::make_pair(lt_rse[0],lt_rse[1]);
-    if(lt_m.find(rs) == lt_m.end()) lt_m[rs] = std::map<int,int>();
-    lt_m.at(rs)[lt_rse[2]] = lt_ientry;
-  }
-
-  std::cout << pd_m.size() << " " << wc_m.size() << " " << lt_m.size() << std::endl;
+  if(pd_t_in->GetEntries() != wc_t_in->GetEntries() || wc_t_in->GetEntries() != lt_t_in->GetEntries())
+    throw std::invalid_argument("Can't use speedy merging - trees don't have equal numbers of entries");
 
   // Pandora branches 
   std::vector<int>* mc_pdg=0;
@@ -188,7 +165,7 @@ void MergeNtuple(){
   Double_t mcs_emu_tracklen;
   Double_t mcs_emu_MCS;
   Double_t mcs_ambiguity_MCS;
-   
+
 
   if(!is_data){
     wc_t_in->SetBranchAddress("mc_nu_pdg",&mc_nu_pdg); 
@@ -223,7 +200,7 @@ void MergeNtuple(){
   wc_t_in->SetBranchAddress("mcs_emu_tracklen", &mcs_emu_tracklen);
   wc_t_in->SetBranchAddress("mcs_emu_MCS", &mcs_emu_MCS);
   wc_t_in->SetBranchAddress("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
-  
+
   // Lantern branches
   Float_t         trueNuE;
   Int_t           trueNuPDG;
@@ -471,41 +448,26 @@ void MergeNtuple(){
   t_out->Branch("showerRecoE", showerRecoE,"showerRecoE[100]/F");
   if(!is_data) t_out->Branch("showerTruePID", showerTruePID,"showerTruePID[100]/I");
 
-  int ctr=0;
-  for(std::map<std::pair<int,int>,std::map<int,int>>::iterator it = pd_m.begin(); it != pd_m.end(); it++){
-    //if(ctr > 1000) break; 
-    const std::pair<int,int>& rs = it->first;
-    if(ctr % 100 == 0) std::cout << ctr << "/" << pd_m.size() << std::endl;
-    ctr++;
+  for(Long64_t ientry=0;ientry<pd_t_in->GetEntries();ientry++){
+    if(ientry % 20000 == 0) std::cout << ientry << "/" << pd_t_in->GetEntries() <<  std::endl;
+    pd_t_in->GetEntry(ientry);
+    wc_t_in->GetEntry(ientry);
+    lt_t_in->GetEntry(ientry);
 
-    if(wc_m.find(rs) == wc_m.end()) continue;
-    if(lt_m.find(rs) == lt_m.end()) continue;
+    if(pd_rse[0] != wc_rse[0] || wc_rse[0] != lt_rse[0]) 
+      throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
+    if(pd_rse[1] != wc_rse[1] || wc_rse[1] != lt_rse[1]) 
+      throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
+    if(pd_rse[2] != wc_rse[2] || wc_rse[2] != lt_rse[2]) 
+      throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
 
-    for(std::map<int,int>::iterator it_e = it->second.begin();it_e != it->second.end();it_e++){
-      int e = it_e->first;
-      if(wc_m.at(rs).find(e) != wc_m.at(rs).end() && lt_m.at(rs).find(e) != lt_m.at(rs).end()){
-        pd_t_in->GetEntry(it_e->second);
-        wc_t_in->GetEntry(wc_m.at(rs).at(e));
-        lt_t_in->GetEntry(lt_m.at(rs).at(e));
-        t_out->Fill();
-
-        // erase event from maps
-        wc_m.at(rs).erase(e);
-        lt_m.at(rs).erase(e);
-
-        // erase rs from map if empty
-        if(!wc_m.at(rs).size()) wc_m.erase(rs);
-        if(!lt_m.at(rs).size()) lt_m.erase(rs);
-
-        //std::cout << wc_m.size() << "  " << lt_m.size() << std::endl;
-
-      }
-    }   
+    t_out->Fill();
 
   }
 
+
+
   t_out->Write("MergedNtuple");
   f_out->Close();
-
 } 
 

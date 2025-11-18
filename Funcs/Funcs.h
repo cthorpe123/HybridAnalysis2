@@ -65,6 +65,21 @@ void Normalise(TH2D* h){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Take 1D hist divide by bin width 
+
+void DivideByBinWidth(TH1D* h) {
+  int NBins = h->GetXaxis()->GetNbins();
+  for (int i=1;i<NBins+1;i++){
+    double CurrentEntry = h->GetBinContent(i);
+    double NewEntry = CurrentEntry / h->GetBinWidth(i);
+    double CurrentError = h->GetBinError(i);
+    double NewError = CurrentError / h->GetBinWidth(i);
+    h->SetBinContent(i,NewEntry); 
+    h->SetBinError(i,NewError); 
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
 // Calculate bias/variance in reconstructed variable afo true variable 
 // given their joint dist 
 

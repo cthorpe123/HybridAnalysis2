@@ -15,7 +15,7 @@ void SysTest(){
 
   bool blinded = true;
 
-  std::string label = "TrueE";
+  std::string label = "RecoE_Test";
 
   TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
   TFile* f_in_detvar = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());
@@ -90,6 +90,8 @@ void SysTest(){
     delete h;
   }
 
+  std::string axis_title = h_Cov->GetXaxis()->GetTitle();
+
   TH1D* h_FE_Tot = (TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_Tot");
   TH2D* h_Tot_Detvar = (TH2D*)f_in_detvar->Get("FCov")->Clone("FCov_Detvar");
   TH2D* h_Tot = (TH2D*)f_in_hist->Get("FCov")->Clone("FCov");
@@ -124,6 +126,7 @@ void SysTest(){
   }
 
   hs_FE->Draw("nostack HIST");
+  hs_FE->GetXaxis()->SetTitle(axis_title.c_str());
   l->Draw();
   c->Print((plot_dir+"FE.png").c_str());
   c->Clear();
@@ -148,6 +151,8 @@ void SysTest(){
   }
 
   hs_FE_Detvar->Draw("nostack HIST");
+  hs_FE_Detvar->GetXaxis()->SetTitle(axis_title.c_str());
+  hs_FE_Detvar->GetYaxis()->SetTitle("Frac. Uncertainty");
   l->Draw();
   c->Print((plot_dir+"FE_Detvar.png").c_str());
   c->Clear();
@@ -169,20 +174,54 @@ void SysTest(){
     h_CV->SetLineColor(1);
     h_CV->SetLineWidth(2);
     hs->Add(h_CV);
+    l->AddEntry(h_CV,"CV","L");
 
     h_Var_Mean->SetLineColor(2);
     h_Var_Mean->SetLineWidth(2);
     hs->Add(h_Var_Mean);
+    l->AddEntry(h_Var_Mean,"Alt Univ. Mean","L");
 
     hs->Draw("HIST nostack"); 
     hs->GetXaxis()->SetTitle(h_CV->GetXaxis()->GetTitle());
     hs->GetYaxis()->SetTitle(h_CV->GetYaxis()->GetTitle());
+    l->Draw();
     c->Print((plot_dir+"SysValidation_"+sys_str.at(i_s)+".png").c_str());
 
     c->Clear();
+    l->Clear();
 
     delete h_CV;
     delete h_Var_Mean;
+
+  }
+
+  // Detvar validation - draw each variation alongside the CV
+  TH1D* h_Detvar_CV = (TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot");
+  h_Detvar_CV->SetLineColor(1);
+  h_Detvar_CV->SetLineWidth(2);
+
+  for(int i_s=0;i_s<kDetvarMAX;i_s++){
+
+    THStack* hs = new THStack("hs","");
+
+    TH1D* h = static_cast<TH1D*>(f_in_detvar->Get(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str()));
+    h->SetLineColor(2);  
+    h->SetLineWidth(2);
+
+    hs->Add(h_Detvar_CV); 
+    hs->Add(h);
+
+    l->AddEntry(h,detvar_str.at(i_s).c_str(),"L");
+    l->AddEntry(h_Detvar_CV,"CV","L");
+
+    hs->Draw("HIST nostack");
+    hs->GetXaxis()->SetTitle(axis_title.c_str());
+    l->Draw();
+    c->Print((plot_dir+"SysValidation_"+detvar_str.at(i_s)+".png").c_str());
+    c->Clear();
+    l->Clear();
+
+    delete hs;  
 
   }
 

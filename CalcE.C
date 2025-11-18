@@ -10,9 +10,10 @@
 
 // Hybrid 7 - muon kinematics from pandora and hadrons from LT
 // Hybrid 8 - muon kinematics from pandora with MCS for uncontained muons, and hadrons from LT
+// Hybrid 9 - muon kinematics from wirecell, with MCS for uncontained muons, with hadrons from LT
 
-const std::vector<std::string> methods_str = {"PD","WC","LT","H7","H8"};
-enum methds_e {kpd,kwc,klt,h7,h8,kMethMAX};
+const std::vector<std::string> methods_str = {"PD","WC","LT","H7","H8","H9"};
+enum methds_e {kpd,kwc,klt,h7,h8,h9,kMethMAX};
 
 // Try using different combinations of cuts and frameworks to calculate W
 
@@ -82,10 +83,15 @@ void CalcE(){
     TLorentzVector plepton_pd(muon_mom_pd->X(),muon_mom_pd->Y(),muon_mom_pd->Z(),sqrt(muon_mom_pd->Mag()*muon_mom_pd->Mag() + ml*ml));
     std::vector<double> est_nu_e_h7 = ee::GetEnergyEst(plepton_pd,W_lt,*proton_p4_lt,nprot_lt,*pion_p4_lt,npi_lt,*shower_p4_lt,nsh_lt);
 
-    std::vector<bool> sel_v = {sel_pd,sel_wc,sel_lt,sel_h7,sel_h8};    
-    std::vector<bool> cont_muon_v = {muon_contained_pd,muon_contained_wc,muon_contained_lt,muon_contained_pd,muon_contained_pd};
-    std::vector<double> W_v = {W_pd,W_wc,W_lt,W_lt,W_lt};    
-    std::vector<std::vector<double>*> e_v = {est_nu_e_pd,est_nu_e_wc,est_nu_e_lt,&est_nu_e_h7,est_nu_e_h8}; 
+    bool sel_h9 = has_muon_wc && sel_lt; 
+    TVector3 muon_mom_h9 = muon_contained_wc ? *muon_mom_len_wc : *muon_mom_mcs_wc;
+    TLorentzVector plepton_h9 = TLorentzVector(muon_mom_h9.X(),muon_mom_h9.Y(),muon_mom_h9.Z(),sqrt(ml*ml+muon_mom_h9.Mag()*muon_mom_h9.Mag()));
+    std::vector<double> est_nu_e_h9 = ee::GetEnergyEst(plepton_h9,W_lt,*proton_p4_lt,nprot_lt,*pion_p4_lt,npi_lt,*shower_p4_lt,nsh_lt);
+
+    std::vector<bool> sel_v = {sel_pd,sel_wc,sel_lt,sel_h7,sel_h8,sel_h9};    
+    std::vector<bool> cont_muon_v = {muon_contained_pd,muon_contained_wc,muon_contained_lt,muon_contained_pd,muon_contained_pd,muon_contained_wc};
+    std::vector<double> W_v = {W_pd,W_wc,W_lt,W_lt,W_lt,W_lt};    
+    std::vector<std::vector<double>*> e_v = {est_nu_e_pd,est_nu_e_wc,est_nu_e_lt,&est_nu_e_h7,est_nu_e_h8,&est_nu_e_h9}; 
 
     for(int i=0;i<kMethMAX;i++){
       if(!sel_v.at(i)) continue;

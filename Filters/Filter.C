@@ -14,16 +14,16 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = false;
-  bool load_syst = true;
+  is_dirt = true;
+  bool load_syst = false;
 
   //std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
-  //const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root";
+  //const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root";
 
   const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
 
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   //const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
@@ -134,6 +134,8 @@ void Filter(){
   bool in_tpc_wc;
   bool has_muon_wc;
   TVector3 muon_mom_wc;
+  TVector3 muon_mom_len_wc;
+  TVector3 muon_mom_mcs_wc;
   bool muon_contained_wc;
   double W_wc;
   int nprot_wc; 
@@ -157,6 +159,8 @@ void Filter(){
   t_out->Branch("pion_p4_wc",&pion_p4_wc);
   t_out->Branch("shower_p4_wc",&shower_p4_wc);
   t_out->Branch("est_nu_e_wc",&est_nu_e_wc);
+  t_out->Branch("muon_mom_len_wc",&muon_mom_len_wc);
+  t_out->Branch("muon_mom_mcs_wc",&muon_mom_mcs_wc);
 
   // LT Reco branches
   bool sel_lt;
@@ -319,9 +323,15 @@ void Filter(){
     // WC Reco
     in_tpc_wc = inActiveTPC(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
     int wc_muon = wc::SimpleMuonSelection(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT);
-    if(wc_muon != -1) muon_mom_wc = TVector3(reco_startMomentum[wc_muon][0],reco_startMomentum[wc_muon][1],reco_startMomentum[wc_muon][2]);
-    has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > 0.1;
+    if(wc_muon != -1){
+      muon_mom_wc = TVector3(reco_startMomentum[wc_muon][0],reco_startMomentum[wc_muon][1],reco_startMomentum[wc_muon][2]);
+      //TVector3 muon_dir = muon_mom_wc*(1.0/muon_mom_wc.Mag());
+      muon_mom_mcs_wc = muon_mom_wc*(mcs_emu_MCS/muon_mom_wc.Mag());
+      muon_mom_len_wc = muon_mom_wc*(mcs_emu_tracklen/muon_mom_wc.Mag()/1.04);
+    } 
+   has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > 0.1;
     muon_contained_wc = has_muon_wc && isContained(reco_endXYZT[wc_muon][0],reco_endXYZT[wc_muon][1],reco_endXYZT[wc_muon][2]);
+    
 
     std::vector<TLorentzVector> wc_proton_v = wc::RecoProton4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
     nprot_wc = wc_proton_v.size();
