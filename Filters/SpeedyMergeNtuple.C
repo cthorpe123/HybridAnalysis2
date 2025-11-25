@@ -4,18 +4,18 @@
 void SpeedyMergeNtuple(){
 
   bool is_data = false;  
-  bool save_syst = true; 
+  bool save_syst = false; 
 
-  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
-  //std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root";
-  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
+  std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_SCE_surprise_reco2_hist.root";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
-  std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
+  //std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
-  std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nue_overlay_surprise_reco2_hist.root";
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nue_overlay_surprise_reco2_hist.root";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
   //std::string dir_in = "/pnfs/uboone/scratch/users/bbogart/v10_04_07_16/";
   //std::string filename = "larpid_patch_smart_patch_test10_full_more.root";

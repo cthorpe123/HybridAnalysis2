@@ -4,13 +4,13 @@
 namespace syst {
 
 // For speed while developing
-//const int nuniv_Genie = 100;
-//const int nuniv_Flux = 100;
-//const int nuniv_Reint = 100;
+const int nuniv_Genie = 100;
+const int nuniv_Flux = 100;
+const int nuniv_Reint = 100;
 
-const int nuniv_Genie = 500;
-const int nuniv_Flux = 1000;
-const int nuniv_Reint = 1000;
+//const int nuniv_Genie = 500;
+//const int nuniv_Flux = 1000;
+//const int nuniv_Reint = 1000;
 
 // Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};

@@ -91,7 +91,6 @@ void SysTest(){
     c->Print((plot_dir+"FCov_"+sys_str.at(i_s)+".png").c_str());
     delete h;
   }
-
   
 
   // Print the detector covarianc and fractional covariance  
@@ -157,6 +156,13 @@ void SysTest(){
   h_FE.back()->SetLineWidth(2);
   hs_FE->Add(h_FE.back());
   l->AddEntry( h_FE.back(),"MCStat","L");
+
+  h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_EstDataStat"));
+  for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
+  h_FE.back()->SetLineColor(kSystMAX+4);
+  h_FE.back()->SetLineWidth(2);
+  hs_FE->Add(h_FE.back());
+  l->AddEntry( h_FE.back(),"EstDataStat","L");
  
   hs_FE->Draw("nostack HIST");
   hs_FE->GetXaxis()->SetTitle(axis_title.c_str());

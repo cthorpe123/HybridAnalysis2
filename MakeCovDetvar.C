@@ -14,8 +14,6 @@ using namespace syst;
 void MakeCovDetvar(){
 
   const double scale = 1.0;
-  const double data_POT = 1.332E+20;
-  const double data_Trig = 31582916.0;
 
   // Label and set the branches defining the selection and systematics
   std::string label = "RecoE_Test";
@@ -31,15 +29,11 @@ void MakeCovDetvar(){
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
-  std::string file_CV = "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root";
-  double pot_CV = 5.42073e+20;
-  double weight_CV = data_POT/pot_CV;
-
-  std::string file_Dirt = "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  double pot_Dirt = 3.06E+20;
-
-  std::string file_EXT = "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
-  double trig_EXT = 88445969.0;
+  std::vector<std::string> files_CV = {
+    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root",
+    "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
+    "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root"
+  };
 
   std::vector<std::string> files_Vars = {
     "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lya_surprise_reco2_hist.root",
@@ -47,23 +41,8 @@ void MakeCovDetvar(){
     "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lyr_surprise_reco2_hist.root",
     "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_SCE_surprise_reco2_hist.root",
     "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root" 
-    //"Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root",
+      //"Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root",
   };
-
-  std::vector<double> pot_Vars = {
-    1.11917e+20,
-    1.19862e+20,
-    1.17663e+20,
-    1.19752e+20,
-    1.14542e+20
-    //1.19177e+20,
-  };
-
-  double weight_Dirt = data_POT/pot_Dirt;
-  double weight_EXT = data_Trig/trig_EXT;
-
-  std::vector<double> weight_Vars;
-  for(size_t i_f=0;i_f<pot_Vars.size();i_f++) weight_Vars.push_back(data_POT/pot_Vars.at(i_f));
 
   //TH1D* h_CV_Tot =  new TH1D("h_Detvar_CV_Tot",axis_title.c_str(),bins.size()-1,&bins[0]);
   TH1D* h_CV_Tot = (TH1D*)h_tp->Clone("h_Detvar_CV_Tot");
@@ -86,67 +65,41 @@ void MakeCovDetvar(){
     }
   }
 
-
-  // Fill the CV histogram
-  std::cout << "Analysing CV" << std::endl;
-  TFile* f_in_CV = nullptr;
-  TTree* t_in_CV = nullptr;
-  LoadTreeFiltered(in_dir+file_CV,f_in_CV,t_in_CV,false,false);
-  for(int ievent=0;ievent<t_in_CV->GetEntries();ievent++){
-    if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in_CV->GetEntries() << std::endl;
-    t_in_CV->GetEntry(ievent);
-    if(!sel_h8) continue;
-    double var = est_nu_e_h8->at(ee::kMuonKin);
-    if(!is_data) h_CV_Tot->Fill(var,weight_CV);
-    h_CV.at(category)->Fill(var,weight_CV);
+  
+  for(int i_f=0;i_f<files_CV.size();i_f++){
+    std::string file = files_CV.at(i_f);
+    TFile* f_in = nullptr;
+    TTree* t_in = nullptr;
+    bool is_overlay,load_syst;
+    LoadTreeFiltered(in_dir+file,f_in,t_in,is_overlay,load_syst);
+    for(int ievent=0;ievent<t_in->GetEntries();ievent++){
+      if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
+      t_in->GetEntry(ievent);
+      if(!sel_h8) continue;
+      double var = est_nu_e_h8->at(ee::kMuonKin);
+      if(!is_data) h_CV_Tot->Fill(var,POT_weight);
+      h_CV.at(category)->Fill(var,POT_weight);
+    }
+    f_in->Close();
   }
-  f_in_CV->Close();
-
-  std::cout << "Analysing Dirt" << std::endl;
-  TFile* f_in_Dirt = nullptr;
-  TTree* t_in_Dirt = nullptr;
-  LoadTreeFiltered(in_dir+file_Dirt,f_in_Dirt,t_in_Dirt,false,false);
-  for(int ievent=0;ievent<t_in_Dirt->GetEntries();ievent++){
-    if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in_Dirt->GetEntries() << std::endl;
-    t_in_Dirt->GetEntry(ievent);
-    if(!sel_h8) continue;
-    double var = est_nu_e_h8->at(ee::kMuonKin);
-    if(!is_data) h_CV_Tot->Fill(var,weight_Dirt);
-    h_CV.at(category)->Fill(var,weight_Dirt);
-  }
-  f_in_Dirt->Close();
-
-  std::cout << "Analysing EXT" << std::endl;
-  TFile* f_in_EXT = nullptr;
-  TTree* t_in_EXT = nullptr;
-  LoadTreeFiltered(in_dir+file_EXT,f_in_EXT,t_in_EXT,true,false);
-  for(int ievent=0;ievent<t_in_EXT->GetEntries();ievent++){
-    if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in_EXT->GetEntries() << std::endl;
-    t_in_EXT->GetEntry(ievent);
-    if(!sel_h8) continue;
-    double var = est_nu_e_h8->at(ee::kMuonKin);
-    if(!is_data) h_CV_Tot->Fill(var,weight_EXT);
-    h_CV.at(category)->Fill(var,weight_EXT);
-  }
-  f_in_EXT->Close();
 
 
   std::cout << "Analysing Variations" << std::endl;
   for(int i_s=0;i_s<kDetvarMAX;i_s++){
     TFile* f_in_Vars = nullptr;
     TTree* t_in_Vars = nullptr;
-    LoadTreeFiltered(in_dir+files_Vars.at(i_s),f_in_Vars,t_in_Vars,false,false);
+    bool is_overlay,load_syst;
+    LoadTreeFiltered(in_dir+files_Vars.at(i_s),f_in_Vars,t_in_Vars,is_overlay,load_syst);
     for(int ievent=0;ievent<t_in_Vars->GetEntries();ievent++){
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in_Vars->GetEntries() << std::endl;
       t_in_Vars->GetEntry(ievent);
       if(!sel_h8) continue;
       double var = est_nu_e_h8->at(ee::kMuonKin);
-      h_Vars_Tot.at(i_s)->Fill(var,weight_Vars.at(i_s));
-      h_Vars.at(category).at(i_s)->Fill(var,weight_Vars.at(i_s));
+      h_Vars_Tot.at(detvar_univ)->Fill(var,POT_weight);
+      h_Vars.at(category).at(detvar_univ)->Fill(var,POT_weight);
     }
    f_in_Vars->Close();
   }
-
   
   for(int i_s=0;i_s<kDetvarMAX;i_s++){
     h_Vars_Tot.at(i_s)->Add(h_CV.at(kEXT));

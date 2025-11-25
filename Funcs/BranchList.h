@@ -1,6 +1,8 @@
 #ifndef _BranchList_h_
 #define _BranchList_h_
 
+#include "Systematics.h"
+
 int run,subrun,event;
 
 // Pandora branches 
@@ -285,6 +287,8 @@ Bool_t          is_data;
 Bool_t          is_ext;
 Bool_t          is_dirt;
 Int_t           category;
+Double_t        POT_weight;
+Int_t           detvar_univ;
 Bool_t          is_signal_t;
 Bool_t          in_tpc_t;
 Bool_t          has_muon_t;
@@ -358,7 +362,7 @@ TLorentzVector  *pion_p4_h8=0;
 TLorentzVector  *shower_p4_h8=0;
 std::vector<double>* est_nu_e_h8=0;
 
-void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool load_syst){
+void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
 
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("DISNtuple"));
@@ -374,8 +378,21 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
   t_in->SetBranchAddress("is_ext",&is_ext);
   t_in->SetBranchAddress("is_dirt",&is_dirt);
   t_in->SetBranchAddress("category",&category);
+  t_in->SetBranchAddress("POT_weight",&POT_weight);
+  t_in->SetBranchAddress("detvar_univ",&detvar_univ);
 
-  if(!is_data){
+  // Check if tree has truth variables
+  is_overlay = false;
+  load_syst = false;
+  for(auto branch : *t_in->GetListOfBranches()){
+    if(strcmp(branch->GetName(),"mc_pdg") == 0) is_overlay = true;
+    if(strcmp(branch->GetName(),"weightsGenie") == 0) load_syst = true;
+  }
+
+  std::cout << "is_overlay = " << is_overlay << std::endl;
+  std::cout << "load_syst = " << load_syst << std::endl;
+
+  if(is_overlay){
     t_in->SetBranchAddress("mc_pdg",&mc_pdg);
     t_in->SetBranchAddress("mc_E",&mc_E);
     t_in->SetBranchAddress("mc_px",&mc_px);
@@ -409,12 +426,11 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool is_dat
       t_in->SetBranchAddress("weightsReint",&weightsReint); 
       t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
     }
-
     t_in->SetBranchAddress("weightSpline",&weightSpline); 
     t_in->SetBranchAddress("weightTune",&weightTune); 
     t_in->SetBranchAddress("weightSplineTimesTune",&weightSplineTimesTune); 
-
   }
+  
 
   t_in->SetBranchAddress("sel_pd", &sel_pd);
   t_in->SetBranchAddress("in_tpc_pd", &in_tpc_pd);

@@ -22,37 +22,12 @@ void MakeCov(){
   h_tp->SetDirectory(0);
   f_tp->Close();
 
-  h_tp->GetXaxis()->SetTitle("Reco E (GeV)");
-  h_tp->GetYaxis()->SetTitle("Events/GeV");
-
-  const double scale = 1.0;
-  const double data_POT = 1.332E+20;
-  const double data_Trig = 31582916.0;
-
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
   std::vector<std::string> files_v = {
     "Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root",
     "Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
     "Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root"
-  };
-
-  std::vector<double> weights = {
-    scale*data_POT/7.88166e+20,
-    scale*data_POT/3.06E+20,
-    scale*data_Trig/88445969.0  
-  };
-
-  std::vector<bool> load_syst_v = {
-    true,
-    false,
-    false
-  };
-
-  std::vector<bool> is_data_v = {
-    false,
-    false,
-    true
   };
 
   // Giant contained for all of the systematics
@@ -93,11 +68,12 @@ void MakeCov(){
 
     TFile* f_in = nullptr;
     TTree* t_in = nullptr;
-    LoadTreeFiltered(file,f_in,t_in,is_data_v.at(i_f),load_syst_v.at(i_f));
+    bool is_overlay,load_syst;
+    LoadTreeFiltered(file,f_in,t_in,is_overlay,load_syst);
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 100000) break;
+      //if(ievent > 10000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
 
@@ -108,29 +84,29 @@ void MakeCov(){
 
       if(std::isnan(weightSpline) || std::isinf(weightSpline)) continue;
            
-      h_CV.at(category)->Fill(var,weights.at(i_f)*weightSpline);
-      if(!is_data) h_CV_Tot->Fill(var,weights.at(i_f)*weightSpline);
+      h_CV.at(category)->Fill(var,POT_weight*weightSpline);
+      if(!is_data) h_CV_Tot->Fill(var,POT_weight*weightSpline);
 
-      if(load_syst_v.at(i_f)){
-        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsGenie->at(i_u)/1000);
-        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsReint->at(i_u)*weightSpline/1000);
-        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsFlux->at(i_u)*weightSpline/1000);
+      if(load_syst){
+        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightsGenie->at(i_u)/1000);
+        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
+        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
       }
       else {
-        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
-        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
-        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
       } 
 
-      if(load_syst_v.at(i_f)){
-        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars.at(category).at(kGenie).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsGenie->at(i_u)/1000);
-        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars.at(category).at(kReint).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsReint->at(i_u)*weightSpline/1000);
-        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars.at(category).at(kFlux).at(i_u)->Fill(var,(double)weights.at(i_f)*weightsFlux->at(i_u)*weightSpline/1000);
+      if(load_syst){
+        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars.at(category).at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightsGenie->at(i_u)/1000);
+        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars.at(category).at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
+        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars.at(category).at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
       }
       else {
-        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars.at(category).at(kGenie).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
-        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars.at(category).at(kReint).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
-        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars.at(category).at(kFlux).at(i_u)->Fill(var,(double)weights.at(i_f)*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) h_Vars.at(category).at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) h_Vars.at(category).at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+        for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) h_Vars.at(category).at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
       } 
 
     }
@@ -188,7 +164,7 @@ void MakeCov(){
     h_Cov_MCStat->SetBinContent(i,i,h_CV_Tot->GetBinError(i)*h_CV_Tot->GetBinError(i));
     h_FCov_MCStat->SetBinContent(i,i,h_CV_Tot->GetBinError(i)*h_CV_Tot->GetBinError(i)/h_CV_Tot->GetBinContent(i)/h_CV_Tot->GetBinContent(i));
     h_Cov_EstDataStat->SetBinContent(i,i,h_CV_Tot->GetBinContent(i)/h_CV_Tot->GetBinWidth(i));
-    h_FCov_EstDataStat->SetBinContent(i,i,h_CV_Tot->GetBinContent(i)*h_CV_Tot->GetBinContent(i)/h_Cov_EstDataStat->GetBinContent(i,i));
+    h_FCov_EstDataStat->SetBinContent(i,i,h_Cov_EstDataStat->GetBinContent(i,i)/h_CV_Tot->GetBinContent(i)/h_CV_Tot->GetBinContent(i));
   } 
   h_Cov_MCStat->Write();
   h_FCov_MCStat->Write();
@@ -212,7 +188,7 @@ void MakeCov(){
       h_Cov_MCStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinError(i)*h_CV.at(i_c)->GetBinError(i));
       h_FCov_MCStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinError(i)*h_CV.at(i_c)->GetBinError(i)/h_CV.at(i_c)->GetBinContent(i)/h_CV.at(i_c)->GetBinContent(i));
       h_Cov_EstDataStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinContent(i));
-      h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,1.0/h_CV.at(i_c)->GetBinContent(i));
+      h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,1.0/h_CV.at(i_c)->GetBinContent(i)/h_CV.at(i_c)->GetBinContent(i));
     } 
     h_Cov_MCStat_Cat.back()->Write();
     h_FCov_MCStat_Cat.back()->Write();
