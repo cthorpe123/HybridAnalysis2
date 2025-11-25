@@ -38,6 +38,7 @@ std::vector<float>* trk_end_x_v=0;
 std::vector<float>* trk_end_y_v=0;
 std::vector<float>* trk_end_z_v=0;
 std::vector<int>* backtracked_pdg=0;
+std::vector<int>* pfng2semlabel=0; 
 
 std::vector<float>* shr_px_v=0;
 std::vector<float>* shr_py_v=0;
@@ -179,6 +180,7 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool l
   t_in->SetBranchAddress("trk_end_y_v",&trk_end_y_v);
   t_in->SetBranchAddress("trk_end_z_v",&trk_end_z_v);
   t_in->SetBranchAddress("trk_llr_pid_score_v",&trk_llr_pid_score_v);
+  t_in->SetBranchAddress("pfng2semlabel",&pfng2semlabel);
   t_in->SetBranchAddress("reco_nu_vtx_x",&reco_nu_vtx_x);
   t_in->SetBranchAddress("reco_nu_vtx_y",&reco_nu_vtx_y);
   t_in->SetBranchAddress("reco_nu_vtx_z",&reco_nu_vtx_z);

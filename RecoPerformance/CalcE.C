@@ -92,7 +92,7 @@ void CalcE(){
     std::vector<bool> cont_muon_v = {muon_contained_pd,muon_contained_wc,muon_contained_lt,muon_contained_pd,muon_contained_pd,muon_contained_wc};
     std::vector<double> W_v = {W_pd,W_wc,W_lt,W_lt,W_lt,W_lt};    
     std::vector<std::vector<double>*> e_v = {est_nu_e_pd,est_nu_e_wc,est_nu_e_lt,&est_nu_e_h7,est_nu_e_h8,&est_nu_e_h9}; 
-
+ 
     for(int i=0;i<kMethMAX;i++){
       if(!sel_v.at(i)) continue;
       //if(!cont_muon_v.at(i)) continue;

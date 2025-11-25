@@ -7,15 +7,8 @@
 #include "LT_Funcs.h"
 #include "BranchList.h"
 
-// Hybrid 1 - LT protons and pions, WC showers
-// Hybrid 2 - LT protons and pions, WC showers, only count events even numbers of showers
-// Hybrid 3 - Agreement cut + WC for showers 
-// Hybrid 4 - Agreement cut between PD and LT, use LT for kinematics 
-// Hybrid 5 - Agreement cut between WC and LT, use WC for kinematics 
-// Hybrid 6 - Agreement cut between WC and LT, use LT for kinematics 
-
-const std::vector<std::string> methods_str = {"PD","WC","LT","H1","H2","H3","H4","H5","H6"};
-enum methds_e {kpd,kwc,klt,kh1,kh2,kh3,kh4,kh5,kh6,kMethMAX};
+const std::vector<std::string> methods_str = {"PD","WC","LT"};
+enum methds_e {kpd,kwc,klt,kMethMAX};
 
 // Try using different combinations of cuts and frameworks to calculate W
 
@@ -75,27 +68,9 @@ void CalcW2(){
 
     h_TrueW->Fill(W_t); 
 
-    bool sel_h1 = sel_lt && in_tpc_wc; 
-    double W_h1 = (*proton_p4_lt+*pion_p4_lt+*shower_p4_wc).M();
-
-    bool sel_h2 = sel_lt && in_tpc_wc && nsh_wc % 2 == 0; 
-    double W_h2 = (*proton_p4_lt+*pion_p4_lt+*shower_p4_wc).M();
-
-    bool sel_h3 = sel_pd && sel_wc && nprot_pd == nprot_wc && npi_pd == npi_wc; 
-    double W_h3 = (*proton_p4_wc+*pion_p4_wc+*shower_p4_wc).M();
-
-    bool sel_h4 = sel_pd && sel_lt && nprot_pd == nprot_lt && npi_pd == npi_lt; 
-    double W_h4 = (*proton_p4_lt+*pion_p4_lt+*shower_p4_lt).M();
-
-    bool sel_h5 = sel_wc && sel_lt && nprot_wc == nprot_lt && npi_wc == npi_lt; 
-    double W_h5 = (*proton_p4_wc+*pion_p4_wc+*shower_p4_wc).M();
-
-    bool sel_h6 = sel_wc && sel_lt && nprot_wc == nprot_lt && npi_wc == npi_lt; 
-    double W_h6 = (*proton_p4_lt+*pion_p4_lt+*shower_p4_lt).M();
-
-    std::vector<bool> sel_v = {sel_pd,sel_wc,sel_lt,sel_h1,sel_h2,sel_h3,sel_h4,sel_h5,sel_h6};    
-    std::vector<double> W_v = {W_pd,W_wc,W_lt,W_h1,W_h2,W_h3,W_h4,W_h5,W_h6};    
-    std::vector<TLorentzVector*> shower_p4_v = {shower_p4_pd,shower_p4_wc,shower_p4_lt,shower_p4_wc,shower_p4_wc,shower_p4_wc,shower_p4_lt,shower_p4_wc,shower_p4_lt};
+    std::vector<bool> sel_v = {sel_pd,sel_wc,sel_lt};    
+    std::vector<double> W_v = {W_pd,W_wc,W_lt};    
+    std::vector<TLorentzVector*> shower_p4_v = {shower_p4_pd,shower_p4_wc,shower_p4_lt};
 
     for(int i=0;i<kMethMAX;i++){
       if(!sel_v.at(i)) continue;
@@ -153,7 +128,6 @@ void CalcW2(){
   THStack* hs_ErrorW = new THStack("hs_ErrorW",";(W_{Reco} - W_{True})/W_{True};Events");
 
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_v.at(i)->Scale(data_POT/POT);
     h_ErrorW_v.at(i)->SetLineWidth(2);
     h_ErrorW_v.at(i)->SetLineColor(i+1);
@@ -171,7 +145,6 @@ void CalcW2(){
   THStack* hs_Normalised_ErrorW = new THStack("hs_Normalised_ErrorW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_v.at(i)->Scale(1.0/h_ErrorW_v.at(i)->Integral());
     h_ErrorW_v.at(i)->SetLineWidth(2);
     h_ErrorW_v.at(i)->SetLineColor(i+1);
@@ -189,7 +162,6 @@ void CalcW2(){
   THStack* hs_ErrorW_HighW = new THStack("hs_ErrorW_HighW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_HighW_v.at(i)->Scale(data_POT/POT);
     h_ErrorW_HighW_v.at(i)->SetLineWidth(2);
     h_ErrorW_HighW_v.at(i)->SetLineColor(i+1);
@@ -206,7 +178,6 @@ void CalcW2(){
   THStack* hs_Normalised_ErrorW_HighW = new THStack("hs_Normalised_ErrorW_HighW",";(W_{Reco} - W_{True})/W_{True};");
 
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_ErrorW_HighW_v.at(i)->Scale(1.0/h_ErrorW_HighW_v.at(i)->Integral());
     h_ErrorW_HighW_v.at(i)->SetLineWidth(2);
     h_ErrorW_HighW_v.at(i)->SetLineColor(i+1);
@@ -305,7 +276,6 @@ void CalcW2(){
   THStack* hs_Eff = new THStack("hs_Eff",";True W (GeV);");
   std::vector<TH1D*> h_Eff_v(kMethMAX);
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_Eff_v.at(i) = static_cast<TH1D*>(h_Selected_v.at(i)->Clone(("h_Eff_"+methods_str.at(i)).c_str()));
     h_Eff_v.at(i)->Scale(data_POT/POT);
     h_Eff_v.at(i)->Divide(h_TrueW);
@@ -384,7 +354,6 @@ void CalcW2(){
   THStack* hs_SSB_RecoW = new THStack("hs_SSB_RecoW",";Reco W (GeV);FOM");
   
   for(int i=0;i<kMethMAX;i++){
-    if(i == kh1 || i == kh3 || i == kh5 || i == kh6) continue;
     h_Selected_RecoW_v.at(i)->Scale(data_POT/POT);
     h_SelectedCorr_RecoW_v.at(i)->Scale(data_POT/POT);
     h_SelectedBG_RecoW_v.at(i)->Scale(data_POT/POT);     

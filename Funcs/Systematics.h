@@ -3,16 +3,33 @@
 
 namespace syst {
 
-const int nuniv_Genie = 100;
-const int nuniv_Flux = 100;
-const int nuniv_Reint = 100;
+// For speed while developing
+//const int nuniv_Genie = 100;
+//const int nuniv_Flux = 100;
+//const int nuniv_Reint = 100;
 
+const int nuniv_Genie = 500;
+const int nuniv_Flux = 1000;
+const int nuniv_Reint = 1000;
+
+// Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};
 const std::vector<std::string> sys_str = {"Genie","Flux","Reint"};
 const std::vector<int> sys_nuniv = {nuniv_Genie,nuniv_Flux,nuniv_Reint};
 
+// Unisims
+
+// Detvars
 enum e_detvars {kLYAtt,kLYDown,kLYRayleigh,kSCE,kRecomb2/*,kWMX*/,kDetvarMAX};
 const std::vector<std::string> detvar_str = {"LYAtt","LYDown","LYRayleigh","SCE","Recomb2"/*,"WMX"*/};
+
+// Stats
+enum e_stats {kMCStat,kDataStat,kStatMAX};
+const std::vector<std::string> stat_str = {"MCStat","DataStat"};
+
+// Special categories, only applied in certain situations
+enum e_special {kEstDataStat,kSpecialMAX};
+const std::vector<std::string> special_str = {"EstDataStat"}; 
 
 ///////////////////////////////////////////////////////////////////////
 // Mean value of a given bin in stack of multisim vars
@@ -40,7 +57,6 @@ void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,
   h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
   h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
 
-
   for(int i_bx=1;i_bx<h_CV->GetNbinsX()+1;i_bx++){
     for(int i_by=1;i_by<h_CV->GetNbinsX()+1;i_by++){
 
@@ -51,7 +67,8 @@ void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,
       double y = Mean(h_Vars,i_by);
 
       double cov = 0;
-      for(int i_u=0;i_u<h_Vars.size();i_u++) cov += (h_Vars.at(i_u)->GetBinContent(i_bx) - x)*(h_Vars.at(i_u)->GetBinContent(i_by) - y);
+      for(int i_u=0;i_u<h_Vars.size();i_u++)
+        cov += (h_Vars.at(i_u)->GetBinContent(i_bx) - x)*(h_Vars.at(i_u)->GetBinContent(i_by) - y);
       cov /= h_Vars.size(); 
 
       //std::cout << i_bx << "  " << i_by << "  " << x << "  " <<  y << "  " << cov << std::endl;
@@ -105,7 +122,22 @@ TH2D* CalcCorrelationMatrix(std::string sys,const TH2D* h_Cov){
   return h_Corr;
 } 
 
+///////////////////////////////////////////////////////////////////////
+// Convert a 2D histogram into a tmatrix 
+
+TMatrixDSym MakeCovMat(TH2D* h){
+
+  TMatrixDSym m(h->GetNbinsX());
+  for(int i=1;i<h->GetNbinsX()+1;i++)
+    for(int j=1;j<h->GetNbinsX()+1;j++)
+      m[i-1][j-1] = h->GetBinContent(i,j);
+
+  return m;
 }
+
+}
+
+
 
 #endif
 

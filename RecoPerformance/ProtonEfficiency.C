@@ -26,7 +26,6 @@ void ProtonEfficiency(){
   TH2D* h_selected_true_proton_costheta_reco_proton_costheta_pd = new TH2D("h_selected_true_proton_costheta_reco_proton_costheta_pd",";True Proton Cos(#theta);Reco Proton Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
   TH1D* h_proton_mom_error_pd = new TH1D("h_proton_mom_error_pd",";(Reco - True)/True;Events",100,-1,1);
 
-
   TH1D* h_selected_true_proton_mom_wc = new TH1D("h_selected_true_proton_mom_wc",";True Proton Momentum (GeV);Events",40,0.0,2.0);
   TH1D* h_selected_true_proton_costheta_wc = new TH1D("h_selected_true_proton_costheta_wc",";True Proton Cos(#theta);Events",40,-1.0,1.0);
   TH2D* h_selected_true_proton_mom_reco_proton_mom_wc = new TH2D("h_selected_true_proton_mom_reco_proton_mom_wc",";True Proton Momentum (Gev);Reco Proton Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
@@ -39,6 +38,12 @@ void ProtonEfficiency(){
   TH2D* h_selected_true_proton_mom_reco_proton_mom_lt = new TH2D("h_selected_true_proton_mom_reco_proton_mom_lt",";True Proton Momentum (Gev);Reco Proton Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
   TH2D* h_selected_true_proton_costheta_reco_proton_costheta_lt = new TH2D("h_selected_true_proton_costheta_reco_proton_costheta_lt",";True Proton Cos(#theta);Reco Proton Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
   TH1D* h_proton_mom_error_lt = new TH1D("h_proton_mom_error_lt",";(Reco - True)/True;Events",100,-1,1);
+
+  TH1D* h_selected_true_proton_mom_pd2 = new TH1D("h_selected_true_proton_mom_pd2",";True Proton Momentum (GeV);Events",40,0.0,2.0);
+  TH1D* h_selected_true_proton_costheta_pd2 = new TH1D("h_selected_true_proton_costheta_pd2",";True Proton Cos(#theta);Events",40,-1.0,1.0);
+  TH2D* h_selected_true_proton_mom_reco_proton_mom_pd2 = new TH2D("h_selected_true_proton_mom_reco_proton_mom_pd2",";True Proton Momentum (Gev);Reco Proton Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
+  TH2D* h_selected_true_proton_costheta_reco_proton_costheta_pd2 = new TH2D("h_selected_true_proton_costheta_reco_proton_costheta_pd2",";True Proton Cos(#theta);Reco Proton Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
+  TH1D* h_proton_mom_error_pd2 = new TH1D("h_proton_mom_error_pd2",";(Reco - True)/True;Events",100,-1,1);
   
   for(Long64_t ievent=0;ievent<t_in->GetEntries();ievent++){
 
@@ -122,6 +127,33 @@ void ProtonEfficiency(){
 
     }
 
+    // Pandora with NuGraph
+
+    int pd2_proton = -1;
+    double len = 0;
+    for(size_t i_tr=0;i_tr<trk_len_v->size();i_tr++){
+      if(pfng2semlabel->at(i_tr) == 1 && trk_len_v->at(i_tr) > len){
+        pd2_proton = i_tr;
+        len = trk_len_v->at(i_tr);
+      }
+    } 
+
+    if(inActiveTPC(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z) && pd2_proton != -1 && abs(backtracked_pdg->at(pd2_proton)) == 2212){
+
+      double reco_p = pd::ProtonMom(trk_len_v->at(pd2_proton)); 
+      double reco_costheta = TVector3(trk_dir_x_v->at(pd2_proton),trk_dir_y_v->at(pd2_proton),trk_dir_z_v->at(pd2_proton)).CosTheta();
+
+      h_selected_true_proton_mom_pd2->Fill(pproton.Mag());
+      h_selected_true_proton_costheta_pd2->Fill(pproton.CosTheta());    
+
+      h_selected_true_proton_mom_reco_proton_mom_pd2->Fill(pproton.Mag(),reco_p); 
+      h_selected_true_proton_costheta_reco_proton_costheta_pd2->Fill(pproton.CosTheta(),reco_costheta);
+      h_proton_mom_error_pd2->Fill((reco_p-pproton.Mag())/pproton.Mag()); 
+
+    }
+
+
+
   }  
 
   gSystem->Exec("mkdir -p Plots/ProtonEfficiency/");
@@ -134,6 +166,8 @@ void ProtonEfficiency(){
   h_selected_true_proton_costheta_wc->Divide(h_true_proton_costheta);
   h_selected_true_proton_mom_lt->Divide(h_true_proton_mom);
   h_selected_true_proton_costheta_lt->Divide(h_true_proton_costheta);
+  h_selected_true_proton_mom_pd2->Divide(h_true_proton_mom);
+  h_selected_true_proton_costheta_pd2->Divide(h_true_proton_costheta);
 
   THStack* hs_proton_mom_eff = new THStack("hs_proton_mom_eff",";True Proton Momentum (GeV);Efficiency");
 
@@ -151,6 +185,11 @@ void ProtonEfficiency(){
   h_selected_true_proton_mom_lt->SetLineWidth(2);
   hs_proton_mom_eff->Add(h_selected_true_proton_mom_lt);
   l->AddEntry(h_selected_true_proton_mom_lt,"LT","L");
+
+  h_selected_true_proton_mom_pd2->SetLineColor(4);
+  h_selected_true_proton_mom_pd2->SetLineWidth(2);
+  hs_proton_mom_eff->Add(h_selected_true_proton_mom_pd2);
+  l->AddEntry(h_selected_true_proton_mom_pd2,"PD2","L");
 
   hs_proton_mom_eff->Draw("nostack HIST");
   l->Draw();
@@ -174,6 +213,11 @@ void ProtonEfficiency(){
   h_selected_true_proton_costheta_lt->SetLineWidth(2);
   hs_proton_costheta_eff->Add(h_selected_true_proton_costheta_lt);
   l->AddEntry(h_selected_true_proton_costheta_lt,"LT","L");
+
+  h_selected_true_proton_costheta_pd2->SetLineColor(4);
+  h_selected_true_proton_costheta_pd2->SetLineWidth(2);
+  hs_proton_costheta_eff->Add(h_selected_true_proton_costheta_pd2);
+  l->AddEntry(h_selected_true_proton_costheta_pd2,"PD2","L");
 
   hs_proton_costheta_eff->Draw("nostack HIST");
   l->Draw();
@@ -248,6 +292,29 @@ void ProtonEfficiency(){
   c->Print("Plots/ProtonEfficiency/Normalised_CosThetaReconstruction_LT.png");
   c->Clear();
 
+  h_selected_true_proton_mom_reco_proton_mom_pd2->Draw("colz");
+  h_selected_true_proton_mom_reco_proton_mom_pd2->SetStats(0);
+  c->Print("Plots/ProtonEfficiency/MomentumReconstruction_PD2.png");
+  c->Clear();
+
+  Normalise(h_selected_true_proton_mom_reco_proton_mom_pd2);
+  h_selected_true_proton_mom_reco_proton_mom_pd2->Draw("colz");
+  h_selected_true_proton_mom_reco_proton_mom_pd2->SetStats(0);
+  c->Print("Plots/ProtonEfficiency/Normalised_MomentumReconstruction_PD2.png");
+  c->Clear();
+
+  h_selected_true_proton_costheta_reco_proton_costheta_pd2->Draw("colz");
+  h_selected_true_proton_costheta_reco_proton_costheta_pd2->SetStats(0);
+  c->Print("Plots/ProtonEfficiency/CosThetaReconstruction_PD2.png");
+  c->Clear();
+
+  Normalise(h_selected_true_proton_costheta_reco_proton_costheta_pd2);
+  h_selected_true_proton_costheta_reco_proton_costheta_pd2->Draw("colz");
+  h_selected_true_proton_costheta_reco_proton_costheta_pd2->SetStats(0);
+  c->Print("Plots/ProtonEfficiency/Normalised_CosThetaReconstruction_PD2.png");
+  c->Clear();
+
+
   THStack* hs_proton_mom_err = new THStack("hs_proton_mom_err",";Proton Momentum (Reco - True)/True;Events");
 
   h_proton_mom_error_pd->SetLineColor(1);
@@ -264,6 +331,11 @@ void ProtonEfficiency(){
   h_proton_mom_error_lt->SetLineWidth(2);
   hs_proton_mom_err->Add(h_proton_mom_error_lt);
   l->AddEntry(h_proton_mom_error_lt,"LT","L");
+
+  h_proton_mom_error_pd2->SetLineColor(4);
+  h_proton_mom_error_pd2->SetLineWidth(2);
+  hs_proton_mom_err->Add(h_proton_mom_error_pd2);
+  l->AddEntry(h_proton_mom_error_pd2,"PD2","L");
     
   hs_proton_mom_err->Draw("nostack HIST");
   l->Draw();

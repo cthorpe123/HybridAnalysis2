@@ -17,7 +17,13 @@ void MakeCov(){
 
   std::string label = "RecoE_Test";
   std::string axis_title = ";Reco E (GeV);Events/GeV";
-  std::vector<double> bins = {0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.90,0.95,1.00,1.1,1.2,1.3,1.4,1.5,1.75,2.0,2.25,2.5};
+  TFile* f_tp = TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str());
+  TH1D* h_tp = (TH1D*)f_tp->Get("h_template");
+  h_tp->SetDirectory(0);
+  f_tp->Close();
+
+  h_tp->GetXaxis()->SetTitle("Reco E (GeV)");
+  h_tp->GetYaxis()->SetTitle("Events/GeV");
 
   const double scale = 1.0;
   const double data_POT = 1.332E+20;
@@ -53,24 +59,30 @@ void MakeCov(){
   std::vector<std::vector<std::vector<TH1D*>>> h_Vars;
   std::vector<TH1D*> h_CV;
 
-  TH1D* h_CV_Tot = new TH1D("h_CV_Tot",axis_title.c_str(),bins.size()-1,&bins[0]);
+  //TH1D* h_CV_Tot = new TH1D("h_CV_Tot",axis_title.c_str(),bins.size()-1,&bins[0]);
+  TH1D* h_CV_Tot = (TH1D*)h_tp->Clone("h_CV_Tot");
+  h_CV_Tot->Sumw2();
   std::vector<std::vector<TH1D*>> h_Vars_Tot;
   for(int i_s=0;i_s<kSystMAX;i_s++){
     h_Vars_Tot.push_back(std::vector<TH1D*>());
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
       std::string label = "h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u);
-      h_Vars_Tot.back().push_back(new TH1D(label.c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+      //h_Vars_Tot.back().push_back(new TH1D(label.c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+      h_Vars_Tot.back().push_back((TH1D*)h_tp->Clone(label.c_str()));
     }
   }
   
   for(size_t i_c=0;i_c<categories.size();i_c++){
-    h_CV.push_back(new TH1D(("h_CV_"+categories.at(i_c)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    //h_CV.push_back(new TH1D(("h_CV_"+categories.at(i_c)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    h_CV.push_back((TH1D*)h_tp->Clone(("h_CV_"+categories.at(i_c)).c_str()));
+    h_CV.back()->Sumw2();
     h_Vars.push_back(std::vector<std::vector<TH1D*>>());
     for(int i_s=0;i_s<kSystMAX;i_s++){
       h_Vars.back().push_back(std::vector<TH1D*>());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         std::string label = "h_Vars_"+categories.at(i_c)+"_"+sys_str.at(i_s)+"_"+std::to_string(i_u);
-        h_Vars.back().back().push_back(new TH1D(label.c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+        //h_Vars.back().back().push_back(new TH1D(label.c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+        h_Vars.back().back().push_back((TH1D*)h_tp->Clone(label.c_str()));
       }
     }
   }
@@ -85,7 +97,7 @@ void MakeCov(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 10000) break;
+      //if(ievent > 100000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
 
@@ -152,6 +164,7 @@ void MakeCov(){
     }
   }
 
+  // Systematics covariance matrices
   std::vector<TH2D*> h_Cov_Tot; 
   std::vector<TH2D*> h_FCov_Tot; 
   for(int i_s=0;i_s<kSystMAX;i_s++){
@@ -162,14 +175,62 @@ void MakeCov(){
     h_FCov_Tot.back()->Write();
   }
   
+  // Statistics covariance matrices
+  TH2D* h_Cov_MCStat = (TH2D*)h_Cov_Tot.at(0)->Clone("Cov_MCStat");
+  TH2D* h_FCov_MCStat = (TH2D*)h_Cov_Tot.at(0)->Clone("FCov_MCStat");
+  TH2D* h_Cov_EstDataStat = (TH2D*)h_Cov_Tot.at(0)->Clone("Cov_EstDataStat");
+  TH2D* h_FCov_EstDataStat = (TH2D*)h_Cov_Tot.at(0)->Clone("FCov_EstDataStat");
+  h_Cov_MCStat->Reset();
+  h_FCov_MCStat->Reset();
+  h_Cov_EstDataStat->Reset();
+  h_FCov_EstDataStat->Reset();
+  for(int i=1;i<h_CV_Tot->GetNbinsX()+1;i++){
+    h_Cov_MCStat->SetBinContent(i,i,h_CV_Tot->GetBinError(i)*h_CV_Tot->GetBinError(i));
+    h_FCov_MCStat->SetBinContent(i,i,h_CV_Tot->GetBinError(i)*h_CV_Tot->GetBinError(i)/h_CV_Tot->GetBinContent(i)/h_CV_Tot->GetBinContent(i));
+    h_Cov_EstDataStat->SetBinContent(i,i,h_CV_Tot->GetBinContent(i)/h_CV_Tot->GetBinWidth(i));
+    h_FCov_EstDataStat->SetBinContent(i,i,h_CV_Tot->GetBinContent(i)*h_CV_Tot->GetBinContent(i)/h_Cov_EstDataStat->GetBinContent(i,i));
+  } 
+  h_Cov_MCStat->Write();
+  h_FCov_MCStat->Write();
+  h_Cov_EstDataStat->Write();
+  h_FCov_EstDataStat->Write();
+
+  std::vector<TH2D*> h_Cov_MCStat_Cat; 
+  std::vector<TH2D*> h_FCov_MCStat_Cat; 
+  std::vector<TH2D*> h_Cov_EstDataStat_Cat; 
+  std::vector<TH2D*> h_FCov_EstDataStat_Cat; 
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    h_Cov_MCStat_Cat.push_back((TH2D*)h_Cov_Tot.at(0)->Clone(("Cov_"+categories.at(i_c)+"_MCStat").c_str()));
+    h_FCov_MCStat_Cat.push_back((TH2D*)h_Cov_Tot.at(0)->Clone(("FCov_"+categories.at(i_c)+"_MCStat").c_str()));
+    h_Cov_EstDataStat_Cat.push_back((TH2D*)h_Cov_Tot.at(0)->Clone(("Cov_"+categories.at(i_c)+"_EstDataStat").c_str()));
+    h_FCov_EstDataStat_Cat.push_back((TH2D*)h_Cov_Tot.at(0)->Clone(("FCov_"+categories.at(i_c)+"_EstDataStat").c_str()));
+    h_Cov_MCStat_Cat.back()->Reset();  
+    h_FCov_MCStat_Cat.back()->Reset();  
+    h_Cov_EstDataStat_Cat.back()->Reset();  
+    h_FCov_EstDataStat_Cat.back()->Reset();  
+    for(int i=1;i<h_CV_Tot->GetNbinsX()+1;i++){
+      h_Cov_MCStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinError(i)*h_CV.at(i_c)->GetBinError(i));
+      h_FCov_MCStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinError(i)*h_CV.at(i_c)->GetBinError(i)/h_CV.at(i_c)->GetBinContent(i)/h_CV.at(i_c)->GetBinContent(i));
+      h_Cov_EstDataStat_Cat.back()->SetBinContent(i,i,h_CV.at(i_c)->GetBinContent(i));
+      h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,1.0/h_CV.at(i_c)->GetBinContent(i));
+    } 
+    h_Cov_MCStat_Cat.back()->Write();
+    h_FCov_MCStat_Cat.back()->Write();
+    h_Cov_EstDataStat_Cat.back()->Write();
+    h_FCov_EstDataStat_Cat.back()->Write();
+  }
+
   TH2D* h_Cov = static_cast<TH2D*>(h_Cov_Tot.at(0)->Clone("Cov"));
   TH2D* h_FCov = static_cast<TH2D*>(h_FCov_Tot.at(0)->Clone("FCov"));
   h_Cov->Reset();
   h_FCov->Reset();
+ 
   for(int i_s=0;i_s<kSystMAX;i_s++){
     h_Cov->Add(h_Cov_Tot.at(i_s));    
     h_FCov->Add(h_FCov_Tot.at(i_s));    
   }
+  h_Cov->Add(h_Cov_MCStat);
+  h_FCov->Add(h_FCov_MCStat);
   h_Cov->Write();
   h_FCov->Write();
 

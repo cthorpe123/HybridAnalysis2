@@ -20,7 +20,14 @@ void MakeCovDetvar(){
   // Label and set the branches defining the selection and systematics
   std::string label = "RecoE_Test";
   std::string axis_title = ";Reco E (GeV);Events";
-  std::vector<double> bins = {0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.90,0.95,1.00,1.1,1.2,1.3,1.4,1.5,1.75,2.0,2.25,2.5};
+
+  TFile* f_tp = TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str());
+  TH1D* h_tp = (TH1D*)f_tp->Get("h_template");
+  h_tp->SetDirectory(0);
+  f_tp->Close();
+
+  h_tp->GetXaxis()->SetTitle("Reco E (GeV)");
+  h_tp->GetYaxis()->SetTitle("Events/GeV");
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
@@ -58,20 +65,24 @@ void MakeCovDetvar(){
   std::vector<double> weight_Vars;
   for(size_t i_f=0;i_f<pot_Vars.size();i_f++) weight_Vars.push_back(data_POT/pot_Vars.at(i_f));
 
-  TH1D* h_CV_Tot =  new TH1D("h_Detvar_CV_Tot",axis_title.c_str(),bins.size()-1,&bins[0]);
+  //TH1D* h_CV_Tot =  new TH1D("h_Detvar_CV_Tot",axis_title.c_str(),bins.size()-1,&bins[0]);
+  TH1D* h_CV_Tot = (TH1D*)h_tp->Clone("h_Detvar_CV_Tot");
   std::vector<TH1D*> h_CV;
 
   std::vector<TH1D*> h_Vars_Tot;
   std::vector<std::vector<TH1D*>> h_Vars;
   
   for(int i_s=0;i_s<kDetvarMAX;i_s++)
-    h_Vars_Tot.push_back(new TH1D(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    //h_Vars_Tot.push_back(new TH1D(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    h_Vars_Tot.push_back((TH1D*)h_tp->Clone(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str()));
  
   for(size_t i_c=0;i_c<categories.size();i_c++){
-    h_CV.push_back(new TH1D(("h_Detvar_CV_"+categories.at(i_c)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    //h_CV.push_back(new TH1D(("h_Detvar_CV_"+categories.at(i_c)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+    h_CV.push_back((TH1D*)h_tp->Clone(("h_Detvar_CV_"+categories.at(i_c)).c_str()));
     h_Vars.push_back(std::vector<TH1D*>());
     for(int i_s=0;i_s<kDetvarMAX;i_s++){
-      h_Vars.back().push_back(new TH1D(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+      //h_Vars.back().push_back(new TH1D(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str(),axis_title.c_str(),bins.size()-1,&bins[0]));
+      h_Vars.back().push_back((TH1D*)h_tp->Clone(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str()));
     }
   }
 

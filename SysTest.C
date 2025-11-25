@@ -60,6 +60,30 @@ void SysTest(){
     delete h2;
   }
 
+  TH2D* h_Cov_MCStat = static_cast<TH2D*>(f_in_hist->Get("Cov_MCStat"));
+  h_Cov_MCStat->Draw("colz");
+  h_Cov_MCStat->SetStats(0);
+  c->Print((plot_dir+"Cov_MCStat.png").c_str());
+  c->Clear(); 
+
+  TH2D* h_FCov_MCStat = static_cast<TH2D*>(f_in_hist->Get("FCov_MCStat"));
+  h_FCov_MCStat->Draw("colz");
+  h_FCov_MCStat->SetStats(0);
+  c->Print((plot_dir+"FCov_MCStat.png").c_str());
+  c->Clear(); 
+
+  TH2D* h_Cov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get("Cov_EstDataStat"));
+  h_Cov_EstDataStat->Draw("colz");
+  h_Cov_EstDataStat->SetStats(0);
+  c->Print((plot_dir+"Cov_EstDataStat.png").c_str());
+  c->Clear(); 
+
+  TH2D* h_FCov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get("FCov_EstDataStat"));
+  h_FCov_EstDataStat->Draw("colz");
+  h_FCov_EstDataStat->SetStats(0);
+  c->Print((plot_dir+"FCov_EstDataStat.png").c_str());
+  c->Clear(); 
+
   for(int i_s=0;i_s<kSystMAX;i_s++){
     TH2D* h = static_cast<TH2D*>(f_in_hist->Get(("FCov_"+sys_str.at(i_s)).c_str()));
     h->Draw("colz");
@@ -67,6 +91,8 @@ void SysTest(){
     c->Print((plot_dir+"FCov_"+sys_str.at(i_s)+".png").c_str());
     delete h;
   }
+
+  
 
   // Print the detector covarianc and fractional covariance  
   for(int i_s=0;i_s<kDetvarMAX;i_s++){
@@ -125,6 +151,13 @@ void SysTest(){
     l->AddEntry(h_FE.back(),sys_str.at(i_s).c_str(),"L");
   }
 
+  h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_MCStat"));
+  for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
+  h_FE.back()->SetLineColor(kSystMAX+3);
+  h_FE.back()->SetLineWidth(2);
+  hs_FE->Add(h_FE.back());
+  l->AddEntry( h_FE.back(),"MCStat","L");
+ 
   hs_FE->Draw("nostack HIST");
   hs_FE->GetXaxis()->SetTitle(axis_title.c_str());
   l->Draw();

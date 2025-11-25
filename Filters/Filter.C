@@ -14,16 +14,16 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = true;
-  bool load_syst = false;
+  is_dirt = false;
+  bool load_syst = true;
 
   //std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
   //const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root";
 
   const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
 
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   //const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
@@ -191,7 +191,7 @@ void Filter(){
   t_out->Branch("shower_p4_lt",&shower_p4_lt);
   t_out->Branch("est_nu_e_lt",&est_nu_e_lt);
 
-  // LT Reco branches
+  // Hybrid methods 
   bool sel_h8;
   bool in_tpc_h8;
   bool has_muon_h8;
@@ -219,6 +219,7 @@ void Filter(){
   t_out->Branch("pion_p4_h8",&pion_p4_h8);
   t_out->Branch("shower_p4_h8",&shower_p4_h8);
   t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
+
 
   // Systematics 
   if(!is_data && !is_ext && !is_dirt && load_syst){

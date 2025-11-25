@@ -4,17 +4,18 @@
 void SpeedyMergeNtuple(){
 
   bool is_data = false;  
-  bool save_syst = false; 
+  bool save_syst = true; 
 
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
-  std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root";
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
+  //std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
-  //std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
+  std::string dir_in = "/exp/uboone/data/uboonepro/MCC9.10/liangliu/v10_04_07_09/";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
-  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nue_overlay_surprise_reco2_hist.root";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
   //std::string dir_in = "/pnfs/uboone/scratch/users/bbogart/v10_04_07_16/";
   //std::string filename = "larpid_patch_smart_patch_test10_full_more.root";
@@ -79,6 +80,7 @@ void SpeedyMergeNtuple(){
   std::vector<float>* trk_end_y_v=0;
   std::vector<float>* trk_end_z_v=0;
   std::vector<int>* backtracked_pdg=0;
+  std::vector<int>* pfng2semlabel=0; 
 
   std::vector<float>* shr_px_v=0;
   std::vector<float>* shr_py_v=0;
@@ -135,6 +137,7 @@ void SpeedyMergeNtuple(){
   pd_t_in->SetBranchAddress("shr_pz_v",&shr_pz_v);
   pd_t_in->SetBranchAddress("shr_energy_y_v",&shr_energy_y_v);
   if(!is_data) pd_t_in->SetBranchAddress("backtracked_pdg",&backtracked_pdg);
+  pd_t_in->SetBranchAddress("pfng2semlabel",&pfng2semlabel);
 
   // Wirecell branches
   Int_t mc_nu_pdg;
@@ -354,6 +357,7 @@ void SpeedyMergeNtuple(){
   t_out->Branch("reco_nu_vtx_y",&reco_nu_vtx_y);
   t_out->Branch("reco_nu_vtx_z",&reco_nu_vtx_z);
   if(!is_data) t_out->Branch("backtracked_pdg",&backtracked_pdg);
+  t_out->Branch("pfng2semlabel",&pfng2semlabel);
 
   t_out->Branch("shr_px_v",&shr_px_v);
   t_out->Branch("shr_py_v",&shr_py_v);

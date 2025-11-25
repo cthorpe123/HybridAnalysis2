@@ -32,6 +32,18 @@ int SimpleMuonSelection(Int_t nTracks,Int_t trackIsSecondary[],Int_t trackPID[])
   return reco_muon;
 }
 
+int SimpleNueSelection(Int_t nShowers,Int_t showerIsSecondary[],Int_t showerPID[]){
+  int reco_electron = -1; 
+  for(int i=0;i<nShowers;i++){
+    if(showerIsSecondary[i]) continue;
+    if(abs(showerPID[i]) == 11){
+      reco_electron = i;
+      break;
+    }
+  } 
+  return reco_electron;
+}
+
 
 std::vector<TLorentzVector> RecoProton4MomV(Int_t nTracks,Int_t trackIsSecondary[],Int_t trackPID[],Float_t trackRecoE[],Float_t trackStartDirX[],Float_t trackStartDirY[],Float_t trackStartDirZ[]){
   std::vector<TLorentzVector> p4;

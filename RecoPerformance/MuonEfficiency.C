@@ -28,19 +28,24 @@ void MuonEfficiency(){
   TH2D* h_selected_true_muon_costheta_reco_muon_costheta_pd = new TH2D("h_selected_true_muon_costheta_reco_muon_costheta_pd",";True Muon Cos(#theta);Reco Muon Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
   TH1D* h_muon_mom_error_pd = new TH1D("h_muon_mom_error_pd",";(Reco - True)/True;Events",100,-1,1);
 
-
   TH1D* h_selected_true_muon_mom_wc = new TH1D("h_selected_true_muon_mom_wc",";True Muon Momentum (GeV);Events",40,0.0,2.0);
   TH1D* h_selected_true_muon_costheta_wc = new TH1D("h_selected_true_muon_costheta_wc",";True Muon Cos(#theta);Events",40,-1.0,1.0);
   TH2D* h_selected_true_muon_mom_reco_muon_mom_wc = new TH2D("h_selected_true_muon_mom_reco_muon_mom_wc",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
   TH2D* h_selected_true_muon_costheta_reco_muon_costheta_wc = new TH2D("h_selected_true_muon_costheta_reco_muon_costheta_wc",";True Muon Cos(#theta);Reco Muon Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
   TH1D* h_muon_mom_error_wc = new TH1D("h_muon_mom_error_wc",";(Reco - True)/True;Events",100,-1,1);
 
-
   TH1D* h_selected_true_muon_mom_lt = new TH1D("h_selected_true_muon_mom_lt",";True Muon Momentum (GeV);Events",40,0.0,2.0);
   TH1D* h_selected_true_muon_costheta_lt = new TH1D("h_selected_true_muon_costheta_lt",";True Muon Cos(#theta);Events",40,-1.0,1.0);
   TH2D* h_selected_true_muon_mom_reco_muon_mom_lt = new TH2D("h_selected_true_muon_mom_reco_muon_mom_lt",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
   TH2D* h_selected_true_muon_costheta_reco_muon_costheta_lt = new TH2D("h_selected_true_muon_costheta_reco_muon_costheta_lt",";True Muon Cos(#theta);Reco Muon Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
   TH1D* h_muon_mom_error_lt = new TH1D("h_muon_mom_error_lt",";(Reco - True)/True;Events",100,-1,1);
+
+  // Pandora with nugraph
+  TH1D* h_selected_true_muon_mom_pd2 = new TH1D("h_selected_true_muon_mom_pd2",";True Muon Momentum (GeV);Events",40,0.0,2.0);
+  TH1D* h_selected_true_muon_costheta_pd2 = new TH1D("h_selected_true_muon_costheta_pd2",";True Muon Cos(#theta);Events",40,-1.0,1.0);
+  TH2D* h_selected_true_muon_mom_reco_muon_mom_pd2 = new TH2D("h_selected_true_muon_mom_reco_muon_mom_pd2",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
+  TH2D* h_selected_true_muon_costheta_reco_muon_costheta_pd2 = new TH2D("h_selected_true_muon_costheta_reco_muon_costheta_pd2",";True Muon Cos(#theta);Reco Muon Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
+  TH1D* h_muon_mom_error_pd2 = new TH1D("h_muon_mom_error_pd2",";(Reco - True)/True;Events",100,-1,1);
 
   for(Long64_t ievent=0;ievent<t_in->GetEntries();ievent++){
 
@@ -107,6 +112,32 @@ void MuonEfficiency(){
 
     }
 
+    // Pandora
+    //int pd2_muon = pd2::SimpleMuonSelection(trk_llr_pid_score_v,trk_len_v);
+    int pd2_muon = -1;
+    double len = 0;
+    for(size_t i_tr=0;i_tr<trk_len_v->size();i_tr++){
+      if(pfng2semlabel->at(i_tr) == 0 && trk_len_v->at(i_tr) > len){
+        pd2_muon = i_tr;
+        len = trk_len_v->at(i_tr);
+      }
+    } 
+
+    if(inActiveTPC(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z) && pd2_muon != -1 && abs(backtracked_pdg->at(pd2_muon)) == 13 && !(check_containment && !isContained(trk_end_x_v->at(pd2_muon),trk_end_y_v->at(pd2_muon),trk_end_z_v->at(pd2_muon)))){
+
+      double reco_p_range = trk_range_muon_mom_v->at(pd2_muon); 
+      double reco_p_mcs = trk_mcs_muon_mom_v->at(pd2_muon); 
+      double reco_costheta = TVector3(trk_dir_x_v->at(pd2_muon),trk_dir_y_v->at(pd2_muon),trk_dir_z_v->at(pd2_muon)).CosTheta();
+
+      h_selected_true_muon_mom_pd2->Fill(p);
+      h_selected_true_muon_costheta_pd2->Fill(cos(theta));    
+
+      h_selected_true_muon_mom_reco_muon_mom_pd2->Fill(p,reco_p_range); 
+      h_selected_true_muon_costheta_reco_muon_costheta_pd2->Fill(cos(theta),reco_costheta);
+      h_muon_mom_error_pd2->Fill((reco_p_range-p)/p); 
+
+    }
+
   }  
 
 
@@ -120,6 +151,8 @@ void MuonEfficiency(){
   h_selected_true_muon_costheta_wc->Divide(h_true_muon_costheta);
   h_selected_true_muon_mom_lt->Divide(h_true_muon_mom);
   h_selected_true_muon_costheta_lt->Divide(h_true_muon_costheta);
+  h_selected_true_muon_mom_pd2->Divide(h_true_muon_mom);
+  h_selected_true_muon_costheta_pd2->Divide(h_true_muon_costheta);
 
   THStack* hs_muon_mom_eff = new THStack("hs_muon_mom_eff",";True Muon Momentum (GeV);Efficiency");
 
@@ -137,6 +170,11 @@ void MuonEfficiency(){
   h_selected_true_muon_mom_lt->SetLineWidth(2);
   hs_muon_mom_eff->Add(h_selected_true_muon_mom_lt);
   l->AddEntry(h_selected_true_muon_mom_lt,"LT","L");
+
+  h_selected_true_muon_mom_pd2->SetLineColor(4);
+  h_selected_true_muon_mom_pd2->SetLineWidth(2);
+  hs_muon_mom_eff->Add(h_selected_true_muon_mom_pd2);
+  l->AddEntry(h_selected_true_muon_mom_pd2,"PD2","L");
 
   hs_muon_mom_eff->Draw("nostack HIST");
   l->Draw();
@@ -160,6 +198,11 @@ void MuonEfficiency(){
   h_selected_true_muon_costheta_lt->SetLineWidth(2);
   hs_muon_costheta_eff->Add(h_selected_true_muon_costheta_lt);
   l->AddEntry(h_selected_true_muon_costheta_lt,"LT","L");
+
+  h_selected_true_muon_costheta_pd2->SetLineColor(4);
+  h_selected_true_muon_costheta_pd2->SetLineWidth(2);
+  hs_muon_costheta_eff->Add(h_selected_true_muon_costheta_pd2);
+  l->AddEntry(h_selected_true_muon_costheta_pd2,"PD2","L");
 
   hs_muon_costheta_eff->Draw("nostack HIST");
   l->Draw();
@@ -234,6 +277,28 @@ void MuonEfficiency(){
   c->Print("Plots/MuonEfficiency/Normalised_CosThetaReconstruction_LT.png");
   c->Clear();
 
+  h_selected_true_muon_mom_reco_muon_mom_pd2->Draw("colz");
+  h_selected_true_muon_mom_reco_muon_mom_pd2->SetStats(0);
+  c->Print("Plots/MuonEfficiency/MomentumReconstruction_PD2.png");
+  c->Clear();
+
+  Normalise(h_selected_true_muon_mom_reco_muon_mom_pd2);
+  h_selected_true_muon_mom_reco_muon_mom_pd2->Draw("colz");
+  h_selected_true_muon_mom_reco_muon_mom_pd2->SetStats(0);
+  c->Print("Plots/MuonEfficiency/Normalised_MomentumReconstruction_PD2.png");
+  c->Clear();
+
+  h_selected_true_muon_costheta_reco_muon_costheta_pd2->Draw("colz");
+  h_selected_true_muon_costheta_reco_muon_costheta_pd2->SetStats(0);
+  c->Print("Plots/MuonEfficiency/CosThetaReconstruction_PD2.png");
+  c->Clear();
+
+  Normalise(h_selected_true_muon_costheta_reco_muon_costheta_pd2);
+  h_selected_true_muon_costheta_reco_muon_costheta_pd2->Draw("colz");
+  h_selected_true_muon_costheta_reco_muon_costheta_pd2->SetStats(0);
+  c->Print("Plots/MuonEfficiency/Normalised_CosThetaReconstruction_PD2.png");
+  c->Clear();
+
   THStack* hs_muon_mom_err = new THStack("hs_muon_mom_err",";Muon Momentum (Reco - True)/True;Events");
 
   h_muon_mom_error_pd->SetLineColor(1);
@@ -250,6 +315,11 @@ void MuonEfficiency(){
   h_muon_mom_error_lt->SetLineWidth(2);
   hs_muon_mom_err->Add(h_muon_mom_error_lt);
   l->AddEntry(h_muon_mom_error_lt,"LT","L");
+
+  h_muon_mom_error_pd2->SetLineColor(4);
+  h_muon_mom_error_pd2->SetLineWidth(2);
+  hs_muon_mom_err->Add(h_muon_mom_error_pd2);
+  l->AddEntry(h_muon_mom_error_pd2,"PD2","L");
     
   hs_muon_mom_err->Draw("nostack HIST");
   l->Draw();

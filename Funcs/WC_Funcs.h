@@ -23,6 +23,21 @@ int SimpleMuonSelection(const Int_t& ntracks,const Int_t pdg[],const Int_t mothe
   return longest_idx;
 }
 
+int SimpleNueSelection(const Int_t& ntracks,const Int_t pdg[],const Int_t mother[],const Float_t mom[][4], const Float_t endxyzt[][4]){
+  double min_E = 0;
+  int longest_idx = -1;
+  int n = 0;
+  for(size_t i_tr=0;i_tr<ntracks;i_tr++){
+    if(mother[i_tr] == 0 && abs(pdg[i_tr]) == 11 && mom[i_tr][3] > min_E){
+      min_E = mom[i_tr][3];
+      longest_idx = i_tr;
+      n++;
+    }
+  }
+  //if(n > 1) return -1;
+  return longest_idx;
+}
+
 // Simple selection for finding leading charged pion 
 int SimplePionSelection(const Int_t& ntracks,const Int_t pdg[],const Int_t mother[],const Float_t mom[][4]){
   double min_E = sqrt(thresholds.at(211).first*thresholds.at(211).first+mpi*mpi);
