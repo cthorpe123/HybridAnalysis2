@@ -4,13 +4,13 @@
 namespace syst {
 
 // For speed while developing
-const int nuniv_Genie = 100;
-const int nuniv_Flux = 100;
-const int nuniv_Reint = 100;
+//const int nuniv_Genie = 100;
+//const int nuniv_Flux = 100;
+//const int nuniv_Reint = 100;
 
-//const int nuniv_Genie = 500;
-//const int nuniv_Flux = 1000;
-//const int nuniv_Reint = 1000;
+const int nuniv_Genie = 500;
+const int nuniv_Flux = 1000;
+const int nuniv_Reint = 1000;
 
 // Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};
@@ -44,8 +44,6 @@ double Mean(const std::vector<TH1D*>& h_Vars, int bin){
 // Multisim covariance calculator 
 
 void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D*& h_FCov){
-
-  std::cout << "Calculating covariance for " << sys << std::endl;
  
   std::string axis_title = h_CV->GetXaxis()->GetTitle();   
 
@@ -70,8 +68,6 @@ void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,
       for(int i_u=0;i_u<h_Vars.size();i_u++)
         cov += (h_Vars.at(i_u)->GetBinContent(i_bx) - x)*(h_Vars.at(i_u)->GetBinContent(i_by) - y);
       cov /= h_Vars.size(); 
-
-      //std::cout << i_bx << "  " << i_by << "  " << x << "  " <<  y << "  " << cov << std::endl;
 
       h_Cov->SetBinContent(i_bx,i_by,cov); 
       h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 

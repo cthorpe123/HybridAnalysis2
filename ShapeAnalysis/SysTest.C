@@ -14,7 +14,8 @@ using namespace syst;
 void SysTest(){
 
   bool blinded = true;
-  std::string label = "RecoE_0p_Test";
+
+  std::string label = "RecoE_TotalEDep";
 
   TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
   TFile* f_in_detvar = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());
@@ -71,18 +72,6 @@ void SysTest(){
   c->Print((plot_dir+"FCov_MCStat.png").c_str());
   c->Clear(); 
 
-  TH2D* h_Cov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get("Cov_EstDataStat"));
-  h_Cov_EstDataStat->Draw("colz");
-  h_Cov_EstDataStat->SetStats(0);
-  c->Print((plot_dir+"Cov_EstDataStat.png").c_str());
-  c->Clear(); 
-
-  TH2D* h_FCov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get("FCov_EstDataStat"));
-  h_FCov_EstDataStat->Draw("colz");
-  h_FCov_EstDataStat->SetStats(0);
-  c->Print((plot_dir+"FCov_EstDataStat.png").c_str());
-  c->Clear(); 
-
   for(int i_s=0;i_s<kSystMAX;i_s++){
     TH2D* h = static_cast<TH2D*>(f_in_hist->Get(("FCov_"+sys_str.at(i_s)).c_str()));
     h->Draw("colz");
@@ -90,7 +79,6 @@ void SysTest(){
     c->Print((plot_dir+"FCov_"+sys_str.at(i_s)+".png").c_str());
     delete h;
   }
-  
 
   // Print the detector covarianc and fractional covariance  
   for(int i_s=0;i_s<kDetvarMAX;i_s++){
@@ -155,13 +143,6 @@ void SysTest(){
   h_FE.back()->SetLineWidth(2);
   hs_FE->Add(h_FE.back());
   l->AddEntry( h_FE.back(),"MCStat","L");
-
-  h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_EstDataStat"));
-  for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
-  h_FE.back()->SetLineColor(kSystMAX+4);
-  h_FE.back()->SetLineWidth(2);
-  hs_FE->Add(h_FE.back());
-  l->AddEntry( h_FE.back(),"EstDataStat","L");
  
   hs_FE->Draw("nostack HIST");
   hs_FE->GetXaxis()->SetTitle(axis_title.c_str());

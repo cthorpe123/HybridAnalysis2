@@ -15,7 +15,7 @@ void MakePrediction(){
 
   bool blinded = true;
 
-  std::string label = "RecoE_0p_Test";
+  std::string label = "RecoE_Test";
 
   TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
   TFile* f_in_detvar = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());
@@ -30,21 +30,12 @@ void MakePrediction(){
   }
 
   // Build total covariance 
-  TH2D* h_Cov_Sum = static_cast<TH2D*>(f_in_hist->Get(("Cov_"+sys_str.at(0)).c_str())->Clone("h_Cov_Sum"));
-  h_Cov_Sum->Reset();
-  for(int i_s=0;i_s<kSystMAX;i_s++)
-      h_Cov_Sum->Add(static_cast<TH2D*>(f_in_hist->Get(("Cov_"+sys_str.at(i_s)).c_str())));
+  TH2D* h_Cov = static_cast<TH2D*>(f_in_hist->Get("Cov"));
+  TH2D* h_Cov_Detvar = static_cast<TH2D*>(f_in_detvar->Get("Cov"));
 
-  TH2D* h_Cov_Sum_Detvar = static_cast<TH2D*>(f_in_detvar->Get(("Cov_"+detvar_str.at(0)).c_str())->Clone("h_Cov_Sum_Detvar"));
-  h_Cov_Sum_Detvar->Reset();
-  for(int i_s=0;i_s<kDetvarMAX;i_s++)
-    h_Cov_Sum_Detvar->Add(static_cast<TH2D*>(f_in_detvar->Get(("Cov_"+detvar_str.at(i_s)).c_str())));
+  //h_Cov->Add(h_Cov_Detvar);
 
-  h_Cov_Sum->Add(h_Cov_Sum_Detvar);
-
-  for(int i=1;i<h_CV_Tot->GetNbinsX()+1;i++){
-    h_CV_Tot->SetBinError(i,sqrt(h_Cov_Sum->GetBinContent(i,i)));
-  }
+  for(int i=1;i<h_CV_Tot->GetNbinsX()+1;i++) h_CV_Tot->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
 
   std::string plot_dir = "Analysis/"+label+"/Plots/MakePrediction/";
   gSystem->Exec(("mkdir -p "+plot_dir).c_str());

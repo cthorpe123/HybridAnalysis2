@@ -54,24 +54,24 @@ void HistogramManager::SetupHistograms()
 {
 
   // Storing totals
-  _h_CV_Tot = (TH1D*)_h_tp->Clone("h_CV_Tot");
+  _h_CV_Tot = (TH1D*)_h_tp->Clone(("h_CV_Tot_"+_label).c_str());
   _h_CV_Tot->Sumw2();
   for(int i_s=0;i_s<kSystMAX;i_s++){
     _h_Vars_Tot.push_back(std::vector<TH1D*>());
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-      _h_Vars_Tot.back().push_back((TH1D*)_h_tp->Clone(("h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str()));
+      _h_Vars_Tot.back().push_back((TH1D*)_h_tp->Clone(("h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u)+"_"+_label).c_str()));
     }
   }
   
   // Storing events broken down by category
   for(size_t i_c=0;i_c<categories.size();i_c++){
-    _h_CV.push_back((TH1D*)_h_tp->Clone(("h_CV_"+categories.at(i_c)).c_str()));
+    _h_CV.push_back((TH1D*)_h_tp->Clone(("h_CV_"+categories.at(i_c)+"_"+_label).c_str()));
     _h_CV.back()->Sumw2();
     _h_Vars.push_back(std::vector<std::vector<TH1D*>>());
     for(int i_s=0;i_s<kSystMAX;i_s++){
       _h_Vars.back().push_back(std::vector<TH1D*>());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        _h_Vars.back().back().push_back((TH1D*)_h_tp->Clone(("h_Vars_"+categories.at(i_c)+"_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str()));
+        _h_Vars.back().back().push_back((TH1D*)_h_tp->Clone(("h_Vars_"+categories.at(i_c)+"_"+sys_str.at(i_s)+"_"+std::to_string(i_u)+"_"+_label).c_str()));
       }
     }
   }
@@ -127,12 +127,12 @@ void HistogramManager::Write()
   if(_divide_by_bin_width) DivideByBinWidth(_h_CV_Tot);
   double integral = _h_CV_Tot->Integral("width");
   if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
-  _h_CV_Tot->Write();
+  _h_CV_Tot->Write("h_CV_Tot");
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     if(_divide_by_bin_width) DivideByBinWidth(_h_CV.at(i_c));
     if(_shape_only) _h_CV.at(i_c)->Scale(1.0/integral);
-    _h_CV.at(i_c)->Write();
+    _h_CV.at(i_c)->Write(("h_CV_"+categories.at(i_c)).c_str());
    }
 
   std::vector<std::vector<double>> integral_v(kSystMAX);
@@ -141,7 +141,7 @@ void HistogramManager::Write()
       if(_divide_by_bin_width) DivideByBinWidth(_h_Vars_Tot.at(i_s).at(i_u));
       integral_v.at(i_s).push_back(_h_Vars_Tot.at(i_s).at(i_u)->Integral("width"));       
       if(_shape_only) _h_Vars_Tot.at(i_s).at(i_u)->Scale(1.0/integral_v.at(i_s).back());
-      _h_Vars_Tot.at(i_s).at(i_u)->Write();     
+      _h_Vars_Tot.at(i_s).at(i_u)->Write(("h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str());     
     }
   }   
 
@@ -150,7 +150,7 @@ void HistogramManager::Write()
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         if(_divide_by_bin_width) DivideByBinWidth(_h_Vars.at(i_c).at(i_s).at(i_u)); 
         if(_shape_only) _h_Vars.at(i_c).at(i_s).at(i_u)->Scale(1.0/integral_v.at(i_s).back());
-        _h_Vars.at(i_c).at(i_s).at(i_u)->Write();        
+        _h_Vars.at(i_c).at(i_s).at(i_u)->Write(("h_Vars_"+categories.at(i_c)+"_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str());
       }
     }
   }
@@ -314,16 +314,16 @@ DetvarHistogramManager::DetvarHistogramManager(std::string label) : _label(label
 void DetvarHistogramManager::SetupHistograms()
 {
 
-  _h_CV_Tot = (TH1D*)_h_tp->Clone("h_Detvar_CV_Tot");
+  _h_CV_Tot = (TH1D*)_h_tp->Clone(("h_Detvar_CV_Tot"+_label).c_str());
   
   for(int i_s=0;i_s<kDetvarMAX;i_s++)
-    _h_Vars_Tot.push_back((TH1D*)_h_tp->Clone(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str()));
+    _h_Vars_Tot.push_back((TH1D*)_h_tp->Clone(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)+"_"+_label).c_str()));
  
   for(size_t i_c=0;i_c<categories.size();i_c++){
-    _h_CV.push_back((TH1D*)_h_tp->Clone(("h_Detvar_CV_"+categories.at(i_c)).c_str()));
+    _h_CV.push_back((TH1D*)_h_tp->Clone(("h_Detvar_CV_"+categories.at(i_c)+"_"+_label).c_str()));
     _h_Vars.push_back(std::vector<TH1D*>());
     for(int i_s=0;i_s<kDetvarMAX;i_s++){
-      _h_Vars.back().push_back((TH1D*)_h_tp->Clone(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str()));
+      _h_Vars.back().push_back((TH1D*)_h_tp->Clone(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)+"_"+_label).c_str()));
     }
   }
 
@@ -365,12 +365,12 @@ void DetvarHistogramManager::Write()
   if(_divide_by_bin_width) DivideByBinWidth(_h_CV_Tot);
   double integral = _h_CV_Tot->Integral("width");
   if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
-  _h_CV_Tot->Write();
+  _h_CV_Tot->Write("h_Detvar_CV_Tot");
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     if(_divide_by_bin_width) DivideByBinWidth(_h_CV.at(i_c));
     if(_shape_only) _h_CV.at(i_c)->Scale(1.0/integral);
-    _h_CV.at(i_c)->Write();
+    _h_CV.at(i_c)->Write(("h_Detvar_CV_"+categories.at(i_c)).c_str());
   }
 
   std::vector<double> integral_v;
@@ -378,14 +378,14 @@ void DetvarHistogramManager::Write()
     if(_divide_by_bin_width) DivideByBinWidth(_h_Vars_Tot.at(i_s));
     integral_v.push_back(_h_Vars_Tot.at(i_s)->Integral("width"));
     if(_shape_only) _h_Vars_Tot.at(i_s)->Scale(1.0/integral_v.back());
-    _h_Vars_Tot.at(i_s)->Write();      
+    _h_Vars_Tot.at(i_s)->Write(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str());
   }  
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     for(int i_s=0;i_s<kDetvarMAX;i_s++){
       if(_divide_by_bin_width) DivideByBinWidth(_h_Vars.at(i_c).at(i_s));
       if(_shape_only) _h_Vars.at(i_c).at(i_s)->Scale(1.0/integral_v.at(i_s));
-      _h_Vars.at(i_c).at(i_s)->Write();  
+      _h_Vars.at(i_c).at(i_s)->Write(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str());  
     }
   }      
 
