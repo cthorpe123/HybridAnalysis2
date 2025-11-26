@@ -15,7 +15,7 @@ void SysTest(){
 
   bool blinded = true;
 
-  std::string label = "RecoE_Test";
+  std::string label = "RecoW_Test";
 
   TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
   TFile* f_in_detvar = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());

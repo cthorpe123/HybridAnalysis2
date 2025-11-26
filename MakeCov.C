@@ -14,9 +14,9 @@
 
 void MakeCov(){
 
-  std::string label = "RecoE_Test";
+  std::string label = "RecoW_Test";
   hist::HistogramManager h(label);
-  h.DBBW();
+  //h.DBBW();
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files_v = {
@@ -41,7 +41,7 @@ void MakeCov(){
       t_in->GetEntry(ievent);
 
       if(!sel_h8) continue;
-      double var = est_nu_e_h8->at(ee::kMuonKin);
+      double var = W_h8;
 
       h.FillHistograms(var,load_syst);
 

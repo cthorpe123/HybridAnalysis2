@@ -125,16 +125,22 @@ void HistogramManager::Write()
   TFile* f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
 
   if(_divide_by_bin_width) DivideByBinWidth(_h_CV_Tot);
+  double integral = _h_CV_Tot->Integral("width");
+  if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
   _h_CV_Tot->Write();
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     if(_divide_by_bin_width) DivideByBinWidth(_h_CV.at(i_c));
+    if(_shape_only) _h_CV.at(i_c)->Scale(1.0/integral);
     _h_CV.at(i_c)->Write();
    }
 
+  std::vector<std::vector<double>> integral_v(kSystMAX);
   for(int i_s=0;i_s<kSystMAX;i_s++){
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
       if(_divide_by_bin_width) DivideByBinWidth(_h_Vars_Tot.at(i_s).at(i_u));
+      integral_v.at(i_s).push_back(_h_Vars_Tot.at(i_s).at(i_u)->Integral("width"));       
+      if(_shape_only) _h_Vars_Tot.at(i_s).at(i_u)->Scale(1.0/integral_v.at(i_s).back());
       _h_Vars_Tot.at(i_s).at(i_u)->Write();     
     }
   }   
@@ -143,6 +149,7 @@ void HistogramManager::Write()
     for(int i_s=0;i_s<kSystMAX;i_s++){
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         if(_divide_by_bin_width) DivideByBinWidth(_h_Vars.at(i_c).at(i_s).at(i_u)); 
+        if(_shape_only) _h_Vars.at(i_c).at(i_s).at(i_u)->Scale(1.0/integral_v.at(i_s).back());
         _h_Vars.at(i_c).at(i_s).at(i_u)->Write();        
       }
     }
@@ -180,7 +187,7 @@ void HistogramManager::Write()
     }
     else {
       h_Cov_MCStat->SetBinContent(i,i,bin_error*bin_error);
-      h_FCov_MCStat->SetBinContent(i,i,bin_error*bin_error/bin_width/bin_width);
+      h_FCov_MCStat->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
       h_Cov_EstDataStat->SetBinContent(i,i,bin_content);
       h_FCov_EstDataStat->SetBinContent(i,i,1.0/sqrt(bin_content));
     }
@@ -356,21 +363,28 @@ void DetvarHistogramManager::Write()
   TFile* f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Detvars.root").c_str(),"RECREATE");
 
   if(_divide_by_bin_width) DivideByBinWidth(_h_CV_Tot);
+  double integral = _h_CV_Tot->Integral("width");
+  if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
   _h_CV_Tot->Write();
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     if(_divide_by_bin_width) DivideByBinWidth(_h_CV.at(i_c));
+    if(_shape_only) _h_CV.at(i_c)->Scale(1.0/integral);
     _h_CV.at(i_c)->Write();
   }
 
+  std::vector<double> integral_v;
   for(int i_s=0;i_s<kDetvarMAX;i_s++){
     if(_divide_by_bin_width) DivideByBinWidth(_h_Vars_Tot.at(i_s));
+    integral_v.push_back(_h_Vars_Tot.at(i_s)->Integral("width"));
+    if(_shape_only) _h_Vars_Tot.at(i_s)->Scale(1.0/integral_v.back());
     _h_Vars_Tot.at(i_s)->Write();      
   }  
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     for(int i_s=0;i_s<kDetvarMAX;i_s++){
       if(_divide_by_bin_width) DivideByBinWidth(_h_Vars.at(i_c).at(i_s));
+      if(_shape_only) _h_Vars.at(i_c).at(i_s)->Scale(1.0/integral_v.at(i_s));
       _h_Vars.at(i_c).at(i_s)->Write();  
     }
   }      

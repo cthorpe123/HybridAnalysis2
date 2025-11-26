@@ -17,9 +17,9 @@ void MakeCovDetvar(){
   const double scale = 1.0;
 
   // Label and set the branches defining the selection and systematics
-  std::string label = "RecoE_Test";
+  std::string label = "RecoW_Test";
   hist::DetvarHistogramManager h(label);
-  h.DBBW(); 
+  //h.DBBW(); 
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
   std::vector<std::string> files = {
@@ -45,7 +45,7 @@ void MakeCovDetvar(){
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
       if(!sel_h8) continue;
-      double var = est_nu_e_h8->at(ee::kMuonKin);
+      double var = W_h8;
       h.FillHistograms(var);
 
     }
