@@ -13,7 +13,9 @@ class HistogramManager {
   public: 
 
     HistogramManager(std::string label);
-    void FillHistograms(double var,bool load_syst,double weight=1.0);
+    void LoadTemplate();
+    void SetTemplate(std::string axis_title,int nbins,double low,double high);
+    void FillHistograms(double var,bool load_syst,double weight=1.0);   
     void DBBW() { _divide_by_bin_width = true; }
     void ShapeOnly() { _shape_only = true; }
     void Write();
@@ -24,7 +26,7 @@ class HistogramManager {
     bool _divide_by_bin_width = false;
     bool _shape_only = false; 
  
-    TH1D* _h_tp;
+    TH1D* _h_tp = nullptr;
     TH1D* _h_CV_Tot;
     std::vector<std::vector<TH1D*>> _h_Vars_Tot;
     std::vector<TH1D*> _h_CV;
@@ -39,6 +41,13 @@ class HistogramManager {
 
 HistogramManager::HistogramManager(std::string label) : _label(label)
 {
+}
+
+///////////////////////////////////////////////////////////////////////
+// initial setup - load template histogram from file
+
+void HistogramManager::LoadTemplate()
+{
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
   _h_tp = (TH1D*)f_tp->Get("h_template");
   _h_tp->SetDirectory(0);
@@ -48,11 +57,20 @@ HistogramManager::HistogramManager(std::string label) : _label(label)
 }
 
 ///////////////////////////////////////////////////////////////////////
+// initial setup - load template histogram from file
+
+void HistogramManager::SetTemplate(std::string axis_title,int nbins,double low,double high)
+{
+  _h_tp = new TH1D(("h_template_"+_label).c_str(),axis_title.c_str(),nbins,low,high);
+
+  SetupHistograms();
+}
+
+///////////////////////////////////////////////////////////////////////
 // Create all of the vectors of histogram pointers
 
 void HistogramManager::SetupHistograms()
 {
-
   // Storing totals
   _h_CV_Tot = (TH1D*)_h_tp->Clone(("h_CV_Tot_"+_label).c_str());
   _h_CV_Tot->Sumw2();
@@ -84,6 +102,9 @@ void HistogramManager::SetupHistograms()
 void HistogramManager::FillHistograms(double var,bool load_syst,double weight)
 {
 
+  if(_h_tp == nullptr) 
+    throw std::invalid_argument("Trying to fill histograms before binning has been set, call LoadTemplate or SetTemplate first!");
+
   if(category == -1) std::cout << "Bad event" << std::endl;
 
   if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
@@ -91,16 +112,18 @@ void HistogramManager::FillHistograms(double var,bool load_syst,double weight)
   _h_CV.at(category)->Fill(var,POT_weight*weightSpline);
   if(!is_data) _h_CV_Tot->Fill(var,POT_weight*weightSpline);
 
-  if(load_syst){
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightsGenie->at(i_u)/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+  if(!is_data){
+    if(load_syst){
+      for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightsGenie->at(i_u)/1000);
+      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
+      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+    }
+    else {
+      for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
+    } 
   }
-  else {
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Tot.at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Tot.at(kReint).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Tot.at(kFlux).at(i_u)->Fill(var,(double)POT_weight*weightSpline);
-  } 
 
   if(load_syst){
     for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars.at(category).at(kGenie).at(i_u)->Fill(var,(double)POT_weight*weightsGenie->at(i_u)/1000);
@@ -274,6 +297,8 @@ class DetvarHistogramManager {
   public: 
 
     DetvarHistogramManager(std::string label);
+    void LoadTemplate();
+    void SetTemplate(std::string axis_title,int nbins,double low,double high);
     void FillHistograms(double var,double weight=1.0);
     void DBBW() { _divide_by_bin_width = true; }
     void ShapeOnly() { _shape_only = true; }
@@ -285,7 +310,7 @@ class DetvarHistogramManager {
     bool _divide_by_bin_width = false;
     bool _shape_only = false; 
  
-    TH1D* _h_tp;
+    TH1D* _h_tp = nullptr;
     TH1D* _h_CV_Tot;
     std::vector<TH1D*> _h_CV;
     std::vector<TH1D*> _h_Vars_Tot;
@@ -300,10 +325,27 @@ class DetvarHistogramManager {
 
 DetvarHistogramManager::DetvarHistogramManager(std::string label) : _label(label)
 {
+}
+
+///////////////////////////////////////////////////////////////////////
+// initial setup - load template histogram from file
+
+void DetvarHistogramManager::LoadTemplate()
+{
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
   _h_tp = (TH1D*)f_tp->Get("h_template");
   _h_tp->SetDirectory(0);
   f_tp->Close();
+
+  SetupHistograms();
+}
+
+///////////////////////////////////////////////////////////////////////
+// initial setup - load template histogram from file
+
+void DetvarHistogramManager::SetTemplate(std::string axis_title,int nbins,double low,double high)
+{
+  _h_tp = new TH1D("h_template",axis_title.c_str(),nbins,low,high);
 
   SetupHistograms();
 }
@@ -334,6 +376,9 @@ void DetvarHistogramManager::SetupHistograms()
 
 void DetvarHistogramManager::FillHistograms(double var,double weight)
 {
+
+  if(_h_tp == nullptr) 
+    throw std::invalid_argument("Trying to fill histograms before binning has been set, call LoadTemplate or SetTemplate first!");
 
   if(detvar_univ == -1){
     if(!is_data) _h_CV_Tot->Fill(var,POT_weight);

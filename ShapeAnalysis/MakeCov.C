@@ -23,6 +23,7 @@ void MakeCov(){
 
     std::string label = "RecoE_"+ee::estimators_str.at(i_e);
     hist::HistogramManager h(label);
+    h.LoadTemplate();
     h.DBBW();
 
     for(int i_f=0;i_f<files_v.size();i_f++){

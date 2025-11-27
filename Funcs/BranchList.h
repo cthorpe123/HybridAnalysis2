@@ -291,6 +291,7 @@ Double_t        POT_weight;
 Int_t           detvar_univ;
 Bool_t          is_signal_t;
 Bool_t          in_tpc_t;
+TVector3        *nu_vtx_t=0;
 Bool_t          has_muon_t;
 TVector3        *muon_mom_t=0;
 Bool_t          muon_contained_t;
@@ -305,6 +306,7 @@ std::vector<double>* est_nu_e_t=0;
 
 Bool_t          sel_pd;
 Bool_t          in_tpc_pd;
+TVector3        *nu_vtx_pd=0;
 Bool_t          has_muon_pd;
 TVector3        *muon_mom_pd=0;
 TVector3        *muon_mom_mcs_pd=0;
@@ -320,6 +322,7 @@ std::vector<double>* est_nu_e_pd=0;
 
 Bool_t          sel_wc;
 Bool_t          in_tpc_wc;
+TVector3        *nu_vtx_wc=0;
 Bool_t          has_muon_wc;
 TVector3        *muon_mom_wc=0;
 TVector3        *muon_mom_len_wc=0;
@@ -336,6 +339,7 @@ std::vector<double>* est_nu_e_wc=0;
 
 Bool_t          sel_lt;
 Bool_t          in_tpc_lt;
+TVector3        *nu_vtx_lt=0;
 Bool_t          has_muon_lt;
 TVector3        *muon_mom_lt=0;
 Bool_t          muon_contained_lt;
@@ -350,6 +354,7 @@ std::vector<double>* est_nu_e_lt=0;
 
 Bool_t          sel_h8;
 Bool_t          in_tpc_h8;
+TVector3        *nu_vtx_h8=0;
 Bool_t          has_muon_h8;
 TVector3        *muon_mom_h8=0;
 Bool_t          muon_contained_h8;
@@ -363,6 +368,8 @@ TLorentzVector  *shower_p4_h8=0;
 std::vector<double>* est_nu_e_h8=0;
 
 void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
+
+  std::cout << "Loading " << filename << std::endl;
 
   f_in = TFile::Open(filename.c_str());
   t_in = static_cast<TTree*>(f_in->Get("DISNtuple"));
@@ -389,9 +396,6 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     if(strcmp(branch->GetName(),"weightsGenie") == 0) load_syst = true;
   }
 
-  std::cout << "is_overlay = " << is_overlay << std::endl;
-  std::cout << "load_syst = " << load_syst << std::endl;
-
   if(is_overlay){
     t_in->SetBranchAddress("mc_pdg",&mc_pdg);
     t_in->SetBranchAddress("mc_E",&mc_E);
@@ -410,6 +414,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     t_in->SetBranchAddress("nu_e",&nu_e); 
     t_in->SetBranchAddress("is_signal_t", &is_signal_t);
     t_in->SetBranchAddress("in_tpc_t", &in_tpc_t);
+    t_in->SetBranchAddress("nu_vtx_t",&nu_vtx_t);
     t_in->SetBranchAddress("has_muon_t", &has_muon_t);
     t_in->SetBranchAddress("muon_mom_t", &muon_mom_t);
     t_in->SetBranchAddress("muon_contained_t", &muon_contained_t);
@@ -434,6 +439,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
   t_in->SetBranchAddress("sel_pd", &sel_pd);
   t_in->SetBranchAddress("in_tpc_pd", &in_tpc_pd);
+  t_in->SetBranchAddress("nu_vtx_pd",&nu_vtx_pd);
   t_in->SetBranchAddress("has_muon_pd", &has_muon_pd);
   t_in->SetBranchAddress("muon_mom_pd", &muon_mom_pd);
   t_in->SetBranchAddress("muon_mom_mcs_pd", &muon_mom_mcs_pd);
@@ -449,6 +455,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
   t_in->SetBranchAddress("sel_wc", &sel_wc);
   t_in->SetBranchAddress("in_tpc_wc", &in_tpc_wc);
+  t_in->SetBranchAddress("nu_vtx_wc",&nu_vtx_wc);
   t_in->SetBranchAddress("has_muon_wc", &has_muon_wc);
   t_in->SetBranchAddress("muon_mom_wc", &muon_mom_wc);
   t_in->SetBranchAddress("muon_mom_mcs_wc", &muon_mom_mcs_wc);
@@ -465,6 +472,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
   t_in->SetBranchAddress("sel_lt", &sel_lt);
   t_in->SetBranchAddress("in_tpc_lt", &in_tpc_lt);
+  t_in->SetBranchAddress("nu_vtx_lt",&nu_vtx_lt);
   t_in->SetBranchAddress("has_muon_lt", &has_muon_lt);
   t_in->SetBranchAddress("muon_mom_lt", &muon_mom_lt);
   t_in->SetBranchAddress("muon_contained_lt", &muon_contained_lt);
@@ -479,6 +487,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
   t_in->SetBranchAddress("sel_h8", &sel_h8);
   t_in->SetBranchAddress("in_tpc_h8", &in_tpc_h8);
+  t_in->SetBranchAddress("nu_vtx_h8",&nu_vtx_h8);
   t_in->SetBranchAddress("has_muon_h8", &has_muon_h8);
   t_in->SetBranchAddress("muon_mom_h8", &muon_mom_h8);
   t_in->SetBranchAddress("muon_contained_h8", &muon_contained_h8);

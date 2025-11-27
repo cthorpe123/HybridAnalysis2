@@ -13,11 +13,15 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = false;
+  is_dirt = true;
   bool load_syst = false;
 
   // Main run4b files
-  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+
+  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";
+  //double POT_weight = 1.0; 
+  //int detvar_univ = -1; // which detvar are you looking at
 
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //double POT_weight = 1.332E+20/7.88166e+20; 
@@ -27,11 +31,12 @@ void Filter(){
   //double POT_weight = 31582916.0/88445969.0;
   //int detvar_univ = -1; // which detvar are you looking at
 
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  //double POT_weight = 1.332E+20/3.06E+20;
-  //int detvar_univ = -1; // which detvar are you looking at
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+  double POT_weight = 1.332E+20/3.06E+20;
+  int detvar_univ = -1; // which detvar are you looking at
 
   // Run 4/5 detvars
+/*
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
   //const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root";
   //double POT_weight = 1.332E+20/5.42073e+20;
@@ -41,6 +46,7 @@ void Filter(){
   const std::string file = "Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root";
   double POT_weight = 1.332E+20/1.14542e+20;
   int detvar_univ = syst::kRecomb2; // which detvar are you looking at
+*/
 
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
@@ -86,6 +92,7 @@ void Filter(){
   // Analysis specific truth branches
   bool is_signal_t;
   bool in_tpc_t;
+  TVector3 nu_vtx_t;
   bool has_muon_t;
   TVector3 muon_mom_t;
   bool muon_contained_t;
@@ -101,6 +108,7 @@ void Filter(){
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
     t_out->Branch("in_tpc_t",&in_tpc_t);
+    t_out->Branch("nu_vtx_t",&nu_vtx_t);
     t_out->Branch("has_muon_t",&has_muon_t);
     t_out->Branch("muon_mom_t",&muon_mom_t);
     t_out->Branch("muon_contained_t",&muon_contained_t);
@@ -117,6 +125,7 @@ void Filter(){
   // PD Reco branches
   bool sel_pd;
   bool in_tpc_pd;
+  TVector3 nu_vtx_pd;
   bool has_muon_pd;
   TVector3 muon_mom_pd;
   TVector3 muon_mom_mcs_pd;
@@ -132,6 +141,7 @@ void Filter(){
 
   t_out->Branch("sel_pd",&sel_pd);
   t_out->Branch("in_tpc_pd",&in_tpc_pd);
+  t_out->Branch("nu_vtx_pd",&nu_vtx_pd);
   t_out->Branch("has_muon_pd",&has_muon_pd);
   t_out->Branch("muon_mom_pd",&muon_mom_pd);
   t_out->Branch("muon_mom_mcs_pd",&muon_mom_mcs_pd);
@@ -149,6 +159,7 @@ void Filter(){
   // WC Reco branches
   bool sel_wc;
   bool in_tpc_wc;
+  TVector3 nu_vtx_wc;
   bool has_muon_wc;
   TVector3 muon_mom_wc;
   TVector3 muon_mom_len_wc;
@@ -165,6 +176,7 @@ void Filter(){
 
   t_out->Branch("sel_wc",&sel_wc);
   t_out->Branch("in_tpc_wc",&in_tpc_wc);
+  t_out->Branch("nu_vtx_wc",&nu_vtx_wc);
   t_out->Branch("has_muon_wc",&has_muon_wc);
   t_out->Branch("muon_mom_wc",&muon_mom_wc);
   t_out->Branch("muon_contained_wc",&muon_contained_wc);
@@ -182,6 +194,7 @@ void Filter(){
   // LT Reco branches
   bool sel_lt;
   bool in_tpc_lt;
+  TVector3 nu_vtx_lt;
   bool has_muon_lt;
   TVector3 muon_mom_lt;
   bool muon_contained_lt;
@@ -196,6 +209,7 @@ void Filter(){
 
   t_out->Branch("sel_lt",&sel_lt);
   t_out->Branch("in_tpc_lt",&in_tpc_lt);
+  t_out->Branch("nu_vtx_lt",&nu_vtx_lt);
   t_out->Branch("has_muon_lt",&has_muon_lt);
   t_out->Branch("muon_mom_lt",&muon_mom_lt);
   t_out->Branch("muon_contained_lt",&muon_contained_lt);
@@ -211,6 +225,7 @@ void Filter(){
   // Hybrid methods 
   bool sel_h8;
   bool in_tpc_h8;
+  TVector3 nu_vtx_h8;
   bool has_muon_h8;
   TVector3 muon_mom_h8;
   bool muon_contained_h8;
@@ -225,6 +240,7 @@ void Filter(){
 
   t_out->Branch("sel_h8",&sel_h8);
   t_out->Branch("in_tpc_h8",&in_tpc_h8);
+  t_out->Branch("nu_vtx_h8",&nu_vtx_h8);
   t_out->Branch("has_muon_h8",&has_muon_h8);
   t_out->Branch("muon_mom_h8",&muon_mom_h8);
   t_out->Branch("muon_contained_h8",&muon_contained_h8);
@@ -274,6 +290,7 @@ void Filter(){
 
       // Select out signal events
       in_tpc_t = inActiveTPC(true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z);
+      nu_vtx_t = TVector3(true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z);
 
       if(mc_pdg->size() && abs(mc_pdg->at(0)) == 13) muon_mom_t = TVector3(mc_px->at(0),mc_py->at(0),mc_pz->at(0));
       has_muon_t = mc_pdg->size() && abs(mc_pdg->at(0)) == 13 && muon_mom_t.Mag() > 0.1;
@@ -311,6 +328,7 @@ void Filter(){
     // Muon ID with each framework
     // PD Reco
     in_tpc_pd = inActiveTPC(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z);
+    nu_vtx_pd = TVector3(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z);
     int pd_muon = pd::SimpleMuonSelection(trk_llr_pid_score_v,trk_len_v);
     if(pd_muon != -1){
       muon_mom_pd = TVector3(trk_range_muon_mom_v->at(pd_muon)*trk_dir_x_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_y_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_z_v->at(pd_muon));
@@ -339,6 +357,7 @@ void Filter(){
 
     // WC Reco
     in_tpc_wc = inActiveTPC(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
+    nu_vtx_wc = TVector3(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
     int wc_muon = wc::SimpleMuonSelection(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT);
     if(wc_muon != -1){
       muon_mom_wc = TVector3(reco_startMomentum[wc_muon][0],reco_startMomentum[wc_muon][1],reco_startMomentum[wc_muon][2]);
@@ -370,6 +389,7 @@ void Filter(){
 
     // LT Reco
     in_tpc_lt = inActiveTPC(vtxX,vtxY,vtxZ);
+    nu_vtx_lt = TVector3(vtxX,vtxY,vtxZ);
     int lt_muon = lt::SimpleMuonSelection(nTracks,trackIsSecondary,trackPID);
     if(lt_muon != -1){
       double mom = sqrt(trackRecoE[lt_muon]*trackRecoE[lt_muon]/1e6 + 2*0.106*trackRecoE[lt_muon]/1e3);
@@ -399,6 +419,7 @@ void Filter(){
 
     // H8 Reco - Lantern for the hadronic system, Pandora Range for contained muons, MCS for uncontained
     in_tpc_h8 = inActiveTPC(vtxX,vtxY,vtxZ);
+    nu_vtx_h8 = TVector3(vtxX,vtxY,vtxZ);
     int h8_muon = pd_muon;
     if(h8_muon != -1)
       muon_mom_h8 = muon_contained_pd ? TVector3(muon_mom_pd.X(),muon_mom_pd.Y(),muon_mom_pd.Z()) : TVector3(muon_mom_mcs_pd.X(),muon_mom_mcs_pd.Y(),muon_mom_mcs_pd.Z());

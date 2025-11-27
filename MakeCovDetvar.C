@@ -19,6 +19,7 @@ void MakeCovDetvar(){
   // Label and set the branches defining the selection and systematics
   std::string label = "RecoE_0p_Test";
   hist::DetvarHistogramManager h(label);
+  h.LoadTemplate();
   h.DBBW(); 
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
@@ -47,7 +48,6 @@ void MakeCovDetvar(){
       bool sel = in_tpc_pd && has_muon_pd && in_tpc_lt && !nprot_lt && !npi_lt && !nsh_lt;
       if(!sel) continue;
       double var = muon_mom_h8->Mag();
-      double var2 = 0.5;
       h.FillHistograms(var);
 
     }

@@ -21,6 +21,7 @@ void MakeCovDetvar(){
     // Label and set the branches defining the selection and systematics
     std::string label = "RecoE_"+ee::estimators_str.at(i_e);
     hist::DetvarHistogramManager h(label);
+    h.LoadTemplate();
     h.DBBW(); 
 
     std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";

@@ -16,8 +16,9 @@ void MakeCov(){
 
   std::string label = "RecoE_0p_Test";
   hist::HistogramManager h("RecoE_0p_Test");
+  h.LoadTemplate();
   h.DBBW();
-
+ 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files_v = {
     "Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root",
