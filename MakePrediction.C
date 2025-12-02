@@ -15,10 +15,10 @@ void MakePrediction(){
 
   bool add_detvars = false;
   bool blinded = true;
-  bool draw_underflow = false;
+  bool draw_underflow = true;
   bool draw_overflow = true;
 
-  std::vector<std::string> label_v = {"RecoE_1p_Test","RecoE_1p_Test"};
+  std::vector<std::string> label_v = {"RecoE_1p_Test"};
 
   for(std::string label : label_v){
 
@@ -110,8 +110,6 @@ void MakePrediction(){
       std::vector<TH1D*> h_U(categories.size());
       THStack* hs_U = new THStack("hs_U","");
       THStack* hs_O = new THStack("hs_O","");
-      double sum_U = 0;
-      double sum_O = 0;
       for(size_t i_c=0;i_c<categories.size();i_c++){
         if(i_c == kData) continue;
         MakeOU(label+"_"+categories.at(i_c),h_CV.at(i_c),h_U.at(i_c),h_O.at(i_c));
@@ -119,8 +117,6 @@ void MakePrediction(){
         h_O.at(i_c)->SetFillColor(i_c+2);
         hs_U->Add(h_U.at(i_c));
         hs_O->Add(h_O.at(i_c));
-        sum_U += h_U.at(i_c)->GetBinContent(1);
-        sum_O += h_O.at(i_c)->GetBinContent(1);
       }
 
       TH1D *h_Data_U,*h_Data_O;
@@ -157,7 +153,8 @@ void MakePrediction(){
         hs_U->GetYaxis()->SetTitleSize(0.1);
         hs_U->GetYaxis()->SetLabelSize(0.11);
         hs_U->GetYaxis()->SetLabelOffset(0.04);
-        hs_U->GetYaxis()->SetTitleOffset(1.7);
+        hs_U->GetYaxis()->SetTitleOffset(1.8);
+        c2->cd();
       }
       if(draw_overflow){
         p_O->Draw(); 
@@ -171,11 +168,12 @@ void MakePrediction(){
         else hs_O->GetYaxis()->SetTitle("Events");
         hs_O->GetYaxis()->SetTitleSize(0.1);
         hs_O->GetXaxis()->SetLabelSize(0.16);
-        hs_O->GetYaxis()->SetTitleOffset(1.7);
+        hs_O->GetYaxis()->SetTitleOffset(1.8);
         hs_O->GetYaxis()->SetLabelSize(0.11);
         hs_O->GetYaxis()->SetLabelOffset(0.04);
         if(!blinded) h_Data_O->Draw("same e1");
-      }    
+        c2->cd();
+       }    
 
       p_middle->cd(); 
       hs_middle->Draw("HIST");

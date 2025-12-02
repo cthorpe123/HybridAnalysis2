@@ -15,6 +15,8 @@ void SysTest(){
 
   bool add_detvars = false;
   bool blinded = true;
+  bool draw_underflow = true;
+  bool draw_overflow = false;
   std::vector<std::string> label_v = {"RecoE_1p_Test"};
 
   for(std::string label : label_v){
@@ -132,28 +134,18 @@ void SysTest(){
     if(add_detvars){
       h_Tot_Detvar = (TH2D*)f_in_detvar->Get("FCov")->Clone("FCov_Detvar");
       h_FE_Tot_Detvar = (TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot")->Clone("h_Detvar_FE_Tot");
-      for(int i=1;i<h_FE_Tot_Detvar->GetNbinsX()+1;i++) h_FE_Tot_Detvar->SetBinContent(i,sqrt(h_Tot_Detvar->GetBinContent(i,i)));
+      for(int i=0;i<h_FE_Tot_Detvar->GetNbinsX()+2;i++) h_FE_Tot_Detvar->SetBinContent(i,sqrt(h_Tot_Detvar->GetBinContent(i,i)));
       h_FE_Tot_Detvar->SetLineColor(2);
       h_FE_Tot_Detvar->SetLineWidth(2);
       l->AddEntry(h_FE_Tot_Detvar,"Detector","L");
       hs_FE->Add(h_FE_Tot_Detvar);
     }
 
-    // Calculate total frac error from all uncertainties
-    for(int i=1;i<h_FE_Tot->GetNbinsX()+1;i++){
-      if(h_Tot_Detvar != nullptr) h_FE_Tot->SetBinContent(i,sqrt(h_Tot->GetBinContent(i,i) + h_Tot_Detvar->GetBinContent(i,i)));
-      else h_FE_Tot->SetBinContent(i,sqrt(h_Tot->GetBinContent(i,i)));
-    }
-    h_FE_Tot->SetLineColor(1);
-    h_FE_Tot->SetLineWidth(2);
-    l->AddEntry(h_FE_Tot,"Total","L");
-    hs_FE->Add(h_FE_Tot);
-
     std::vector<TH1D*> h_FE;
     for(int i_s=0;i_s<kSystMAX;i_s++){
       h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone(("h_FE_"+sys_str.at(i_s)).c_str()));
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get(("FCov_"+sys_str.at(i_s)).c_str()));
-      for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
+      for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
       h_FE.back()->SetLineColor(i_s+3);
       h_FE.back()->SetLineWidth(2);
       delete h;
@@ -162,18 +154,29 @@ void SysTest(){
     }
 
     h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_MCStat"));
-    for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
+    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
     h_FE.back()->SetLineColor(kSystMAX+3);
     h_FE.back()->SetLineWidth(2);
     hs_FE->Add(h_FE.back());
     l->AddEntry( h_FE.back(),"MCStat","L");
 
     h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_EstDataStat"));
-    for(int i=1;i<h_FE.back()->GetNbinsX()+1;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
+    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
     h_FE.back()->SetLineColor(kSystMAX+4);
     h_FE.back()->SetLineWidth(2);
     hs_FE->Add(h_FE.back());
     l->AddEntry( h_FE.back(),"EstDataStat","L");
+
+    // Calculate total frac error from all uncertainties
+    for(int i=0;i<h_FE_Tot->GetNbinsX()+2;i++){
+      double total_cov = h_Tot->GetBinContent(i,i) + h_FCov_EstDataStat->GetBinContent(i,i);
+      if(h_Tot_Detvar != nullptr) total_cov += h_Tot_Detvar->GetBinContent(i,i);
+      h_FE_Tot->SetBinContent(i,sqrt(total_cov));
+    }
+    h_FE_Tot->SetLineColor(1);
+    h_FE_Tot->SetLineWidth(2);
+    l->AddEntry(h_FE_Tot,"Total","L");
+    hs_FE->Add(h_FE_Tot);
 
     hs_FE->Draw("nostack HIST");
     hs_FE->GetXaxis()->SetTitle(axis_title.c_str());
@@ -193,7 +196,7 @@ void SysTest(){
       for(int i_s=0;i_s<kDetvarMAX;i_s++){
         h_FE_Detvar.push_back((TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot")->Clone(("h_FE_"+detvar_str.at(i_s)).c_str()));
         TH2D* h = static_cast<TH2D*>(f_in_detvar->Get(("FCov_"+detvar_str.at(i_s)).c_str()));
-        for(int i=1;i<h_FE_Detvar.back()->GetNbinsX()+1;i++) h_FE_Detvar.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
+        for(int i=0;i<h_FE_Detvar.back()->GetNbinsX()+2;i++) h_FE_Detvar.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
         delete h; 
         h_FE_Detvar.back()->SetLineColor(i_s+2);
         h_FE_Detvar.back()->SetLineWidth(2);
@@ -247,8 +250,6 @@ void SysTest(){
 
     }
 
-
-
     // Detvar validation - draw each variation alongside the CV
     if(add_detvars){
       TH1D* h_Detvar_CV = (TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot");
@@ -282,8 +283,90 @@ void SysTest(){
     }
 
     delete c;
+
+    if(draw_underflow || draw_overflow){
+
+      THStack* hs_middle = new THStack("hs_middle",(";"+axis_title+";FE").c_str());
+      THStack* hs_U = new THStack("hs_U",";;FE");
+      THStack* hs_O = new THStack("hs_O",";;FE");
+
+      TH1D *h_FE_Tot_U,*h_FE_Tot_O;
+      MakeOU(label,h_FE_Tot,h_FE_Tot_U,h_FE_Tot_O); 
+      h_FE_Tot_U->SetLineWidth(2);
+      h_FE_Tot_U->SetLineColor(1);
+      h_FE_Tot_O->SetLineWidth(2);
+      h_FE_Tot_O->SetLineColor(1);
+      hs_middle->Add(h_FE_Tot);
+      hs_U->Add(h_FE_Tot_U);
+      hs_O->Add(h_FE_Tot_O);
+
+      std::vector<TH1D*> h_O(h_FE.size());
+      std::vector<TH1D*> h_U(h_FE.size());
+      for(size_t i_s=0;i_s<h_FE.size();i_s++){
+        MakeOU(h_FE.at(i_s)->GetName(),h_FE.at(i_s),h_U.at(i_s),h_O.at(i_s));
+        h_U.at(i_s)->SetLineColor(i_s+2);
+        h_O.at(i_s)->SetLineColor(i_s+2);
+        h_U.at(i_s)->SetLineWidth(2);
+        h_O.at(i_s)->SetLineWidth(2);
+        hs_U->Add(h_U.at(i_s));
+        hs_O->Add(h_O.at(i_s));
+        hs_middle->Add(h_FE.at(i_s));
+      }
+
+      TCanvas* c2 = new TCanvas("c2","c2",1000,600);
+      double  split_low = draw_underflow ? 0.18 : 0.0;
+      double  split_high = draw_overflow ? 0.82 : 1.0;
+      TPad* p_U = draw_underflow ? new TPad("p_U","p_U",0.0,0.0,split_low,1.0) : nullptr;
+      TPad* p_middle = new TPad("p_middle","p_middle",split_low,0.0,split_high,1.0);
+      TPad* p_O = draw_overflow ? new TPad("p_O","p_O",split_high,0.0,1.0,1.0) : nullptr;
+
+      c2->cd();
+      p_middle->Draw();
+      p_middle->SetRightMargin(0.03);
+      if(draw_underflow){
+        p_U->Draw();
+        p_U->SetLeftMargin(0.37);
+        p_U->SetRightMargin(0.04);
+        p_U->cd();
+        hs_U->Draw("nostack HIST");       
+        //hs_U->SetMaximum(GetMax(h_FE_Tot_U)*1.1);
+        hs_U->GetXaxis()->SetLabelSize(0.16);
+        hs_U->GetYaxis()->SetTitleSize(0.1);
+        hs_U->GetYaxis()->SetLabelSize(0.11);
+        hs_U->GetYaxis()->SetLabelOffset(0.04);
+        hs_U->GetYaxis()->SetTitleOffset(1.8);
+        c2->cd();
+      }
+      if(draw_overflow){
+        p_O->Draw(); 
+        p_O->SetRightMargin(0.37);
+        p_O->SetLeftMargin(0.04);
+        p_O->cd();
+        hs_O->Draw("nostack HIST Y+");       
+        //hs_O->SetMaximum(GetMax(h_FE_Tot_O)*1.1);
+        hs_O->GetYaxis()->SetTitleSize(0.1);
+        hs_O->GetXaxis()->SetLabelSize(0.16);
+        hs_O->GetYaxis()->SetTitleOffset(1.8);
+        hs_O->GetYaxis()->SetLabelSize(0.11);
+        hs_O->GetYaxis()->SetLabelOffset(0.04);
+        c2->cd();
+      }    
+
+      p_middle->cd(); 
+      hs_middle->Draw("nostack HIST");
+      //hs_middle->SetMaximum(GetMax(h_FE_Tot)*1.1);
+
+      c2->cd();
+      c2->Print((plot_dir+"test.png").c_str());
+      delete c2;
+
+    }
+
     f_in_hist->Close();
     if(add_detvars) f_in_detvar->Close();
+
+
+
 
   }
 

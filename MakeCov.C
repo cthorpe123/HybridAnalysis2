@@ -16,8 +16,8 @@ void MakeCov(){
 
   hist::HistogramManager h("RecoE_1p_Test");
   h.SetTemplate(";Muon Mom (GeV);Events/GeV",10,0.5,1.5);
-  h.DBBW();
-  h.ShapeOnly();
+  //h.DBBW();
+  //h.ShapeOnly();
   h.KeepOU();
  
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
