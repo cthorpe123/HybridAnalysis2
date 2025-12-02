@@ -14,14 +14,15 @@ enum methds_e {kpd,kwc,klt,kMethMAX};
 
 void CalcW2(){
 
-  const double FOM_Cut = 0.15;
+  const double FOM_Cut = 0.1;
 
   const double data_POT = 1.5e21;
 
   const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
-  LoadTreeFiltered(file,f_in,t_in,false,false);
+  bool is_overlay,load_syst;
+  LoadTreeFiltered(file,f_in,t_in,is_overlay,load_syst);
   const double POT = 7.88166e+20;
 
   TH1D* h_TrueW = new TH1D("h_TrueW",";True W (GeV);Events",40,0.9,5.0);

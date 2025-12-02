@@ -18,13 +18,15 @@ class HistogramManager {
     void FillHistograms(double var,bool load_syst,double weight=1.0);   
     void DBBW() { _divide_by_bin_width = true; }
     void ShapeOnly() { _shape_only = true; }
+    void KeepOU(){ _keep_overflow_underflow_ = true; }
     void Write();
 
- private:
+  private:
 
     const std::string _label;
     bool _divide_by_bin_width = false;
     bool _shape_only = false; 
+    bool _keep_overflow_underflow_ = false;
  
     TH1D* _h_tp = nullptr;
     TH1D* _h_CV_Tot;
@@ -41,6 +43,7 @@ class HistogramManager {
 
 HistogramManager::HistogramManager(std::string label) : _label(label)
 {
+  std::cout << "Setting up HistogramManager for " << _label << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -49,7 +52,7 @@ HistogramManager::HistogramManager(std::string label) : _label(label)
 void HistogramManager::LoadTemplate()
 {
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
-  _h_tp = (TH1D*)f_tp->Get("h_template");
+  _h_tp = (TH1D*)f_tp->Get(("h_template_"+_label).c_str());
   _h_tp->SetDirectory(0);
   f_tp->Close();
 
@@ -147,9 +150,26 @@ void HistogramManager::Write()
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
   TFile* f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
 
-  if(_divide_by_bin_width) DivideByBinWidth(_h_CV_Tot);
+  // Store the CV before any scaling so we can calculate the errors correctly
+  TH1D* h_CV_NoScale = (TH1D*)_h_CV_Tot->Clone("h_CV_NoScale");
+  std::vector<TH1D*> h_CV_Cat_NoScale;
+  for(size_t i_c=0;i_c<categories.size();i_c++)
+    h_CV_Cat_NoScale.push_back((TH1D*)_h_CV.at(i_c)->Clone(("h_CV_Cat_NoScale_"+categories.at(i_c)).c_str()));
+
+  if(_divide_by_bin_width){
+    DivideByBinWidth(_h_CV_Tot);
+  }  
+
   double integral = _h_CV_Tot->Integral("width");
-  if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
+  if(_keep_overflow_underflow_){
+  integral = _h_CV_Tot->GetBinContent(0) + _h_CV_Tot->GetBinContent(_h_CV_Tot->GetNbinsX()+1);
+  if(_divide_by_bin_width ) for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++) integral += _h_CV_Tot->GetBinContent(i)*_h_CV_Tot->GetBinWidth(i); 
+  else for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++) integral += _h_CV_Tot->GetBinContent(i);
+  } 
+
+  if(_shape_only){
+    _h_CV_Tot->Scale(1.0/integral);
+  }
   _h_CV_Tot->Write("h_CV_Tot");
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
@@ -163,6 +183,13 @@ void HistogramManager::Write()
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
       if(_divide_by_bin_width) DivideByBinWidth(_h_Vars_Tot.at(i_s).at(i_u));
       integral_v.at(i_s).push_back(_h_Vars_Tot.at(i_s).at(i_u)->Integral("width"));       
+
+      if(_keep_overflow_underflow_){
+        integral_v.at(i_s).at(i_u) = _h_Vars_Tot.at(i_s).at(i_u)->GetBinContent(0) + _h_Vars_Tot.at(i_s).at(i_u)->GetBinContent(_h_CV_Tot->GetNbinsX()+1);
+        if(_divide_by_bin_width ) for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++) integral_v.at(i_s).at(i_u) += _h_Vars_Tot.at(i_s).at(i_u)->GetBinContent(i)*_h_Vars_Tot.at(i_s).at(i_u)->GetBinWidth(i); 
+        else for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++) integral_v.at(i_s).at(i_u) += _h_Vars_Tot.at(i_s).at(i_u)->GetBinContent(i);
+      } 
+
       if(_shape_only) _h_Vars_Tot.at(i_s).at(i_u)->Scale(1.0/integral_v.at(i_s).back());
       _h_Vars_Tot.at(i_s).at(i_u)->Write(("h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str());     
     }
@@ -198,22 +225,15 @@ void HistogramManager::Write()
   h_FCov_MCStat->Reset();
   h_Cov_EstDataStat->Reset();
   h_FCov_EstDataStat->Reset();
-  for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++){
+  for(int i=0;i<_h_CV_Tot->GetNbinsX()+2;i++){
     double bin_error = _h_CV_Tot->GetBinError(i);
-    double bin_width = _h_CV_Tot->GetBinWidth(i);
     double bin_content = _h_CV_Tot->GetBinContent(i);
-    if(_divide_by_bin_width){
-      h_Cov_MCStat->SetBinContent(i,i,bin_error*bin_error);
-      h_FCov_MCStat->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
-      h_Cov_EstDataStat->SetBinContent(i,i,bin_content/bin_width);
-      h_FCov_EstDataStat->SetBinContent(i,i,h_Cov_EstDataStat->GetBinContent(i,i)/bin_content/bin_content);
-    }
-    else {
-      h_Cov_MCStat->SetBinContent(i,i,bin_error*bin_error);
-      h_FCov_MCStat->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
-      h_Cov_EstDataStat->SetBinContent(i,i,bin_content);
-      h_FCov_EstDataStat->SetBinContent(i,i,1.0/sqrt(bin_content));
-    }
+    double orig_bin_content = h_CV_NoScale->GetBinContent(i);
+    double scale = bin_content/orig_bin_content;
+    h_Cov_MCStat->SetBinContent(i,i,bin_error*bin_error);
+    h_FCov_MCStat->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
+    h_Cov_EstDataStat->SetBinContent(i,i,orig_bin_content*scale*scale);
+    h_FCov_EstDataStat->SetBinContent(i,i,1.0/orig_bin_content);
   } 
   h_Cov_MCStat->Write();
   h_FCov_MCStat->Write();
@@ -233,23 +253,15 @@ void HistogramManager::Write()
     h_FCov_MCStat_Cat.back()->Reset();  
     h_Cov_EstDataStat_Cat.back()->Reset();  
     h_FCov_EstDataStat_Cat.back()->Reset();  
-    for(int i=1;i<_h_CV_Tot->GetNbinsX()+1;i++){
+    for(int i=0;i<_h_CV_Tot->GetNbinsX()+2;i++){
       double bin_error = _h_CV.at(i_c)->GetBinError(i);
-      double bin_width = _h_CV.at(i_c)->GetBinWidth(i);
       double bin_content = _h_CV.at(i_c)->GetBinContent(i);
-      if(_divide_by_bin_width){
-        h_Cov_MCStat_Cat.back()->SetBinContent(i,i,bin_error*bin_error);
-        h_FCov_MCStat_Cat.back()->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
-        h_Cov_EstDataStat_Cat.back()->SetBinContent(i,i,bin_content/bin_width);
-        h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,h_Cov_EstDataStat_Cat.at(i_c)->GetBinContent(i,i)/bin_content/bin_content);
-      }
-    else {
+      double orig_bin_content = h_CV_Cat_NoScale.at(i_c)->GetBinContent(i);
+      double scale = bin_content/orig_bin_content;
       h_Cov_MCStat_Cat.back()->SetBinContent(i,i,bin_error*bin_error);
       h_FCov_MCStat_Cat.back()->SetBinContent(i,i,bin_error*bin_error/bin_content/bin_content);
-      h_Cov_EstDataStat_Cat.back()->SetBinContent(i,i,bin_content);
-      h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,1.0/sqrt(bin_content));
-    }
-
+      h_Cov_EstDataStat_Cat.back()->SetBinContent(i,i,orig_bin_content*scale*scale);
+      h_FCov_EstDataStat_Cat.back()->SetBinContent(i,i,1.0/orig_bin_content);
     } 
     h_Cov_MCStat_Cat.back()->Write();
     h_FCov_MCStat_Cat.back()->Write();

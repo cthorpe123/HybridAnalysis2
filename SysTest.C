@@ -15,7 +15,7 @@ void SysTest(){
 
   bool add_detvars = false;
   bool blinded = true;
-  std::vector<std::string> label_v = {"Vertex_X_PD","Vertex_Y_PD","Vertex_Z_PD","Vertex_X_WC","Vertex_Y_WC","Vertex_Z_WC","Vertex_X_LT","Vertex_Y_LT","Vertex_Z_LT",};
+  std::vector<std::string> label_v = {"RecoE_1p_Test"};
 
   for(std::string label : label_v){
 

@@ -13,15 +13,16 @@ using namespace syst;
 
 void SensitivityTest(){
 
+  bool add_detvars = false;
   bool blinded = true;
 
   std::vector<TH1D*> h_chi2_v(ee::kMAX);
   for(int i_e=0;i_e<ee::kMAX;i_e++){
 
-    std::string label = "RecoE_"+ee::estimators_str.at(i_e);
+    std::string label = ee::estimators_str.at(i_e);
 
     TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     // Build the CV prediction
     TH1D* h_CV_Tot = static_cast<TH1D*>(f_in_hist->Get("h_CV_Tot"));
@@ -37,15 +38,17 @@ void SensitivityTest(){
     h_Cov->Reset();
 
     h_Cov->Add((TH2D*)f_in_hist->Get("Cov_MCStat"));
-
+    h_Cov->Add((TH2D*)f_in_hist->Get("Cov_EstDataStat"));
 
     for(int i_s=0;i_s<kSystMAX;i_s++){
       if(i_s == kFlux) continue;
       h_Cov->Add(static_cast<TH2D*>(f_in_hist->Get(("Cov_"+sys_str.at(i_s)).c_str())));
     }  
 
-    TH2D* h_Cov_Detvar = static_cast<TH2D*>(f_in_detvar->Get("Cov"));
-    //h_Cov->Add(h_Cov_Detvar);
+    if(add_detvars){
+      TH2D* h_Cov_Detvar = static_cast<TH2D*>(f_in_detvar->Get("Cov"));
+      h_Cov->Add(h_Cov_Detvar);
+    }
 
     for(int i=1;i<h_CV_Tot->GetNbinsX()+1;i++) h_CV_Tot->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
 
@@ -79,7 +82,7 @@ void SensitivityTest(){
     m_CovInv.Invert();
 
     // Calculate the chi2 WRT to the CV for every flux universe, make histogram of values
-    h_chi2_v.at(i_e) = new TH1D(("h_chi2_"+ee::estimators_str.at(i_e)).c_str(),";#chi^{2}/ndof;Toys",25,0.0,1.0);
+    h_chi2_v.at(i_e) = new TH1D(("h_chi2_"+ee::estimators_str.at(i_e)).c_str(),";#chi^{2}/ndof;Toys",25,0.0,0.5);
     for(int i_u=0;i_u<nuniv_Flux;i_u++){
       TH1D* h_alt = (TH1D*)f_in_hist->Get(("h_Vars_Tot_Flux_"+std::to_string(i_u)).c_str());
       double chi2 = 0.0;

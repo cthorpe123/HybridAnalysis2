@@ -14,10 +14,11 @@
 
 void MakeCov(){
 
-  std::string label = "RecoE_0p_Test";
-  hist::HistogramManager h("RecoE_0p_Test");
-  h.LoadTemplate();
+  hist::HistogramManager h("RecoE_1p_Test");
+  h.SetTemplate(";Muon Mom (GeV);Events/GeV",10,0.5,1.5);
   h.DBBW();
+  h.ShapeOnly();
+  h.KeepOU();
  
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files_v = {
@@ -37,11 +38,11 @@ void MakeCov(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      if(ievent > 10000) break;
+      if(ievent > 50000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
 
-      bool sel = in_tpc_pd && has_muon_pd && in_tpc_lt && !nprot_lt && !npi_lt && !nsh_lt;
+      bool sel = in_tpc_pd && has_muon_pd && in_tpc_lt && nprot_lt == 1 && !npi_lt && !nsh_lt;
       double var = muon_mom_h8->Mag();
       if(sel) h.FillHistograms(var,load_syst);
 

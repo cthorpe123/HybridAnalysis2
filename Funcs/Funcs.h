@@ -131,7 +131,73 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
   return p_tot;
 }
 
-//
+///////////////////////////////////////////////////////////////////////
+// Generate variably binned histogram  
 
+void MakeBinningTemplate(std::string label,TH1D* h_data,double target_fe=0.1){
+
+  std::cout << "Generating binning template for " << label << std::endl;
+
+  gSystem->Exec(("mkdir -p Analysis/"+label+"/rootfiles/").c_str());
+  TFile* f_out = TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
+
+  std::vector<double> bin_edges;
+  double events = 0;
+  const double _EPSILON_ = 1e-10;
+  for(int i=1;i<h_data->GetNbinsX()+1;i++){
+
+    if(h_data->GetBinContent(i) < _EPSILON_) continue;
+
+    if(!bin_edges.size()) bin_edges.push_back(h_data->GetBinLowEdge(i));
+
+    events += h_data->GetBinContent(i);
+    if(1/sqrt(events) < target_fe){
+      bin_edges.push_back(h_data->GetBinLowEdge(i+1));
+      events = 0;
+    } 
+
+  }
+
+  std::cout << "Number of bins generated " << bin_edges.size()-1 << std::endl;
+  std::cout << "Low edge = " << bin_edges.front() << " Hgh edge = " << bin_edges.back() << std::endl;
+
+  TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",bin_edges.size()-1,&bin_edges[0]); 
+  h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
+  h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
+  h_template->Write();
+  f_out->Close();
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Make histogram with underflow/overflow 1 bin histograms that can be 
+// plotted alongside 
+
+void MakeOU(std::string label,TH1D* h,TH1D*& h_underflow,TH1D*& h_overflow,std::string u_label="Underflow",std::string o_label="Overflow",TH2D* h_cov=nullptr){
+
+  h_underflow = new TH1D(("h_underflow_"+label).c_str(),"",1,0.0,1.0);
+  h_overflow = new TH1D(("h_overflow_"+label).c_str(),"",1,0.0,1.0);
+
+  h_underflow->SetBinContent(1,h->GetBinContent(0));
+  h_overflow->SetBinContent(1,h->GetBinContent(h->GetNbinsX()+1));
+
+  if(h_cov != nullptr) h_underflow->SetBinError(1,sqrt(h_cov->GetBinContent(0,0)));
+  else h_underflow->SetBinError(1,h->GetBinError(0));
+  if(h_cov != nullptr) h_overflow->SetBinError(1,sqrt(h_cov->GetBinContent(h->GetNbinsX()+1,h->GetNbinsX()+1)));
+  else h_overflow->SetBinError(1,h->GetBinContent(h->GetNbinsX()+1));
+  
+  h_underflow->GetXaxis()->SetBinLabel(1,u_label.c_str());
+  h_overflow->GetXaxis()->SetBinLabel(1,o_label.c_str());
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Get maximum of hist with error bars 
+
+double GetMax(const TH1D* h){
+  double max = 0;
+  for(int i=1;i<h->GetNbinsX()+1;i++) max = std::max(max,h->GetBinContent(i)+h->GetBinError(i));
+  return max;
+}
 
 #endif

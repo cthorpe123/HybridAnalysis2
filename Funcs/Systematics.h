@@ -4,13 +4,13 @@
 namespace syst {
 
 // For speed while developing
-//const int nuniv_Genie = 100;
-//const int nuniv_Flux = 100;
-//const int nuniv_Reint = 100;
+const int nuniv_Genie = 100;
+const int nuniv_Flux = 100;
+const int nuniv_Reint = 100;
 
-const int nuniv_Genie = 500;
-const int nuniv_Flux = 1000;
-const int nuniv_Reint = 1000;
+//const int nuniv_Genie = 500;
+//const int nuniv_Flux = 1000;
+//const int nuniv_Reint = 1000;
 
 // Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};
@@ -55,8 +55,8 @@ void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,
   h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
   h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
 
-  for(int i_bx=1;i_bx<h_CV->GetNbinsX()+1;i_bx++){
-    for(int i_by=1;i_by<h_CV->GetNbinsX()+1;i_by++){
+  for(int i_bx=0;i_bx<h_CV->GetNbinsX()+2;i_bx++){
+    for(int i_by=0;i_by<h_CV->GetNbinsX()+2;i_by++){
 
       //double x = h_CV->GetBinContent(i_bx);
       //double y = h_CV->GetBinContent(i_by);
@@ -68,7 +68,7 @@ void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,
       for(int i_u=0;i_u<h_Vars.size();i_u++)
         cov += (h_Vars.at(i_u)->GetBinContent(i_bx) - x)*(h_Vars.at(i_u)->GetBinContent(i_by) - y);
       cov /= h_Vars.size(); 
-
+        
       h_Cov->SetBinContent(i_bx,i_by,cov); 
       h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
 

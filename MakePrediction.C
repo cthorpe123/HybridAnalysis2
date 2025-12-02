@@ -14,9 +14,11 @@ using namespace syst;
 void MakePrediction(){
 
   bool add_detvars = false;
-  bool blinded = false;
+  bool blinded = true;
+  bool draw_underflow = false;
+  bool draw_overflow = true;
 
-  std::vector<std::string> label_v = {"Vertex_X_PD","Vertex_Y_PD","Vertex_Z_PD","Vertex_X_WC","Vertex_Y_WC","Vertex_Z_WC","Vertex_X_LT","Vertex_Y_LT","Vertex_Z_LT",};
+  std::vector<std::string> label_v = {"RecoE_1p_Test","RecoE_1p_Test"};
 
   for(std::string label : label_v){
 
@@ -25,6 +27,7 @@ void MakePrediction(){
 
     // Build the CV prediction
     TH1D* h_CV_Tot = static_cast<TH1D*>(f_in_hist->Get("h_CV_Tot"));
+    std::string axis_title = ";" + string(h_CV_Tot->GetXaxis()->GetTitle()) + ";" + h_CV_Tot->GetYaxis()->GetTitle();
 
     std::vector<TH1D*> h_CV;
     for(size_t i_c=0;i_c<categories.size();i_c++){
@@ -57,7 +60,7 @@ void MakePrediction(){
     TCanvas* c = new TCanvas("c","c");
     l->SetNColumns(3);
 
-    THStack* hs = new THStack("hs",h_CV_Tot->GetTitle());
+    THStack* hs = new THStack("hs",axis_title.c_str());
 
     for(size_t i_c=0;i_c<categories.size();i_c++){
       if(i_c == kData) continue;
@@ -83,6 +86,109 @@ void MakePrediction(){
     c->Clear();
 
     delete c;
+
+    if(draw_underflow || draw_overflow){
+
+      THStack* hs_middle = new THStack("hs_middle",axis_title.c_str());
+      for(size_t i_c=0;i_c<categories.size();i_c++){
+        if(i_c == kData) continue;
+        h_CV.at(i_c)->SetFillColor(i_c+2);
+        l->AddEntry(h_CV.at(i_c),categories.at(i_c).c_str(),"F");
+        hs_middle->Add(h_CV.at(i_c));
+      }
+      h_CV_Tot->SetFillStyle(3253);
+      h_CV_Tot->SetFillColor(1);
+
+      TH1D *h_CV_O,*h_CV_U;
+      MakeOU(label,h_CV_Tot,h_CV_U,h_CV_O,"","",h_Cov_Sum);
+      h_CV_U->SetFillStyle(3253);
+      h_CV_U->SetFillColor(1);
+      h_CV_O->SetFillStyle(3253);
+      h_CV_O->SetFillColor(1);
+
+      std::vector<TH1D*> h_O(categories.size());
+      std::vector<TH1D*> h_U(categories.size());
+      THStack* hs_U = new THStack("hs_U","");
+      THStack* hs_O = new THStack("hs_O","");
+      double sum_U = 0;
+      double sum_O = 0;
+      for(size_t i_c=0;i_c<categories.size();i_c++){
+        if(i_c == kData) continue;
+        MakeOU(label+"_"+categories.at(i_c),h_CV.at(i_c),h_U.at(i_c),h_O.at(i_c));
+        h_U.at(i_c)->SetFillColor(i_c+2);
+        h_O.at(i_c)->SetFillColor(i_c+2);
+        hs_U->Add(h_U.at(i_c));
+        hs_O->Add(h_O.at(i_c));
+        sum_U += h_U.at(i_c)->GetBinContent(1);
+        sum_O += h_O.at(i_c)->GetBinContent(1);
+      }
+
+      TH1D *h_Data_U,*h_Data_O;
+      if(!blinded) MakeOU(label+"_data",h_Data,h_Data_U,h_Data_O);
+
+      if(!blinded){
+        h_Data->SetMarkerStyle(20);
+        h_Data->SetMarkerSize(0.8);
+        h_Data->SetLineColor(1);
+      }
+
+      TCanvas* c2 = new TCanvas("c2","c2",1000,600);
+      double  split_low = draw_underflow ? 0.18 : 0.0;
+      double  split_high = draw_overflow ? 0.82 : 1.0;
+      TPad* p_U = draw_underflow ? new TPad("p_U","p_U",0.0,0.0,split_low,1.0) : nullptr;
+      TPad* p_middle = new TPad("p_middle","p_middle",split_low,0.0,split_high,1.0);
+      TPad* p_O = draw_overflow ? new TPad("p_O","p_O",split_high,0.0,1.0,1.0) : nullptr;
+      
+      c2->cd();
+      p_middle->Draw();
+      p_middle->SetRightMargin(0.03);
+      if(draw_underflow){
+        p_U->Draw();
+        p_U->SetLeftMargin(0.37);
+        p_U->SetRightMargin(0.04);
+        p_U->cd();
+        hs_U->Draw("HIST");       
+        h_CV_U->Draw("same e2");
+        hs_U->SetMaximum(GetMax(h_CV_U)*1.1);
+        if(h_CV_U->GetBinContent(1) < 1) hs_U->GetYaxis()->SetTitle("PMF");
+        else hs_U->GetYaxis()->SetTitle("Events");
+        if(!blinded) h_Data_U->Draw("same e1");
+        hs_U->GetXaxis()->SetLabelSize(0.16);
+        hs_U->GetYaxis()->SetTitleSize(0.1);
+        hs_U->GetYaxis()->SetLabelSize(0.11);
+        hs_U->GetYaxis()->SetLabelOffset(0.04);
+        hs_U->GetYaxis()->SetTitleOffset(1.7);
+      }
+      if(draw_overflow){
+        p_O->Draw(); 
+        p_O->SetRightMargin(0.37);
+        p_O->SetLeftMargin(0.04);
+        p_O->cd();
+        hs_O->Draw("HIST Y+");       
+        h_CV_O->Draw("same e2");
+        hs_O->SetMaximum(GetMax(h_CV_O)*1.1);
+        if(h_CV_O->GetBinContent(1) < 1) hs_O->GetYaxis()->SetTitle("PMF");
+        else hs_O->GetYaxis()->SetTitle("Events");
+        hs_O->GetYaxis()->SetTitleSize(0.1);
+        hs_O->GetXaxis()->SetLabelSize(0.16);
+        hs_O->GetYaxis()->SetTitleOffset(1.7);
+        hs_O->GetYaxis()->SetLabelSize(0.11);
+        hs_O->GetYaxis()->SetLabelOffset(0.04);
+        if(!blinded) h_Data_O->Draw("same e1");
+      }    
+
+      p_middle->cd(); 
+      hs_middle->Draw("HIST");
+      h_CV_Tot->Draw("same e2");
+      hs_middle->SetMaximum(GetMax(h_CV_Tot)*1.1);
+      if(!blinded) h_Data->Draw("same e1");
+
+      c2->cd();
+      c2->Print((plot_dir+"test.png").c_str());
+
+      delete c2;
+    }
+
     f_in_hist->Close();
     if(add_detvars) f_in_detvar->Close();
 
