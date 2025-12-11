@@ -3,24 +3,34 @@
 
 void SpeedyMergeNtuple(){
 
-  bool is_data = true;  
-  bool save_syst = false; 
+  bool is_data = false;  
+  bool save_syst = true; 
 
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar_test/";
   //std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_SCE_surprise_reco2_hist.root";
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/";
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nue_overlay_surprise_reco2_hist.root";
-  std::string filename = "MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  //std::string filename = "MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";
 
   //std::string dir_in = "/pnfs/uboone/scratch/users/bbogart/v10_04_07_16/";
   //std::string filename = "larpid_patch_smart_patch_test10_full_more.root";
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+
+/*
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4c_full_samples/BNB/";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
+*/
+
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4d_full_samples/BNB/";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
+
 
   // Open the two files and setup branches to read the RSE numbers
   TFile* f_in = new TFile((dir_in + filename).c_str());

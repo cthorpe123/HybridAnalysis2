@@ -299,9 +299,11 @@ Double_t        W_t;
 Int_t           nprot_t;
 Int_t           npi_t;
 Int_t           npi0_t;
+Int_t           nsh_t;
 TLorentzVector  *proton_p4_t=0;
 TLorentzVector  *pion_p4_t=0;
-TLorentzVector  *shower_p4_t=0;
+TLorentzVector  *pi0_p4_t=0;
+TLorentzVector  *gamma_p4_t=0;
 std::vector<double>* est_nu_e_t=0;
 
 Bool_t          sel_pd;
@@ -317,7 +319,7 @@ Int_t           npi_pd;
 Int_t           nsh_pd;
 TLorentzVector  *proton_p4_pd=0;
 TLorentzVector  *pion_p4_pd=0;
-TLorentzVector  *shower_p4_pd=0;
+TLorentzVector  *gamma_p4_pd=0;
 std::vector<double>* est_nu_e_pd=0;
 
 Bool_t          sel_wc;
@@ -334,7 +336,7 @@ Int_t           npi_wc;
 Int_t           nsh_wc;
 TLorentzVector  *proton_p4_wc=0;
 TLorentzVector  *pion_p4_wc=0;
-TLorentzVector  *shower_p4_wc=0;
+TLorentzVector  *gamma_p4_wc=0;
 std::vector<double>* est_nu_e_wc=0;
 
 Bool_t          sel_lt;
@@ -349,7 +351,7 @@ Int_t           npi_lt;
 Int_t           nsh_lt;
 TLorentzVector  *proton_p4_lt=0;
 TLorentzVector  *pion_p4_lt=0;
-TLorentzVector  *shower_p4_lt=0;
+TLorentzVector  *gamma_p4_lt=0;
 std::vector<double>* est_nu_e_lt=0;
 
 Bool_t          sel_h8;
@@ -364,7 +366,7 @@ Int_t           npi_h8;
 Int_t           nsh_h8;
 TLorentzVector  *proton_p4_h8=0;
 TLorentzVector  *pion_p4_h8=0;
-TLorentzVector  *shower_p4_h8=0;
+TLorentzVector  *gamma_p4_h8=0;
 std::vector<double>* est_nu_e_h8=0;
 
 void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
@@ -422,9 +424,11 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     t_in->SetBranchAddress("nprot_t", &nprot_t);
     t_in->SetBranchAddress("npi_t", &npi_t);
     t_in->SetBranchAddress("npi0_t", &npi0_t);
+    t_in->SetBranchAddress("nsh_t", &nsh_t);
     t_in->SetBranchAddress("proton_p4_t", &proton_p4_t);
     t_in->SetBranchAddress("pion_p4_t", &pion_p4_t);
-    t_in->SetBranchAddress("shower_p4_t", &shower_p4_t);
+    t_in->SetBranchAddress("pi0_p4_t", &pi0_p4_t);
+    t_in->SetBranchAddress("gamma_p4_t", &gamma_p4_t);
     t_in->SetBranchAddress("est_nu_e_t",&est_nu_e_t);
     if(load_syst){
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
@@ -450,7 +454,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("nsh_pd", &nsh_pd);
   t_in->SetBranchAddress("proton_p4_pd", &proton_p4_pd);
   t_in->SetBranchAddress("pion_p4_pd", &pion_p4_pd);
-  t_in->SetBranchAddress("shower_p4_pd", &shower_p4_pd);
+  t_in->SetBranchAddress("gamma_p4_pd", &gamma_p4_pd);
   t_in->SetBranchAddress("est_nu_e_pd",&est_nu_e_pd);
 
   t_in->SetBranchAddress("sel_wc", &sel_wc);
@@ -467,7 +471,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("nsh_wc", &nsh_wc);
   t_in->SetBranchAddress("proton_p4_wc", &proton_p4_wc);
   t_in->SetBranchAddress("pion_p4_wc", &pion_p4_wc);
-  t_in->SetBranchAddress("shower_p4_wc", &shower_p4_wc);
+  t_in->SetBranchAddress("gamma_p4_wc", &gamma_p4_wc);
   t_in->SetBranchAddress("est_nu_e_wc",&est_nu_e_wc);
 
   t_in->SetBranchAddress("sel_lt", &sel_lt);
@@ -482,7 +486,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("nsh_lt", &nsh_lt);
   t_in->SetBranchAddress("proton_p4_lt", &proton_p4_lt);
   t_in->SetBranchAddress("pion_p4_lt", &pion_p4_lt);
-  t_in->SetBranchAddress("shower_p4_lt", &shower_p4_lt);
+  t_in->SetBranchAddress("gamma_p4_lt", &gamma_p4_lt);
   t_in->SetBranchAddress("est_nu_e_lt",&est_nu_e_lt);
 
   t_in->SetBranchAddress("sel_h8", &sel_h8);
@@ -497,12 +501,13 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("nsh_h8", &nsh_h8);
   t_in->SetBranchAddress("proton_p4_h8", &proton_p4_h8);
   t_in->SetBranchAddress("pion_p4_h8", &pion_p4_h8);
-  t_in->SetBranchAddress("shower_p4_h8", &shower_p4_h8);
+  t_in->SetBranchAddress("gamma_p4_h8", &gamma_p4_h8);
   t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
 
 }
 
 const std::vector<std::string> categories = {"Signal","BG","Nue","OutFV","Dirt","EXT","Data"};
 enum e_cat {kSignal,kBG,kNue,kOutFV,kDirt,kEXT,kData};
+const int colors[kData] = {kBlue-7,kMagenta-7,kRed-7,kBlue+2,kMagenta+3,kGray};
 
 #endif

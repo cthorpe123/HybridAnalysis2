@@ -15,12 +15,21 @@ void MakePrediction(){
 
   bool add_detvars = false;
   bool blinded = true;
-  bool draw_underflow = true;
-  bool draw_overflow = true;
 
-  std::vector<std::string> label_v = {"RecoE_1p_Test"};
+  std::vector<std::string> label_v = {"MuonMom","MuonCosTheta","ProtonE","PionE","PiZeroE","NProt","NPi","NShr","W"};
+  std::vector<bool> draw_underflow_v = {false,false,false,true,true,false,false,false,true};
+  std::vector<bool> draw_overflow_v = {false,false,false,false,false,false,false,false,false};
 
-  for(std::string label : label_v){
+  for(int i_e=0;i_e<ee::kMAX;i_e++){
+    label_v.push_back(ee::estimators_str.at(i_e));
+    draw_underflow_v.push_back(false);
+    draw_overflow_v.push_back(false);
+  }
+
+  for(size_t i_f=0;i_f<label_v.size();i_f++){
+    std::string label = label_v.at(i_f);
+    bool draw_underflow = draw_underflow_v.at(i_f);
+    bool draw_overflow = draw_overflow_v.at(i_f);
 
     TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
     TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
@@ -58,13 +67,13 @@ void MakePrediction(){
 
     TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
     TCanvas* c = new TCanvas("c","c");
-    l->SetNColumns(3);
+    l->SetNColumns(2);
 
     THStack* hs = new THStack("hs",axis_title.c_str());
 
     for(size_t i_c=0;i_c<categories.size();i_c++){
       if(i_c == kData) continue;
-      h_CV.at(i_c)->SetFillColor(i_c+2);
+      h_CV.at(i_c)->SetFillColor(colors[i_c]);
       l->AddEntry(h_CV.at(i_c),categories.at(i_c).c_str(),"F");
       hs->Add(h_CV.at(i_c));
     }
@@ -89,11 +98,13 @@ void MakePrediction(){
 
     if(draw_underflow || draw_overflow){
 
+      TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
+      l2->SetNColumns(2);
       THStack* hs_middle = new THStack("hs_middle",axis_title.c_str());
       for(size_t i_c=0;i_c<categories.size();i_c++){
         if(i_c == kData) continue;
-        h_CV.at(i_c)->SetFillColor(i_c+2);
-        l->AddEntry(h_CV.at(i_c),categories.at(i_c).c_str(),"F");
+        h_CV.at(i_c)->SetFillColor(colors[i_c]);
+        l2->AddEntry(h_CV.at(i_c),categories.at(i_c).c_str(),"F");
         hs_middle->Add(h_CV.at(i_c));
       }
       h_CV_Tot->SetFillStyle(3253);
@@ -113,8 +124,8 @@ void MakePrediction(){
       for(size_t i_c=0;i_c<categories.size();i_c++){
         if(i_c == kData) continue;
         MakeOU(label+"_"+categories.at(i_c),h_CV.at(i_c),h_U.at(i_c),h_O.at(i_c));
-        h_U.at(i_c)->SetFillColor(i_c+2);
-        h_O.at(i_c)->SetFillColor(i_c+2);
+        h_U.at(i_c)->SetFillColor(colors[i_c]);
+        h_O.at(i_c)->SetFillColor(colors[i_c]);
         hs_U->Add(h_U.at(i_c));
         hs_O->Add(h_O.at(i_c));
       }
@@ -182,6 +193,7 @@ void MakePrediction(){
       if(!blinded) h_Data->Draw("same e1");
 
       c2->cd();
+      l2->Draw();
       c2->Print((plot_dir+"test.png").c_str());
 
       delete c2;

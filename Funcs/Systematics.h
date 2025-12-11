@@ -4,32 +4,36 @@
 namespace syst {
 
 // For speed while developing
-const int nuniv_Genie = 100;
-const int nuniv_Flux = 100;
-const int nuniv_Reint = 100;
+//const int nuniv_Genie = 100;
+//const int nuniv_Flux = 100;
+//const int nuniv_Reint = 100;
 
-//const int nuniv_Genie = 500;
-//const int nuniv_Flux = 1000;
-//const int nuniv_Reint = 1000;
+const int nuniv_Genie = 500;
+const int nuniv_Flux = 1000;
+const int nuniv_Reint = 1000;
 
 // Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};
 const std::vector<std::string> sys_str = {"Genie","Flux","Reint"};
 const std::vector<int> sys_nuniv = {nuniv_Genie,nuniv_Flux,nuniv_Reint};
+const std::vector<int> sys_color = {kBlue-7,kMagenta-7,kRed-7};
 
 // Unisims
 
 // Detvars
 enum e_detvars {kLYAtt,kLYDown,kLYRayleigh,kSCE,kRecomb2/*,kWMX*/,kDetvarMAX};
 const std::vector<std::string> detvar_str = {"LYAtt","LYDown","LYRayleigh","SCE","Recomb2"/*,"WMX"*/};
+const int detvar_color = kGreen+2; 
 
 // Stats
 enum e_stats {kMCStat,kDataStat,kStatMAX};
 const std::vector<std::string> stat_str = {"MCStat","DataStat"};
+const std::vector<int> stat_color = {kBlue+2,kRed+2};
 
 // Special categories, only applied in certain situations
 enum e_special {kEstDataStat,kSpecialMAX};
 const std::vector<std::string> special_str = {"EstDataStat"}; 
+const std::vector<int> special_color = {kRed+2};
 
 ///////////////////////////////////////////////////////////////////////
 // Mean value of a given bin in stack of multisim vars
@@ -131,9 +135,44 @@ TMatrixDSym MakeCovMat(TH2D* h){
   return m;
 }
 
+///////////////////////////////////////////////////////////////////////
+// Convert a 2D histogram into a tmatrix 
+
+std::vector<TH1D*> PadUniverses(TH1D* h,TH2D* h_cov,int nuniv){
+
+  //std::cout << "Doing PadUniverses" << std::endl;
+
+  TMatrixDSym m_Cov = MakeCovMat(h_cov); 
+  int dim = m_Cov.GetNrows();
+
+  TDecompChol* decomp = new TDecompChol(m_Cov);
+  bool valid = decomp->Decompose();
+  //std::cout << "valid = " << valid << std::endl;  
+ 
+  if(!valid) return std::vector<TH1D*>();
+
+  TMatrixD m_decomp = decomp->GetU(); 
+  TMatrixD m_decomp_t = m_decomp;
+
+  TRandom2* r = new TRandom2();
+  std::vector<TH1D*> univ;
+
+  for(int i_u=0;i_u<nuniv;i_u++){
+    TMatrixD v(dim,1);
+    for(int i=0;i<dim;i++) v[i][0] = r->Gaus(0.0,1.0); 
+    TMatrixD weights = m_decomp*v;
+    univ.push_back((TH1D*)h->Clone((string(h->GetName())+"_"+std::to_string(i_u)).c_str()));
+    for(int i=1;i<h->GetNbinsX()+1;i++) univ.back()->SetBinContent(i,(1+weights[i-1][0])*h->GetBinContent(i));
+  }
+
+  delete r;
+  delete decomp;
+
+  return univ;
+
 }
 
-
+}
 
 #endif
 

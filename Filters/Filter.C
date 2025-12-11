@@ -13,8 +13,8 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = true;
-  bool load_syst = false;
+  is_dirt = false;
+  bool load_syst = true;
 
   // Main run4b files
   const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
@@ -31,8 +31,16 @@ void Filter(){
   //double POT_weight = 31582916.0/88445969.0;
   //int detvar_univ = -1; // which detvar are you looking at
 
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  double POT_weight = 1.332E+20/3.06E+20;
+  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+  //double POT_weight = 1.332E+20/3.06E+20;
+  //int detvar_univ = -1; // which detvar are you looking at
+
+  //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
+  //double POT_weight = 1.332E+20/4.71538e+20; 
+  //int detvar_univ = -1; // which detvar are you looking at
+
+  const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
+  double POT_weight = 1.332E+20/8.96646e+20; 
   int detvar_univ = -1; // which detvar are you looking at
 
   // Run 4/5 detvars
@@ -99,10 +107,12 @@ void Filter(){
   double W_t;
   TLorentzVector proton_p4_t; 
   TLorentzVector pion_p4_t; 
-  TLorentzVector shower_p4_t; 
+  TLorentzVector pi0_p4_t; 
+  TLorentzVector gamma_p4_t; 
   int nprot_t; 
   int npi_t; 
   int npi0_t; 
+  int nsh_t; 
   std::vector<double> est_nu_e_t;
 
   if(!is_data && !is_ext && !is_dirt){
@@ -115,10 +125,12 @@ void Filter(){
     t_out->Branch("W_t",&W_t);
     t_out->Branch("proton_p4_t",&proton_p4_t);
     t_out->Branch("pion_p4_t",&pion_p4_t);
-    t_out->Branch("shower_p4_t",&shower_p4_t);
+    t_out->Branch("pi0_p4_t",&pi0_p4_t);
+    t_out->Branch("gamma_p4_t",&gamma_p4_t);
     t_out->Branch("nprot_t",&nprot_t);
     t_out->Branch("npi_t",&npi_t);
     t_out->Branch("npi0_t",&npi0_t);
+    t_out->Branch("nsh_t",&npi0_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
   }
 
@@ -136,7 +148,7 @@ void Filter(){
   int nsh_pd; 
   TLorentzVector proton_p4_pd; 
   TLorentzVector pion_p4_pd; 
-  TLorentzVector shower_p4_pd; 
+  TLorentzVector gamma_p4_pd; 
   std::vector<double> est_nu_e_pd;
 
   t_out->Branch("sel_pd",&sel_pd);
@@ -152,7 +164,7 @@ void Filter(){
   t_out->Branch("nsh_pd",&nsh_pd);
   t_out->Branch("proton_p4_pd",&proton_p4_pd);
   t_out->Branch("pion_p4_pd",&pion_p4_pd);
-  t_out->Branch("shower_p4_pd",&shower_p4_pd);
+  t_out->Branch("gamma_p4_pd",&gamma_p4_pd);
   t_out->Branch("est_nu_e_pd",&est_nu_e_pd);
 
 
@@ -171,7 +183,7 @@ void Filter(){
   int nsh_wc; 
   TLorentzVector proton_p4_wc; 
   TLorentzVector pion_p4_wc; 
-  TLorentzVector shower_p4_wc; 
+  TLorentzVector gamma_p4_wc; 
   std::vector<double> est_nu_e_wc;
 
   t_out->Branch("sel_wc",&sel_wc);
@@ -186,7 +198,7 @@ void Filter(){
   t_out->Branch("nsh_wc",&nsh_wc);
   t_out->Branch("proton_p4_wc",&proton_p4_wc);
   t_out->Branch("pion_p4_wc",&pion_p4_wc);
-  t_out->Branch("shower_p4_wc",&shower_p4_wc);
+  t_out->Branch("gamma_p4_wc",&gamma_p4_wc);
   t_out->Branch("est_nu_e_wc",&est_nu_e_wc);
   t_out->Branch("muon_mom_len_wc",&muon_mom_len_wc);
   t_out->Branch("muon_mom_mcs_wc",&muon_mom_mcs_wc);
@@ -204,7 +216,7 @@ void Filter(){
   int nsh_lt; 
   TLorentzVector proton_p4_lt; 
   TLorentzVector pion_p4_lt; 
-  TLorentzVector shower_p4_lt; 
+  TLorentzVector gamma_p4_lt; 
   std::vector<double> est_nu_e_lt;
 
   t_out->Branch("sel_lt",&sel_lt);
@@ -219,7 +231,7 @@ void Filter(){
   t_out->Branch("nsh_lt",&nsh_lt);
   t_out->Branch("proton_p4_lt",&proton_p4_lt);
   t_out->Branch("pion_p4_lt",&pion_p4_lt);
-  t_out->Branch("shower_p4_lt",&shower_p4_lt);
+  t_out->Branch("gamma_p4_lt",&gamma_p4_lt);
   t_out->Branch("est_nu_e_lt",&est_nu_e_lt);
 
   // Hybrid methods 
@@ -235,7 +247,7 @@ void Filter(){
   int nsh_h8; 
   TLorentzVector proton_p4_h8; 
   TLorentzVector pion_p4_h8; 
-  TLorentzVector shower_p4_h8; 
+  TLorentzVector gamma_p4_h8; 
   std::vector<double> est_nu_e_h8;
 
   t_out->Branch("sel_h8",&sel_h8);
@@ -250,7 +262,7 @@ void Filter(){
   t_out->Branch("nsh_h8",&nsh_h8);
   t_out->Branch("proton_p4_h8",&proton_p4_h8);
   t_out->Branch("pion_p4_h8",&pion_p4_h8);
-  t_out->Branch("shower_p4_h8",&shower_p4_h8);
+  t_out->Branch("gamma_p4_h8",&gamma_p4_h8);
   t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
 
   // Systematics and tune 
@@ -279,11 +291,13 @@ void Filter(){
     nprot_t = 0;
     npi_t = 0;
     npi0_t = 0;
+    nsh_t = 0;
     has_muon_t = false;
     muon_mom_t = TVector3(0,0,0);
     proton_p4_t = TLorentzVector(0,0,0,0);
     pion_p4_t = TLorentzVector(0,0,0,0);
-    shower_p4_t = TLorentzVector(0,0,0,0);
+    pi0_p4_t = TLorentzVector(0,0,0,0);
+    gamma_p4_t = TLorentzVector(0,0,0,0);
     est_nu_e_t = std::vector<double>(ee::kMAX,-1);
 
     if(!is_data && !is_ext && !is_dirt){
@@ -308,16 +322,32 @@ void Filter(){
         }
         if(mc_pdg->at(i_p) == 111){
           npi0_t++;
-          shower_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
+          pi0_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
         }
       } 
-      W_t = (proton_p4_t + pion_p4_t + shower_p4_t).M();
+
+      std::vector<int> pi0_ids;
+      for(int i=0;i<truth_Ntrack;i++){
+        if(truth_pdg[i] == 111 && truth_mother[i] == 0)
+          pi0_ids.push_back(truth_id[i]);
+      }
+
+      for(int i=0;i<truth_Ntrack;i++){
+        if(truth_pdg[i] == 22 && std::find(pi0_ids.begin(),pi0_ids.end(),truth_mother[i]) != pi0_ids.end()){
+          if(TVector3(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2]).Mag() > 0.025){
+            gamma_p4_t += TLorentzVector(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2],truth_startMomentum[i][3]);               
+            nsh_t++;
+          }
+        }
+      }
+
+      W_t = (proton_p4_t + pion_p4_t + gamma_p4_t).M();
       is_signal_t = abs(nu_pdg) == 14 && ccnc == 0 && in_tpc_t && muon_mom_t.Mag() > 0.1 && nprot_t > 0; 
 
       // Energy estimators
       if(is_signal_t){
         TLorentzVector plepton_t(muon_mom_t.X(),muon_mom_t.Y(),muon_mom_t.Z(),sqrt(muon_mom_t.Mag()*muon_mom_t.Mag() + ml*ml));
-        est_nu_e_t = ee::GetEnergyEst(plepton_t,W_t,proton_p4_t,nprot_t,pion_p4_t,npi_t,shower_p4_t,npi0_t);
+        est_nu_e_t = ee::GetEnergyEst(plepton_t,W_t,proton_p4_t,nprot_t,pion_p4_t,npi_t,gamma_p4_t,npi0_t);
         category = kSignal;
       }
       else if(abs(nu_pdg) == 12 && in_tpc_t) category = kNue;
@@ -345,15 +375,15 @@ void Filter(){
     npi_pd = pd_pion_v.size();
     pion_p4_pd = SumTLorentzVector(pd_pion_v); 
 
-    std::vector<TLorentzVector> pd_shower_v = pd::RecoShower4MomV(shr_px_v,shr_py_v,shr_pz_v,shr_energy_y_v);
-    nsh_pd = pd_shower_v.size();
-    shower_p4_pd = SumTLorentzVector(pd_shower_v);
+    std::vector<TLorentzVector> pd_gamma_v = pd::RecoShower4MomV(shr_px_v,shr_py_v,shr_pz_v,shr_energy_y_v);
+    nsh_pd = pd_gamma_v.size();
+    gamma_p4_pd = SumTLorentzVector(pd_gamma_v);
 
-    W_pd = (proton_p4_pd + pion_p4_pd + shower_p4_pd).M();
+    W_pd = (proton_p4_pd + pion_p4_pd + gamma_p4_pd).M();
     sel_pd = pd_muon != -1 && in_tpc_pd && nprot_pd > 0; 
     est_nu_e_pd = std::vector<double>(ee::kMAX,-1);
     TLorentzVector plepton_pd(muon_mom_pd.X(),muon_mom_pd.Y(),muon_mom_pd.Z(),sqrt(muon_mom_pd.Mag()*muon_mom_pd.Mag() + ml*ml));
-    if(sel_pd) est_nu_e_pd = ee::GetEnergyEst(plepton_pd,W_pd,proton_p4_pd,nprot_pd,pion_p4_pd,npi_pd,shower_p4_pd,nsh_pd);
+    if(sel_pd) est_nu_e_pd = ee::GetEnergyEst(plepton_pd,W_pd,proton_p4_pd,nprot_pd,pion_p4_pd,npi_pd,gamma_p4_pd,nsh_pd);
 
     // WC Reco
     in_tpc_wc = inActiveTPC(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
@@ -377,15 +407,15 @@ void Filter(){
     npi_wc = wc_pion_v.size();
     pion_p4_wc = SumTLorentzVector(wc_pion_v); 
 
-    std::vector<TLorentzVector> wc_shower_v = wc::RecoShower4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
-    nsh_wc = wc_shower_v.size();
-    shower_p4_wc = SumTLorentzVector(wc_shower_v);
+    std::vector<TLorentzVector> wc_gamma_v = wc::RecoShower4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
+    nsh_wc = wc_gamma_v.size();
+    gamma_p4_wc = SumTLorentzVector(wc_gamma_v);
 
-    W_wc = (proton_p4_wc + pion_p4_wc + shower_p4_wc).M();
+    W_wc = (proton_p4_wc + pion_p4_wc + gamma_p4_wc).M();
     sel_wc = wc_muon != -1 && in_tpc_wc && nprot_wc > 0; 
     est_nu_e_wc = std::vector<double>(ee::kMAX,-1);
     TLorentzVector plepton_wc(muon_mom_wc.X(),muon_mom_wc.Y(),muon_mom_wc.Z(),sqrt(muon_mom_wc.Mag()*muon_mom_wc.Mag() + ml*ml));
-    if(sel_wc) est_nu_e_wc = ee::GetEnergyEst(plepton_wc,W_wc,proton_p4_wc,nprot_wc,pion_p4_wc,npi_wc,shower_p4_wc,nsh_wc);
+    if(sel_wc) est_nu_e_wc = ee::GetEnergyEst(plepton_wc,W_wc,proton_p4_wc,nprot_wc,pion_p4_wc,npi_wc,gamma_p4_wc,nsh_wc);
 
     // LT Reco
     in_tpc_lt = inActiveTPC(vtxX,vtxY,vtxZ);
@@ -406,15 +436,15 @@ void Filter(){
     npi_lt = lt_pion_v.size();
     pion_p4_lt = SumTLorentzVector(lt_pion_v); 
 
-    std::vector<TLorentzVector> lt_shower_v = lt::RecoShower4MomV(nShowers,showerIsSecondary,showerPID,showerRecoE,showerStartDirX,showerStartDirY,showerStartDirZ);
-    nsh_lt = lt_shower_v.size();
-    shower_p4_lt = SumTLorentzVector(lt_shower_v);
+    std::vector<TLorentzVector> lt_gamma_v = lt::RecoShower4MomV(nShowers,showerIsSecondary,showerPID,showerRecoE,showerStartDirX,showerStartDirY,showerStartDirZ);
+    nsh_lt = lt_gamma_v.size();
+    gamma_p4_lt = SumTLorentzVector(lt_gamma_v);
 
-    W_lt = (proton_p4_lt + pion_p4_lt + shower_p4_lt).M();
+    W_lt = (proton_p4_lt + pion_p4_lt + gamma_p4_lt).M();
     sel_lt = lt_muon != -1 && in_tpc_lt && nprot_lt > 0; 
     est_nu_e_lt = std::vector<double>(ee::kMAX,-1);
     TLorentzVector plepton_lt(muon_mom_lt.X(),muon_mom_lt.Y(),muon_mom_lt.Z(),sqrt(muon_mom_lt.Mag()*muon_mom_lt.Mag() + ml*ml));
-    if(sel_lt) est_nu_e_lt = ee::GetEnergyEst(plepton_lt,W_lt,proton_p4_lt,nprot_lt,pion_p4_lt,npi_lt,shower_p4_lt,nsh_lt);
+    if(sel_lt) est_nu_e_lt = ee::GetEnergyEst(plepton_lt,W_lt,proton_p4_lt,nprot_lt,pion_p4_lt,npi_lt,gamma_p4_lt,nsh_lt);
 
 
     // H8 Reco - Lantern for the hadronic system, Pandora Range for contained muons, MCS for uncontained
@@ -432,14 +462,14 @@ void Filter(){
     npi_h8 = lt_pion_v.size();
     pion_p4_h8 = SumTLorentzVector(lt_pion_v); 
 
-    nsh_h8 = lt_shower_v.size();
-    shower_p4_h8 = SumTLorentzVector(lt_shower_v);
+    nsh_h8 = lt_gamma_v.size();
+    gamma_p4_h8 = SumTLorentzVector(lt_gamma_v);
 
-    W_h8 = (proton_p4_h8 + pion_p4_h8 + shower_p4_h8).M();
+    W_h8 = (proton_p4_h8 + pion_p4_h8 + gamma_p4_h8).M();
     sel_h8 = has_muon_pd && sel_lt; 
     est_nu_e_h8 = std::vector<double>(ee::kMAX,-1);
     TLorentzVector plepton_h8(muon_mom_h8.X(),muon_mom_h8.Y(),muon_mom_h8.Z(),sqrt(muon_mom_h8.Mag()*muon_mom_h8.Mag() + ml*ml));
-    if(sel_h8) est_nu_e_h8 = ee::GetEnergyEst(plepton_h8,W_h8,proton_p4_h8,nprot_h8,pion_p4_h8,npi_h8,shower_p4_h8,nsh_h8);
+    if(sel_h8) est_nu_e_h8 = ee::GetEnergyEst(plepton_h8,W_h8,proton_p4_h8,nprot_h8,pion_p4_h8,npi_h8,gamma_p4_h8,nsh_h8);
 
     if(category == -1) std::cout << "Bad event" << std::endl;
 

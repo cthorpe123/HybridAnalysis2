@@ -15,11 +15,21 @@ void SysTest(){
 
   bool add_detvars = false;
   bool blinded = true;
-  bool draw_underflow = true;
-  bool draw_overflow = false;
-  std::vector<std::string> label_v = {"RecoE_1p_Test"};
 
-  for(std::string label : label_v){
+  std::vector<std::string> label_v = {"MuonMom","MuonCosTheta","ProtonE","PionE","PiZeroE","NProt","NPi","NShr","W"};
+  std::vector<bool> draw_underflow_v = {false,false,false,true,true,false,false,false,true};
+  std::vector<bool> draw_overflow_v = {false,false,false,false,false,false,false,false,false};
+
+  for(int i_e=0;i_e<ee::kMAX;i_e++){
+    label_v.push_back(ee::estimators_str.at(i_e));
+    draw_underflow_v.push_back(false);
+    draw_overflow_v.push_back(false);
+  }
+
+  for(size_t i_f=0;i_f<label_v.size();i_f++){
+    std::string label = label_v.at(i_f);
+    bool draw_underflow = draw_underflow_v.at(i_f);
+    bool draw_overflow = draw_overflow_v.at(i_f);
 
     TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
     TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
@@ -28,7 +38,6 @@ void SysTest(){
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
     TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
     TCanvas* c = new TCanvas("c","c");
-    l->SetNColumns(3);
 
     // Print total covariance and total fractional covariance
     TH2D* h_Cov = static_cast<TH2D*>(f_in_hist->Get("Cov"));
@@ -135,37 +144,41 @@ void SysTest(){
       h_Tot_Detvar = (TH2D*)f_in_detvar->Get("FCov")->Clone("FCov_Detvar");
       h_FE_Tot_Detvar = (TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot")->Clone("h_Detvar_FE_Tot");
       for(int i=0;i<h_FE_Tot_Detvar->GetNbinsX()+2;i++) h_FE_Tot_Detvar->SetBinContent(i,sqrt(h_Tot_Detvar->GetBinContent(i,i)));
-      h_FE_Tot_Detvar->SetLineColor(2);
+      h_FE_Tot_Detvar->SetLineColor(detvar_color);
       h_FE_Tot_Detvar->SetLineWidth(2);
       l->AddEntry(h_FE_Tot_Detvar,"Detector","L");
       hs_FE->Add(h_FE_Tot_Detvar);
     }
 
     std::vector<TH1D*> h_FE;
+    std::vector<std::string> legs;
     for(int i_s=0;i_s<kSystMAX;i_s++){
       h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone(("h_FE_"+sys_str.at(i_s)).c_str()));
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get(("FCov_"+sys_str.at(i_s)).c_str()));
       for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
-      h_FE.back()->SetLineColor(i_s+3);
+      h_FE.back()->SetLineColor(sys_color.at(i_s));
       h_FE.back()->SetLineWidth(2);
       delete h;
       hs_FE->Add(h_FE.back());
       l->AddEntry(h_FE.back(),sys_str.at(i_s).c_str(),"L");
+      legs.push_back(sys_str.at(i_s));
     }
 
     h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_MCStat"));
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
-    h_FE.back()->SetLineColor(kSystMAX+3);
+    h_FE.back()->SetLineColor(stat_color.at(kMCStat));
     h_FE.back()->SetLineWidth(2);
     hs_FE->Add(h_FE.back());
-    l->AddEntry( h_FE.back(),"MCStat","L");
+    l->AddEntry(h_FE.back(),"MCStat","L");
+    legs.push_back("MCStat");
 
     h_FE.push_back((TH1D*)f_in_hist->Get("h_CV_Tot")->Clone("h_FE_EstDataStat"));
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
-    h_FE.back()->SetLineColor(kSystMAX+4);
+    h_FE.back()->SetLineColor(special_color.at(kEstDataStat));
     h_FE.back()->SetLineWidth(2);
     hs_FE->Add(h_FE.back());
     l->AddEntry( h_FE.back(),"EstDataStat","L");
+    legs.push_back("EstDataStat");
 
     // Calculate total frac error from all uncertainties
     for(int i=0;i<h_FE_Tot->GetNbinsX()+2;i++){
@@ -174,7 +187,7 @@ void SysTest(){
       h_FE_Tot->SetBinContent(i,sqrt(total_cov));
     }
     h_FE_Tot->SetLineColor(1);
-    h_FE_Tot->SetLineWidth(2);
+    h_FE_Tot->SetLineWidth(3);
     l->AddEntry(h_FE_Tot,"Total","L");
     hs_FE->Add(h_FE_Tot);
 
@@ -188,7 +201,7 @@ void SysTest(){
     if(add_detvars){
       THStack* hs_FE_Detvar = new THStack("hs_FE_Detvar",h_FE_Tot_Detvar->GetTitle());
 
-      h_FE_Tot_Detvar->SetLineColor(1);
+      h_FE_Tot_Detvar->SetLineColor(detvar_color);
       hs_FE_Detvar->Add(h_FE_Tot_Detvar);
       l->AddEntry(h_FE_Tot_Detvar,"Total","L"); 
 
@@ -213,75 +226,6 @@ void SysTest(){
       l->Clear(); 
     }
 
-    // Validation - check the mean of each multiverse systematic matches the CV prediction
-    for(int i_s=0;i_s<kSystMAX;i_s++){
-
-      THStack* hs = new THStack("hs","");
-
-      TH1D* h_CV = (TH1D*)f_in_hist->Get("h_CV_Tot")->Clone(("h_CV_"+sys_str.at(i_s)).c_str());
-      TH1D* h_Var_Mean = (TH1D*)f_in_hist->Get(("h_Vars_Tot_"+sys_str.at(i_s)+"_0").c_str())->Clone("h_Var_Mean"); 
-
-      // Calculate mean of alt universes 
-      for(int i_u=1;i_u<sys_nuniv.at(i_s);i_u++)
-        h_Var_Mean->Add((TH1D*)f_in_hist->Get(("h_Vars_Tot_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str())); 
-      h_Var_Mean->Scale(1.0/sys_nuniv.at(i_s));
-
-      h_CV->SetLineColor(1);
-      h_CV->SetLineWidth(2);
-      hs->Add(h_CV);
-      l->AddEntry(h_CV,"CV","L");
-
-      h_Var_Mean->SetLineColor(2);
-      h_Var_Mean->SetLineWidth(2);
-      hs->Add(h_Var_Mean);
-      l->AddEntry(h_Var_Mean,"Alt Univ. Mean","L");
-
-      hs->Draw("HIST nostack"); 
-      hs->GetXaxis()->SetTitle(h_CV->GetXaxis()->GetTitle());
-      hs->GetYaxis()->SetTitle(h_CV->GetYaxis()->GetTitle());
-      l->Draw();
-      c->Print((plot_dir+"SysValidation_"+sys_str.at(i_s)+".png").c_str());
-
-      c->Clear();
-      l->Clear();
-
-      delete h_CV;
-      delete h_Var_Mean;
-
-    }
-
-    // Detvar validation - draw each variation alongside the CV
-    if(add_detvars){
-      TH1D* h_Detvar_CV = (TH1D*)f_in_detvar->Get("h_Detvar_CV_Tot");
-      h_Detvar_CV->SetLineColor(1);
-      h_Detvar_CV->SetLineWidth(2);
-
-      for(int i_s=0;i_s<kDetvarMAX;i_s++){
-
-        THStack* hs = new THStack("hs","");
-
-        TH1D* h = static_cast<TH1D*>(f_in_detvar->Get(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str()));
-        h->SetLineColor(2);  
-        h->SetLineWidth(2);
-
-        hs->Add(h_Detvar_CV); 
-        hs->Add(h);
-
-        l->AddEntry(h,detvar_str.at(i_s).c_str(),"L");
-        l->AddEntry(h_Detvar_CV,"CV","L");
-
-        hs->Draw("HIST nostack");
-        hs->GetXaxis()->SetTitle(axis_title.c_str());
-        l->Draw();
-        c->Print((plot_dir+"SysValidation_"+detvar_str.at(i_s)+".png").c_str());
-        c->Clear();
-        l->Clear();
-
-        delete hs;  
-
-      }
-    }
-
     delete c;
 
     if(draw_underflow || draw_overflow){
@@ -289,6 +233,7 @@ void SysTest(){
       THStack* hs_middle = new THStack("hs_middle",(";"+axis_title+";FE").c_str());
       THStack* hs_U = new THStack("hs_U",";;FE");
       THStack* hs_O = new THStack("hs_O",";;FE");
+      TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
 
       TH1D *h_FE_Tot_U,*h_FE_Tot_O;
       MakeOU(label,h_FE_Tot,h_FE_Tot_U,h_FE_Tot_O); 
@@ -299,18 +244,20 @@ void SysTest(){
       hs_middle->Add(h_FE_Tot);
       hs_U->Add(h_FE_Tot_U);
       hs_O->Add(h_FE_Tot_O);
+      l2->AddEntry(h_FE_Tot,"Total","L");
 
       std::vector<TH1D*> h_O(h_FE.size());
       std::vector<TH1D*> h_U(h_FE.size());
       for(size_t i_s=0;i_s<h_FE.size();i_s++){
         MakeOU(h_FE.at(i_s)->GetName(),h_FE.at(i_s),h_U.at(i_s),h_O.at(i_s));
-        h_U.at(i_s)->SetLineColor(i_s+2);
-        h_O.at(i_s)->SetLineColor(i_s+2);
+        h_U.at(i_s)->SetLineColor(h_FE.at(i_s)->GetLineColor());
+        h_O.at(i_s)->SetLineColor(h_FE.at(i_s)->GetLineColor());
         h_U.at(i_s)->SetLineWidth(2);
         h_O.at(i_s)->SetLineWidth(2);
         hs_U->Add(h_U.at(i_s));
         hs_O->Add(h_O.at(i_s));
         hs_middle->Add(h_FE.at(i_s));
+        l2->AddEntry(h_FE.at(i_s),legs.at(i_s).c_str(),"L");
       }
 
       TCanvas* c2 = new TCanvas("c2","c2",1000,600);
@@ -355,6 +302,7 @@ void SysTest(){
       p_middle->cd(); 
       hs_middle->Draw("nostack HIST");
       //hs_middle->SetMaximum(GetMax(h_FE_Tot)*1.1);
+      l2->Draw();
 
       c2->cd();
       c2->Print((plot_dir+"test.png").c_str());

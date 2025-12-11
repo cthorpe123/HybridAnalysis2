@@ -147,6 +147,8 @@ void HistogramManager::FillHistograms(double var,bool load_syst,double weight)
 void HistogramManager::Write()
 {
 
+  std::cout << "Writing histograms for " << _label << std::endl;
+
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
   TFile* f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
 

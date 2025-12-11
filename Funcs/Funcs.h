@@ -47,7 +47,8 @@ std::map<int,std::pair<double,double>> thresholds = {
   {13,{0.1,100.0}},
   {2212,{0.3,5.0}},
   {211,{0.1,5.0}},
-  {111,{0.0,5.0}}
+  {111,{0.0,5.0}},
+  {22,{0.0,5.0}}
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -134,7 +135,7 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
 ///////////////////////////////////////////////////////////////////////
 // Generate variably binned histogram  
 
-void MakeBinningTemplate(std::string label,TH1D* h_data,double target_fe=0.1){
+void MakeBinningTemplate(std::string label,TH1D* h_data,double target_fe=0.05){
 
   std::cout << "Generating binning template for " << label << std::endl;
 
@@ -198,6 +199,47 @@ double GetMax(const TH1D* h){
   double max = 0;
   for(int i=1;i<h->GetNbinsX()+1;i++) max = std::max(max,h->GetBinContent(i)+h->GetBinError(i));
   return max;
+}
+
+///////////////////////////////////////////////////////////////////////
+// Unroll a 2D dist into one large 1D dist
+
+TH1D* Unroll2DDist(TH2D* h,std::vector<std::pair<int,int>> skip={}){
+
+  int nbins_x = h->GetNbinsX();
+  int nbins_y = h->GetNbinsY();
+  std::string name = string(h->GetName())+"_unroll";
+  TH1D* h_unroll = new TH1D(name.c_str(),"",nbins_x*nbins_y-skip.size(),0.5,nbins_x*nbins_y-skip.size()+0.5);
+
+  int ctr = 1;
+  for(int i=1;i<nbins_x+1;i++){
+    for(int j=1;j<nbins_y+1;j++){
+      if(std::find(skip.begin(),skip.end(),std::make_pair(i,j)) != skip.end()) continue;
+      h_unroll->SetBinContent(ctr,h->GetBinContent(i,j));
+      h_unroll->SetBinError(ctr,h->GetBinError(i,j));
+      ctr++;
+    }
+  }
+
+  return h_unroll;
+}
+
+///////////////////////////////////////////////////////////////////////
+// Given the true dist and joint truth/reco dist for selected events
+// renormalise the 2D hist to give the response 
+
+void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
+
+  for(int i=0;i<h_true->GetNbinsX()+2;i++){
+    double total_true = h_true->GetBinContent(i);
+    if(total_true > 0){
+      for(int j=0;j<h_true_reco->GetNbinsY()+2;j++){
+        h_true_reco->SetBinContent(i,j,h_true_reco->GetBinContent(i,j)/total_true);
+        h_true_reco->SetBinError(i,j,h_true_reco->GetBinError(i,j)/total_true);
+      }
+    }
+  }
+
 }
 
 #endif
