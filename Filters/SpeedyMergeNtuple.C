@@ -10,26 +10,29 @@ void SpeedyMergeNtuple(){
   //std::string filename = "DetVar_Run45_v10_04_07_15_BNB_nu_overlay_SCE_surprise_reco2_hist.root";
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
 
-  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/";
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_BNB_nue_overlay_surprise_reco2_hist.root";
   //std::string filename = "MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
   //std::string dir_in = "/pnfs/uboone/scratch/users/bbogart/v10_04_07_16/";
   //std::string filename = "larpid_patch_smart_patch_test10_full_more.root";
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
 
-/*
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4c_full_samples/BNB/";
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
-*/
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4c_full_samples/BNB/";
+  //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
 
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4d_full_samples/BNB/";
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
-  std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4d_full_samples/BNB/";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
+
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";
 
 
   // Open the two files and setup branches to read the RSE numbers
@@ -77,6 +80,8 @@ void SpeedyMergeNtuple(){
   Float_t weightSplineTimesTune;
   Float_t weightTune;
 
+  std::map<std::string,std::vector<double>>* weights=0;  
+
   std::vector<float>* trk_len_v=0;
   std::vector<float>* trk_dir_x_v=0;
   std::vector<float>* trk_dir_y_v=0;
@@ -120,6 +125,7 @@ void SpeedyMergeNtuple(){
       pd_t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
       pd_t_in->SetBranchAddress("weightsReint",&weightsReint); 
       pd_t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+      pd_t_in->SetBranchAddress("weights",&weights);
     }
     pd_t_in->SetBranchAddress("weightSpline",&weightSpline); 
     pd_t_in->SetBranchAddress("weightTune",&weightTune); 
@@ -345,6 +351,7 @@ void SpeedyMergeNtuple(){
       t_out->Branch("weightsGenie",&weightsGenie); 
       t_out->Branch("weightsReint",&weightsReint); 
       t_out->Branch("weightsFlux",&weightsFlux); 
+      t_out->Branch("weights",&weights);
     }
     t_out->Branch("weightSpline",&weightSpline);
     t_out->Branch("weightTune",&weightTune);
@@ -374,7 +381,6 @@ void SpeedyMergeNtuple(){
   t_out->Branch("shr_py_v",&shr_py_v);
   t_out->Branch("shr_pz_v",&shr_pz_v);
   t_out->Branch("shr_energy_y_v",&shr_energy_y_v);
-
 
   // Wirecell Branches
   if(!is_data){

@@ -135,12 +135,13 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
 ///////////////////////////////////////////////////////////////////////
 // Generate variably binned histogram  
 
-void MakeBinningTemplate(std::string label,TH1D* h_data,double target_fe=0.05){
+void MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double target_fe=0.05){
 
   std::cout << "Generating binning template for " << label << std::endl;
 
   gSystem->Exec(("mkdir -p Analysis/"+label+"/rootfiles/").c_str());
-  TFile* f_out = TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
+  TFile* f_out = !truth ? TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE")
+                        : TFile::Open(("Analysis/"+label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
 
   std::vector<double> bin_edges;
   double events = 0;
@@ -185,7 +186,7 @@ void MakeOU(std::string label,TH1D* h,TH1D*& h_underflow,TH1D*& h_overflow,std::
   if(h_cov != nullptr) h_underflow->SetBinError(1,sqrt(h_cov->GetBinContent(0,0)));
   else h_underflow->SetBinError(1,h->GetBinError(0));
   if(h_cov != nullptr) h_overflow->SetBinError(1,sqrt(h_cov->GetBinContent(h->GetNbinsX()+1,h->GetNbinsX()+1)));
-  else h_overflow->SetBinError(1,h->GetBinContent(h->GetNbinsX()+1));
+  else h_overflow->SetBinError(1,h->GetBinError(h->GetNbinsX()+1));
   
   h_underflow->GetXaxis()->SetBinLabel(1,u_label.c_str());
   h_overflow->GetXaxis()->SetBinLabel(1,o_label.c_str());
@@ -240,6 +241,28 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
     }
   }
 
+}
+
+///////////////////////////////////////////////////////////////////////
+// Given the true dist and joint truth/reco dist for selected events
+// renormalise the 2D hist to give the response 
+TH1D* Multiply(TH1D* h_true,TH2D* h_res){
+
+  std::vector<double> bins;
+  for(int i=1;i<h_res->GetNbinsY()+2;i++) bins.push_back(h_res->GetYaxis()->GetBinLowEdge(i));
+  int n_bins = bins.size()-1;
+  double* bins_a = &bins[0];
+    
+  TH1D* h_reco = new TH1D((string(h_true->GetName())+"_folded").c_str(),"",n_bins,bins_a);
+
+  for(int j=1;j<n_bins;j++){
+    double content = 0.0;
+    for(int i=1;i<h_true->GetNbinsX()+1;i++)
+      content += h_true->GetBinContent(i)*h_res->GetBinContent(i,j);
+    h_reco->SetBinContent(j,content);
+  }
+
+  return h_reco;
 }
 
 #endif

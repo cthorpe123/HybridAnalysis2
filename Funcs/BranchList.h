@@ -24,7 +24,7 @@ std::vector<unsigned short>* weightsFlux=0;
 Float_t weightSpline = 1.0;
 Float_t weightSplineTimesTune = 1.0;
 Float_t weightTune = 1.0;
-
+std::map<std::string,std::vector<double>>* weights=0;
 
 std::vector<float>* trk_len_v=0;
 std::vector<float>* trk_dir_x_v=0;
@@ -163,6 +163,7 @@ void LoadTree(std::string filename,TFile*& f_in,TTree*& t_in,bool is_data,bool l
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
       t_in->SetBranchAddress("weightsReint",&weightsReint); 
       t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+      t_in->SetBranchAddress("weights",&weights);
     }
     t_in->SetBranchAddress("weightSpline",&weightSpline); 
     t_in->SetBranchAddress("weightTune",&weightTune); 
@@ -369,6 +370,8 @@ TLorentzVector  *pion_p4_h8=0;
 TLorentzVector  *gamma_p4_h8=0;
 std::vector<double>* est_nu_e_h8=0;
 
+std::map<std::string,std::vector<double>>* weightsUnisim=0;
+
 void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
 
   std::cout << "Loading " << filename << std::endl;
@@ -434,6 +437,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
       t_in->SetBranchAddress("weightsReint",&weightsReint); 
       t_in->SetBranchAddress("weightsFlux",&weightsFlux); 
+      t_in->SetBranchAddress("weightsUnisim",&weightsUnisim);
     }
     t_in->SetBranchAddress("weightSpline",&weightSpline); 
     t_in->SetBranchAddress("weightTune",&weightTune); 

@@ -13,8 +13,8 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = false;
-  bool load_syst = true;
+  is_dirt = true;
+  bool load_syst = false;
 
   // Main run4b files
   const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
@@ -35,13 +35,19 @@ void Filter(){
   //double POT_weight = 1.332E+20/3.06E+20;
   //int detvar_univ = -1; // which detvar are you looking at
 
-  //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
-  //double POT_weight = 1.332E+20/4.71538e+20; 
-  //int detvar_univ = -1; // which detvar are you looking at
 
+  // Runs 4c -5, give same pot weight as run 4b for now so we can use to pad statistics
+  //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";
+  //double POT_weight = 1.332E+20/7.88166e+20; 
+  //int detvar_univ = -1; // which detvar are you looking at
+  
   const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
-  double POT_weight = 1.332E+20/8.96646e+20; 
+  double POT_weight = 1.332E+20/7.88166e+20; 
   int detvar_univ = -1; // which detvar are you looking at
+
+  //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";
+  //double POT_weight = 1.332E+20/7.88166e+20; 
+  //int detvar_univ = -1; // which detvar are you looking at
 
   // Run 4/5 detvars
 /*
@@ -167,7 +173,6 @@ void Filter(){
   t_out->Branch("gamma_p4_pd",&gamma_p4_pd);
   t_out->Branch("est_nu_e_pd",&est_nu_e_pd);
 
-
   // WC Reco branches
   bool sel_wc;
   bool in_tpc_wc;
@@ -274,12 +279,13 @@ void Filter(){
       t_out->Branch("weightsGenie",&weightsGenie); 
       t_out->Branch("weightsReint",&weightsReint); 
       t_out->Branch("weightsFlux",&weightsFlux); 
+      t_out->Branch("weightsUnisim",&weightsUnisim);
     }
   }
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-    //if(ievent > 10000) break;
+    //if(ievent > 1000) break;
     if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
     t_in->GetEntry(ievent);
 
@@ -472,6 +478,17 @@ void Filter(){
     if(sel_h8) est_nu_e_h8 = ee::GetEnergyEst(plepton_h8,W_h8,proton_p4_h8,nprot_h8,pion_p4_h8,npi_h8,gamma_p4_h8,nsh_h8);
 
     if(category == -1) std::cout << "Bad event" << std::endl;
+
+    // Organise unisim systematics
+    if(load_syst){
+      weightsUnisim->clear();
+      std::map<std::string,std::vector<double>>::iterator it;
+      for(it = weights->begin();it != weights->end();it++){
+        if(it->first != "flux_all" && it->first != "reint_all" && it->first != "All_UBGenie" && it->first != "xsr_scc_Fa3_SCC" && it->first != "xsr_scc_Fv3_SCC" && it->first != "ppfx_all"){
+          weightsUnisim->insert(std::make_pair(it->first,it->second));
+        } 
+      }    
+    }
 
     t_out->Fill();
   }

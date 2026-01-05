@@ -4,13 +4,13 @@
 namespace syst {
 
 // For speed while developing
-//const int nuniv_Genie = 100;
-//const int nuniv_Flux = 100;
-//const int nuniv_Reint = 100;
+const int nuniv_Genie = 100;
+const int nuniv_Flux = 100;
+const int nuniv_Reint = 100;
 
-const int nuniv_Genie = 500;
-const int nuniv_Flux = 1000;
-const int nuniv_Reint = 1000;
+//const int nuniv_Genie = 500;
+//const int nuniv_Flux = 1000;
+//const int nuniv_Reint = 1000;
 
 // Multisims
 enum e_syst {kGenie,kFlux,kReint,kSystMAX};
@@ -45,25 +45,33 @@ double Mean(const std::vector<TH1D*>& h_Vars, int bin){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Generate a 2D hist with binning and axis titles matching a 1D hist 
+// along both axes 
+
+TH2D* Make2DHist(std::string name,TH1D* h){
+  std::string axis_title = h->GetXaxis()->GetTitle();   
+  std::vector<double> bins;
+  for(int i=1;i<h->GetNbinsX()+2;i++) bins.push_back(h->GetBinLowEdge(i));
+  return new TH2D(name.c_str(),(";"+axis_title+";"+axis_title+";").c_str(),bins.size()-1,&bins[0],bins.size()-1,&bins[0]);
+}
+
+///////////////////////////////////////////////////////////////////////
 // Multisim covariance calculator 
 
-void CalcCovMultisim(std::string sys,const TH1D* h_CV,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D*& h_FCov){
+void CalcCovMultisim(std::string sys,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D*& h_FCov){
  
-  std::string axis_title = h_CV->GetXaxis()->GetTitle();   
+  std::string axis_title = h_Vars.at(0)->GetXaxis()->GetTitle();   
 
   std::vector<double> bins;
-  for(int i=1;i<h_CV->GetNbinsX()+2;i++) bins.push_back(h_CV->GetBinLowEdge(i));
+  for(int i=1;i<h_Vars.at(0)->GetNbinsX()+2;i++) bins.push_back(h_Vars.at(0)->GetBinLowEdge(i));
   int n_bins = bins.size()-1;
   double* bins_a = &bins[0];
 
   h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
   h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
 
-  for(int i_bx=0;i_bx<h_CV->GetNbinsX()+2;i_bx++){
-    for(int i_by=0;i_by<h_CV->GetNbinsX()+2;i_by++){
-
-      //double x = h_CV->GetBinContent(i_bx);
-      //double y = h_CV->GetBinContent(i_by);
+  for(int i_bx=0;i_bx<h_Vars.at(0)->GetNbinsX()+2;i_bx++){
+    for(int i_by=0;i_by<h_Vars.at(0)->GetNbinsX()+2;i_by++){
 
       double x = Mean(h_Vars,i_bx);
       double y = Mean(h_Vars,i_by);
