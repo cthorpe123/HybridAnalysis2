@@ -512,6 +512,6 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
 const std::vector<std::string> categories = {"Signal","BG","Nue","OutFV","Dirt","EXT","Data"};
 enum e_cat {kSignal,kBG,kNue,kOutFV,kDirt,kEXT,kData};
-const int colors[kData] = {kBlue-7,kMagenta-7,kRed-7,kBlue+2,kMagenta+3,kGray};
+const int cat_colors[kData] = {kBlue-7,kMagenta-7,kRed-7,kBlue+2,kMagenta+3,kGray};
 
 #endif

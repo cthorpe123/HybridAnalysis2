@@ -25,6 +25,7 @@ void MakeCov(){
   h.KeepAll();
   h.DBBW();
   //h.ShapeOnly();
+  h.AddSpecialUniv("ExtraPi");
 
   for(int i_f=0;i_f<files_v.size();i_f++){
 
@@ -37,15 +38,19 @@ void MakeCov(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 50000) break;
+      if(ievent > 100000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
 
-      double alt_weight = npi_t > 0 ? 10.0 : 1.0;
+      double alt_weight = npi_t > 0 && is_signal_t ? 10.0 : 1.0;
 
       //h.FillTruthHistograms(is_signal_t,muon_mom_t->Mag(),load_syst);
       //h.FillRecoHistograms(sel_h8,muon_mom_h8->Mag(),load_syst);
       h.FillHistograms2D(is_signal_t,sel_h8,muon_mom_t->Mag(),muon_mom_h8->Mag(),load_syst);
+
+      //h.FillSpecialTruthHistograms("ExtraPi",is_signal_t,muon_mom_t->Mag(),alt_weight);
+      //h.FillSpecialRecoHistograms("ExtraPi",sel_h8,muon_mom_h8->Mag(),alt_weight);
+      h.FillSpecialHistograms2D("ExtraPi",is_signal_t,sel_h8,muon_mom_t->Mag(),muon_mom_h8->Mag(),alt_weight);
  
     }
 

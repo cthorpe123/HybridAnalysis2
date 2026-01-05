@@ -16,13 +16,21 @@ class HistogramManager {
     void LoadTemplate();
     void SetTemplate(std::string axis_title,int nbins,double low,double high);
     void SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r);
+
     void FillTruthHistograms(bool sig,double var_t,bool load_syst,double weight=1.0);
     void FillRecoHistograms(bool sel,double var_r,bool load_syst,double weight=1.0);
-    void FillHistograms2D(bool sign,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0);
+    void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0);
+
+    void AddSpecialUniv(std::string name);
+    void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight);
+    void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight);
+    void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight);
+
     void DBBW() { _divide_by_bin_width = true; }
     void ShapeOnly() { _shape_only = true; }
     void KeepOU(){ _keep_overflow_underflow_ = true; }
     void KeepAll(){ _keep_all = true; }
+
     void Write();
     
   private:
@@ -41,10 +49,12 @@ class HistogramManager {
     // Reco histograms 
     TH1D* _h_CV_Reco_Tot;
     std::vector<std::vector<TH1D*>> _h_Vars_Reco_Tot;
+    std::map<std::string,TH1D*> _h_Special_Reco_Tot;
 
     // Reco histograms by category
     std::vector<TH1D*> _h_CV_Reco_Cat;
     std::vector<std::vector<std::vector<TH1D*>>> _h_Vars_Reco_Cat;
+    std::map<std::string,std::vector<TH1D*>> _h_Special_Reco_Cat;
  
     // Truth histograms, only filled for the signal
     TH1D* _h_CV_Truth_Signal;
@@ -224,6 +234,23 @@ void HistogramManager::_SetupJointHistograms()
   }
 
 }
+///////////////////////////////////////////////////////////////////////
+// Setup histograms for special alternative universe 
+
+void HistogramManager::AddSpecialUniv(std::string name)
+{
+
+  _h_Special_Reco_Tot[name] = (TH1D*)_h_tp->Clone(("h_Special_Reco_Tot_"+name+"_"+_label).c_str()); 
+  _h_Special_Reco_Cat[name] = std::vector<TH1D*>();
+  for(size_t i_c=0;i_c<categories.size();i_c++)
+    _h_Special_Reco_Cat.at(name).push_back((TH1D*)_h_tp->Clone(("h_Special_Reco_"+categories.at(i_c)+"_"+name+"_"+_label).c_str()));
+ 
+  if(_save_truth){
+    _h_Special_Truth_Signal[name] = (TH1D*)_h_tp->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
+    _h_Special_Joint_Signal[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
+  }
+ 
+}
 
 ///////////////////////////////////////////////////////////////////////
 // Fill the histograms
@@ -268,6 +295,9 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
   } 
 
 }
+
+///////////////////////////////////////////////////////////////////////
+// Fill the histograms
 
 void HistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,double weight=1.0)
 {
@@ -330,7 +360,67 @@ void HistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double va
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Fill the histograms
+
+void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight)
+{
+
+  if(!sig) return;
+
+  if(_h_tp_truth == nullptr) 
+    throw std::invalid_argument("Trying to fill histograms before binning has been set, call LoadTemplate or SetTemplate first!");
+
+  if(category == -1) std::cout << "Bad event" << std::endl;
+
+  _h_Special_Truth_Signal.at(name)->Fill(var_t,POT_weight*weightSpline*weight);
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Fill the histograms
+
+void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight)
+{
+
+  if(!sel) return;
+
+  if(_h_tp == nullptr) 
+    throw std::invalid_argument("Trying to fill histograms before binning has been set, call LoadTemplate or SetTemplate first!");
+
+  if(category == -1) std::cout << "Bad event" << std::endl;
+
+  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+
+  if(!is_data) _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSpline*weight);
+  _h_Special_Reco_Cat.at(name).at(category)->Fill(var_r,POT_weight*weightSpline*weight);
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Fill the histograms
+
+void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight)
+{
+
+  FillSpecialTruthHistograms(name,sig,var_t,weight);
+  FillSpecialRecoHistograms(name,sel,var_r,weight);
+
+  if(!sig || !sel) return;
+
+  if(_h_tp == nullptr || _h_tp_truth == nullptr) 
+    throw std::invalid_argument("Trying to fill histograms before binning has been set, call LoadTemplate or SetTemplate first!");
+
+  if(category == -1) std::cout << "Bad event" << std::endl;
+
+  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+
+  _h_Special_Joint_Signal.at(name)->Fill(var_t,var_r,POT_weight*weightSpline*weight);
+
+}
+
+///////////////////////////////////////////////////////////////////////
 // Write the histograms to file
+
 void HistogramManager::Write()
 {
   std::cout << "Writing histograms for " << _label << std::endl;
@@ -533,6 +623,22 @@ void HistogramManager::_WriteReco()
 
   _f_out->cd();
 
+  if(_h_Special_Reco_Tot.size()){
+    _f_out->mkdir("Special");
+    _f_out->mkdir("Special/Reco");
+    _f_out->cd("Special/Reco");
+    std::map<std::string,TH1D*>::iterator it;
+    for(it=_h_Special_Reco_Tot.begin();it!=_h_Special_Reco_Tot.end();it++){
+      std::string name = it->first;
+      _f_out->mkdir(("Special/Reco/"+name).c_str());
+      _f_out->cd(("Special/Reco/"+name).c_str());
+      _h_Special_Reco_Tot.at(name)->Write("h_Tot");
+      for(size_t i_c=0;i_c<categories.size();i_c++)
+        _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
+    }
+    _f_out->cd();
+  } 
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -657,6 +763,19 @@ void HistogramManager::_WriteTruth()
 
   _f_out->cd();
 
+  if(_h_Special_Truth_Signal.size()){
+    _f_out->mkdir("Special");
+    _f_out->mkdir("Special/Truth");
+    _f_out->cd("Special/Truth");
+    std::map<std::string,TH1D*>::iterator it;
+    for(it=_h_Special_Truth_Signal.begin();it!=_h_Special_Truth_Signal.end();it++){
+      std::string name = it->first;
+      _f_out->mkdir(("Special/Truth/"+name).c_str());
+      _f_out->cd(("Special/Truth/"+name).c_str());
+      _h_Special_Truth_Signal.at(name)->Write("h_Signal");
+    }
+  } 
+
 }
 
 
@@ -688,6 +807,19 @@ void HistogramManager::_WriteJoint()
       _f_out->cd();
     }
   }
+
+  if(_h_Special_Joint_Signal.size()){
+    _f_out->mkdir("Special");
+    _f_out->mkdir("Special/Joint");
+    _f_out->cd("Special/Joint");
+    std::map<std::string,TH2D*>::iterator it;
+    for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
+      std::string name = it->first;
+      _f_out->mkdir(("Special/Joint/"+name).c_str());
+      _f_out->cd(("Special/Joint/"+name).c_str());
+      _h_Special_Joint_Signal.at(name)->Write("h_Signal");
+    }
+  } 
   
 }
 

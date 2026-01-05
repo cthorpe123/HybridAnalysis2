@@ -36,7 +36,7 @@ void MakePrediction(){
     for(size_t i_c=0;i_c<categories.size();i_c++){
       if(i_c == kData) continue;
       h_CV.push_back(static_cast<TH1D*>(f_in_hist->Get(("CV/Reco/h_"+categories.at(i_c)).c_str())));
-      fill_colors.push_back(colors[i_c]); 
+      fill_colors.push_back(cat_colors[i_c]); 
       legs.push_back(categories.at(i_c));
     }
 
