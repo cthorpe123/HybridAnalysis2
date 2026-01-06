@@ -49,21 +49,25 @@ class HistogramManager {
     // Reco histograms 
     TH1D* _h_CV_Reco_Tot;
     std::vector<std::vector<TH1D*>> _h_Vars_Reco_Tot;
+    std::vector<TH1D*> _h_Unisim_Vars_Reco_Tot;
     std::map<std::string,TH1D*> _h_Special_Reco_Tot;
 
     // Reco histograms by category
     std::vector<TH1D*> _h_CV_Reco_Cat;
     std::vector<std::vector<std::vector<TH1D*>>> _h_Vars_Reco_Cat;
+    std::vector<std::vector<TH1D*>> _h_Unisim_Vars_Reco_Cat;
     std::map<std::string,std::vector<TH1D*>> _h_Special_Reco_Cat;
  
     // Truth histograms, only filled for the signal
     TH1D* _h_CV_Truth_Signal;
     std::vector<std::vector<TH1D*>> _h_Vars_Truth_Signal;
+    std::vector<TH1D*> _h_Unisim_Vars_Truth_Signal;
     std::map<std::string,TH1D*> _h_Special_Truth_Signal;
 
     // Joint histograms, only filled for the signal
     TH2D* _h_CV_Joint_Signal;
     std::vector<std::vector<TH2D*>> _h_Vars_Joint_Signal;
+    std::vector<TH2D*> _h_Unisim_Vars_Joint_Signal;
     std::map<std::string,TH2D*> _h_Special_Joint_Signal;
 
     int _nbins_t;    
@@ -132,7 +136,7 @@ void HistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low
 
 void HistogramManager::SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
 {
-  if(_save_truth) 
+  if(!_save_truth) 
     throw std::invalid_argument("HistogramManager::SetTemplate: Calling wrong function when response matrices are being set, truth binning not enabled");  
 
   _h_tp = new TH1D(("h_template_"+_label).c_str(),axis_title.c_str(),nbins_r,low_r,high_r);
@@ -178,6 +182,9 @@ void HistogramManager::_SetupRecoHistograms()
     }
   }
 
+  for(int i_s=0;i_s<kUnisimMAX;i_s++)
+    _h_Unisim_Vars_Reco_Tot.push_back((TH1D*)_h_tp->Clone(("h_Unisim_Vars_Reco_Tot_"+unisims_str.at(i_s)+"_"+_label).c_str()));
+
   for(size_t i_c=0;i_c<categories.size();i_c++){
     _h_Vars_Reco_Cat.push_back(std::vector<std::vector<TH1D*>>());
     for(int i_s=0;i_s<kSystMAX;i_s++){
@@ -187,7 +194,14 @@ void HistogramManager::_SetupRecoHistograms()
       }
     }
   }
- 
+
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    _h_Unisim_Vars_Reco_Cat.push_back(std::vector<TH1D*>());
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      _h_Unisim_Vars_Reco_Cat.at(i_c).push_back((TH1D*)_h_tp->Clone(("h_Unisim_Vars_Reco_"+categories.at(i_c)+"_"+unisims_str.at(i_s)+"_"+_label).c_str()));
+    }
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -210,6 +224,9 @@ void HistogramManager::_SetupTruthHistograms()
       _h_Vars_Truth_Signal.back().push_back((TH1D*)_h_tp_truth->Clone(("h_Vars_Truth_Signal_"+sys_str.at(i_s)+"_"+std::to_string(i_u)+"_"+_label).c_str()));
     }
   }
+
+  for(int i_s=0;i_s<kUnisimMAX;i_s++)
+    _h_Unisim_Vars_Truth_Signal.push_back((TH1D*)_h_tp_truth->Clone(("h_Unisim_Vars_Truth_Signal_"+unisims_str.at(i_s)+"_"+_label).c_str()));
  
 }
 
@@ -233,7 +250,11 @@ void HistogramManager::_SetupJointHistograms()
     }
   }
 
+  for(int i_s=0;i_s<kUnisimMAX;i_s++)
+    _h_Unisim_Vars_Joint_Signal.push_back((TH2D*)_h_CV_Joint_Signal->Clone(("h_Unisim_Vars_Joint_Signal_"+unisims_str.at(i_s)+"_"+_label).c_str()));
+
 }
+
 ///////////////////////////////////////////////////////////////////////
 // Setup histograms for special alternative universe 
 
@@ -265,33 +286,37 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
-  if(!is_data) _h_CV_Reco_Tot->Fill(var_r,POT_weight*weightSpline);
-  _h_CV_Reco_Cat.at(category)->Fill(var_r,POT_weight*weightSpline);
+  if(!is_data) _h_CV_Reco_Tot->Fill(var_r,POT_weight*weightSplineTimesTune);
+  _h_CV_Reco_Cat.at(category)->Fill(var_r,POT_weight*weightSplineTimesTune);
 
   if(!is_data){
     if(load_syst){
       for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)/1000);
-      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
-      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
+      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
+      for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Tot.at(i_s)->Fill(var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim));
     }
     else {
-      for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
-      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
-      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
+      for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+      for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+      for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Tot.at(i_s)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
     } 
   }
 
   if(load_syst){
     for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Cat.at(category).at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Cat.at(category).at(i_s)->Fill(var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim));
   }
   else {
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Cat.at(category).at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightSpline);
+    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Cat.at(category).at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Cat.at(category).at(i_s)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
   } 
 
 }
@@ -309,19 +334,21 @@ void HistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
-  _h_CV_Truth_Signal->Fill(var_t,POT_weight*weightSpline);
+  _h_CV_Truth_Signal->Fill(var_t,POT_weight*weightSplineTimesTune);
 
   if(load_syst){
     for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Truth_Signal.at(kGenie).at(i_u)->Fill(var_t,(double)POT_weight*weightsGenie->at(i_u)/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Truth_Signal.at(kReint).at(i_u)->Fill(var_t,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Truth_Signal.at(kFlux).at(i_u)->Fill(var_t,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Truth_Signal.at(kReint).at(i_u)->Fill(var_t,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Truth_Signal.at(kFlux).at(i_u)->Fill(var_t,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Truth_Signal.at(i_s)->Fill(var_t,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim));
   }
   else {
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Truth_Signal.at(kGenie).at(i_u)->Fill(var_t,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Truth_Signal.at(kReint).at(i_u)->Fill(var_t,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Truth_Signal.at(kFlux).at(i_u)->Fill(var_t,(double)POT_weight*weightSpline);
+    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Truth_Signal.at(kGenie).at(i_u)->Fill(var_t,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Truth_Signal.at(kReint).at(i_u)->Fill(var_t,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Truth_Signal.at(kFlux).at(i_u)->Fill(var_t,(double)POT_weight*weightSplineTimesTune);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Truth_Signal.at(i_s)->Fill(var_t,(double)POT_weight*weightSplineTimesTune);
   } 
 
 }
@@ -342,19 +369,21 @@ void HistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double va
 
  if(category == -1) std::cout << "Bad event" << std::endl;
 
- if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+ if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
- _h_CV_Joint_Signal->Fill(var_t,var_r,POT_weight*weightSpline);
+ _h_CV_Joint_Signal->Fill(var_t,var_r,POT_weight*weightSplineTimesTune);
 
   if(load_syst){
     for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Joint_Signal.at(kGenie).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightsGenie->at(i_u)/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Joint_Signal.at(kReint).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightsReint->at(i_u)*weightSpline/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Joint_Signal.at(kFlux).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSpline/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Joint_Signal.at(kReint).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Joint_Signal.at(kFlux).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Joint_Signal.at(i_s)->Fill(var_t,var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim));
   }
   else {
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Joint_Signal.at(kGenie).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Joint_Signal.at(kReint).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSpline);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Joint_Signal.at(kFlux).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSpline);
+    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Joint_Signal.at(kGenie).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Joint_Signal.at(kReint).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Joint_Signal.at(kFlux).at(i_u)->Fill(var_t,var_r,(double)POT_weight*weightSplineTimesTune);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Joint_Signal.at(i_s)->Fill(var_t,var_r,(double)POT_weight*weightSplineTimesTune);
   } 
 
 }
@@ -372,7 +401,7 @@ void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,doub
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  _h_Special_Truth_Signal.at(name)->Fill(var_t,POT_weight*weightSpline*weight);
+  _h_Special_Truth_Signal.at(name)->Fill(var_t,POT_weight*weightSplineTimesTune*weight);
 
 }
 
@@ -389,10 +418,10 @@ void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,doubl
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
-  if(!is_data) _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSpline*weight);
-  _h_Special_Reco_Cat.at(name).at(category)->Fill(var_r,POT_weight*weightSpline*weight);
+  if(!is_data) _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
+  _h_Special_Reco_Cat.at(name).at(category)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
 
 }
 
@@ -412,9 +441,9 @@ void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool se
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  if(std::isnan(weightSpline) || std::isinf(weightSpline)) return;
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
-  _h_Special_Joint_Signal.at(name)->Fill(var_t,var_r,POT_weight*weightSpline*weight);
+  _h_Special_Joint_Signal.at(name)->Fill(var_t,var_r,POT_weight*weightSplineTimesTune*weight);
 
 }
 
@@ -467,15 +496,12 @@ void HistogramManager::_WriteReco()
 
   // Apply scaling to the reco if shape only
   if(_shape_only){
-
     double integral = _h_CV_Reco_Tot->Integral() + _h_CV_Reco_Tot->GetBinContent(0) + _h_CV_Reco_Tot->GetBinContent(_nbins_r+1);
-
     _h_CV_Reco_Tot->Scale(1.0/integral);
     h_CV_Reco_Tot_E->Scale(1.0/integral);
     for(size_t i_c=0;i_c<categories.size();i_c++) _h_CV_Reco_Cat.at(i_c)->Scale(1.0/integral);
     for(size_t i_c=0;i_c<categories.size();i_c++) h_CV_Reco_Cat_E.at(i_c)->Scale(1.0/integral);
-
-    for(int i_s=0;i_s<kSystMAX;i_s++){
+    for(size_t i_s=0;i_s<kSystMAX;i_s++){
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         TH1D* h =_h_Vars_Reco_Tot.at(i_s).at(i_u); 
         integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_r+1);
@@ -485,7 +511,14 @@ void HistogramManager::_WriteReco()
         }
       } 
     }
-
+    for(size_t i_s=0;i_s<kUnisimMAX;i_s++){
+      TH1D* h =_h_Unisim_Vars_Reco_Tot.at(i_s); 
+      integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_r+1);
+      h->Scale(1.0/integral);
+      for(size_t i_c=0;i_c<categories.size();i_c++){
+        _h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s)->Scale(1.0/integral);
+      }
+    }
   } 
 
   if(_divide_by_bin_width){
@@ -493,13 +526,18 @@ void HistogramManager::_WriteReco()
     DivideByBinWidth(h_CV_Reco_Tot_E);
     for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_CV_Reco_Cat.at(i_c));
     for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(h_CV_Reco_Cat_E.at(i_c));
-    for(int i_s=0;i_s<kSystMAX;i_s++){
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+    for(size_t i_s=0;i_s<kSystMAX;i_s++){
+      for(size_t i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         DivideByBinWidth(_h_Vars_Reco_Tot.at(i_s).at(i_u));
         for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_Vars_Reco_Cat.at(i_c).at(i_s).at(i_u));
       }
     } 
+    for(size_t i_s=0;i_s<kUnisimMAX;i_s++){
+      DivideByBinWidth(_h_Unisim_Vars_Reco_Tot.at(i_s));
+      for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s));
+    } 
   }
+
  
   // Central value reco histograms
   _f_out->mkdir("CV");
@@ -523,9 +561,17 @@ void HistogramManager::_WriteReco()
       }
       _f_out->cd();
     }
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      _f_out->mkdir(("Vars/Reco/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Vars/Reco/"+unisims_str.at(i_s)).c_str());
+      _h_Unisim_Vars_Reco_Tot.at(i_s)->Write("h_Tot");
+      for(size_t i_c=0;i_c<categories.size();i_c++) 
+        _h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s)->Write(("h_"+categories.at(i_c)).c_str());
+      _f_out->cd();
+    }
   }
 
-  // Reco covariance matrices 
+  // Reco covariance matrices - multisims 
   _f_out->mkdir("Cov");
   _f_out->mkdir("Cov/Reco");
   for(int i_s=0;i_s<kSystMAX;i_s++){
@@ -542,6 +588,33 @@ void HistogramManager::_WriteReco()
     for(size_t i_c=0;i_c<categories.size();i_c++){
       TH2D *C_Cat,*FC_Cat;
       CalcCovMultisim(sys_str.at(i_s)+"_"+categories.at(i_c),_h_Vars_Reco_Cat.at(i_c).at(i_s),C_Cat,FC_Cat);
+      C_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
+      FC_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
+      h_Cov_Cat.at(i_c)->Add(C_Cat);
+      h_FCov_Cat.at(i_c)->Add(FC_Cat);
+      h_Cov_Sys_Cat.at(i_c)->Add(C_Cat);
+      h_FCov_Sys_Cat.at(i_c)->Add(FC_Cat);
+    } 
+    _f_out->cd();
+  } 
+
+  // Reco covariance matrices - unisims 
+  _f_out->mkdir("Cov");
+  _f_out->mkdir("Cov/Reco");
+  for(int i_s=0;i_s<kUnisimMAX;i_s++){
+    _f_out->mkdir(("Cov/Reco/"+unisims_str.at(i_s)).c_str());
+    _f_out->cd(("Cov/Reco/"+unisims_str.at(i_s)).c_str());
+    TH2D *C,*FC;
+    CalcCovUnisim(unisims_str.at(i_s),_h_CV_Reco_Tot,_h_Unisim_Vars_Reco_Tot.at(i_s),C,FC);
+    C->Write("Cov_Tot");
+    FC->Write("FCov_Tot");
+    h_Cov->Add(C);
+    h_FCov->Add(FC);
+    h_Cov_Sys->Add(C);
+    h_FCov_Sys->Add(FC);
+    for(size_t i_c=0;i_c<categories.size();i_c++){
+      TH2D *C_Cat,*FC_Cat;
+      CalcCovUnisim(unisims_str.at(i_s)+"_"+categories.at(i_c),_h_CV_Reco_Cat.at(i_c),_h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s),C_Cat,FC_Cat);
       C_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
       FC_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
       h_Cov_Cat.at(i_c)->Add(C_Cat);
@@ -664,12 +737,9 @@ void HistogramManager::_WriteTruth()
 
   // Apply scaling to the reco if shape only
   if(_shape_only){
-
     double integral = _h_CV_Truth_Signal->Integral() + _h_CV_Truth_Signal->GetBinContent(0) + _h_CV_Truth_Signal->GetBinContent(_nbins_t+1);
-
     _h_CV_Truth_Signal->Scale(1.0/integral);
     h_CV_Truth_Signal_E->Scale(1.0/integral);
-
     for(int i_s=0;i_s<kSystMAX;i_s++){
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         TH1D* h =_h_Vars_Truth_Signal.at(i_s).at(i_u); 
@@ -677,7 +747,11 @@ void HistogramManager::_WriteTruth()
         h->Scale(1.0/integral);
       } 
     }
-
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      TH1D* h =_h_Unisim_Vars_Truth_Signal.at(i_s); 
+      integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_t+1);
+      h->Scale(1.0/integral);
+    }
   } 
 
   if(_divide_by_bin_width){
@@ -687,6 +761,9 @@ void HistogramManager::_WriteTruth()
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         DivideByBinWidth(_h_Vars_Truth_Signal.at(i_s).at(i_u));
       }
+    } 
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      DivideByBinWidth(_h_Unisim_Vars_Truth_Signal.at(i_s));
     } 
   }
  
@@ -706,9 +783,15 @@ void HistogramManager::_WriteTruth()
       }
       _f_out->cd();
     }
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      _f_out->mkdir(("Vars/Truth/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Vars/Truth/"+unisims_str.at(i_s)).c_str());
+      _h_Unisim_Vars_Truth_Signal.at(i_s)->Write("h_Signal");
+      _f_out->cd();
+    }
   }
 
-  // Truth covariance matrices 
+  // Truth covariance matrices - multisim 
   _f_out->mkdir("Cov");
   _f_out->mkdir("Cov/Truth");
   for(int i_s=0;i_s<kSystMAX;i_s++){
@@ -716,6 +799,21 @@ void HistogramManager::_WriteTruth()
     _f_out->cd(("Cov/Truth/"+sys_str.at(i_s)).c_str());
     TH2D *C,*FC;
     CalcCovMultisim(sys_str.at(i_s),_h_Vars_Truth_Signal.at(i_s),C,FC);
+    C->Write("Cov_Signal");
+    FC->Write("FCov_Signal");
+    h_Cov->Add(C);
+    h_FCov->Add(FC);
+    h_Cov_Sys->Add(C);
+    h_FCov_Sys->Add(FC);
+    _f_out->cd();
+  } 
+
+  // Truth covariance matrices - unisim 
+  for(int i_s=0;i_s<kUnisimMAX;i_s++){
+    _f_out->mkdir(("Cov/Truth/"+unisims_str.at(i_s)).c_str());
+    _f_out->cd(("Cov/Truth/"+unisims_str.at(i_s)).c_str());
+    TH2D *C,*FC;
+    CalcCovUnisim(unisims_str.at(i_s),_h_CV_Truth_Signal,_h_Unisim_Vars_Truth_Signal.at(i_s),C,FC);
     C->Write("Cov_Signal");
     FC->Write("FCov_Signal");
     h_Cov->Add(C);
@@ -790,6 +888,23 @@ void HistogramManager::_WriteJoint()
   _f_out->mkdir("CV");
   _f_out->mkdir("CV/Joint");
 
+  if(_divide_by_bin_width){
+    for(int i_t=0;i_t<_nbins_t;i_t++){
+      for(int i_r=0;i_r<_nbins_t;i_r++){
+        double a = _h_tp->GetBinWidth(i_r)*_h_tp_truth->GetBinWidth(i_t);
+        _h_CV_Joint_Signal->SetBinContent(i_t,i_r,_h_CV_Joint_Signal->GetBinContent(i_t,i_r)/a);
+        for(int i_s=0;i_s<kSystMAX;i_s++){
+          for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+            _h_Vars_Joint_Signal.at(i_s).at(i_u)->SetBinContent(i_t,i_r,_h_Vars_Joint_Signal.at(i_s).at(i_u)->GetBinContent(i_t,i_r)/a);
+          }
+        }
+        for(int i_s=0;i_s<kUnisimMAX;i_s++){
+          _h_Unisim_Vars_Joint_Signal.at(i_s)->SetBinContent(i_t,i_r,_h_Unisim_Vars_Joint_Signal.at(i_s)->GetBinContent(i_t,i_r)/a);
+        }
+      }
+    }
+  }
+
   _f_out->cd("CV/Joint");
   _h_CV_Joint_Signal->Write("h_Signal");  
   _f_out->cd();
@@ -804,6 +919,12 @@ void HistogramManager::_WriteJoint()
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         _h_Vars_Joint_Signal.at(i_s).at(i_u)->Write(Form("h_Signal_%i",i_u));
       }
+      _f_out->cd();
+    }
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      _f_out->mkdir(("Vars/Joint/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Vars/Joint/"+unisims_str.at(i_s)).c_str());
+      _h_Unisim_Vars_Joint_Signal.at(i_s)->Write("h_Signal");
       _f_out->cd();
     }
   }

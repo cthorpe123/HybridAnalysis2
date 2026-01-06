@@ -86,6 +86,14 @@ void TruthSysTest(){
       delete h;
     }
 
+    TH2D* h_unisim = (TH2D*)h_FCov->Clone("h_unisim");
+    h_unisim->Reset();
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) h_unisim->Add((TH2D*)f_in_hist->Get(("Cov/Truth/"+unisims_str.at(i_s)+"/FCov_Signal").c_str()));
+    h_FE.push_back((TH1D*)f_in_hist->Get("CV/Truth/h_Signal")->Clone("h_FE_Unisim"));
+    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_unisim->GetBinContent(i,i)));
+    colors.push_back(unisim_color);
+    legs.push_back("Unisim");
+
     h_FE.push_back((TH1D*)f_in_hist->Get("CV/Truth/h_Signal")->Clone("h_FE_MCStat"));
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
     colors.push_back(stat_color[kMCStat]);
@@ -102,6 +110,21 @@ void TruthSysTest(){
     legs.push_back("Total");
 
     pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE.png");
+
+    // Plot comparing the unisim errors to one another
+    colors.clear();
+    legs.clear();
+    h_FE.clear();
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      h_FE.push_back((TH1D*)f_in_hist->Get("CV/Truth/h_Signal")->Clone(("h_FE_"+unisims_str.at(i_s)).c_str()));
+      TH2D* h = (TH2D*)f_in_hist->Get(("Cov/Truth/"+unisims_str.at(i_s)+"/FCov_Signal").c_str()); 
+      for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
+      colors.push_back(i_s+2);
+      legs.push_back(unisims_str.at(i_s));
+      delete h;
+    } 
+    
+    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Unisim.png");
 
   }
 

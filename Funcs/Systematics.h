@@ -19,6 +19,9 @@ const std::vector<int> sys_nuniv = {nuniv_Genie,nuniv_Flux,nuniv_Reint};
 const std::vector<int> sys_color = {kBlue-7,kMagenta-7,kRed-7};
 
 // Unisims
+enum e_unisims {kAxFFCCQEshape,kDecayAngMEC,kNormCCCOH,kNormNCCOH,kThetaDelta2NRad,kTheta_Delta2Npi,kVecFFCCQEshape,kXSecShape_CCMEC,kUnisimMAX};
+const std::vector<std::string> unisims_str = {"AxFFCCQEshape","DecayAngMEC","NormCCCOH","NormNCCOH","ThetaDelta2NRad","Theta_Delta2Npi","VecFFCCQEshape","XSecShape_CCMEC"};
+const int unisim_color = 3; 
 
 // Detvars
 enum e_detvars {kLYAtt,kLYDown,kLYRayleigh,kSCE,kRecomb2/*,kWMX*/,kDetvarMAX};
@@ -178,6 +181,17 @@ std::vector<TH1D*> PadUniverses(TH1D* h,TH2D* h_cov,int nuniv){
 
   return univ;
 
+}
+
+///////////////////////////////////////////////////////////////////////
+// Select the correct unisim weight 
+
+double ChooseUnisimWeight(int u,std::map<std::string,std::vector<double>>* w){
+
+  if(u == kXSecShape_CCMEC) return w->at("XSecShape_CCMEC_UBGenie").at(1); 
+  else if(u < kUnisimMAX) return w->at(unisims_str.at(u)+"_UBGenie").at(0);
+ 
+  return 0;
 }
 
 }

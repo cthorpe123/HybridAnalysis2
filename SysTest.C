@@ -59,6 +59,21 @@ void SysTest(){
       delete h2;
     }
 
+    // Print unisim covariance and fractional covariance
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      plot_dir = "Analysis/"+label+"/Plots/SysTest/Reco/";
+      sub = "Cov/Reco/"+unisims_str.at(i_s)+"/"; 
+      TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_Tot").c_str()));
+      pfs::Draw2DHist(h,plot_dir+"Cov_"+unisims_str.at(i_s)+".png");
+      TH2D* hf = static_cast<TH2D*>(f_in_hist->Get((sub+"FCov_Tot").c_str()));
+      pfs::Draw2DHist(hf,plot_dir+"FCov_"+unisims_str.at(i_s)+".png");
+      TH2D* h2 = CalcCorrelationMatrix(unisims_str.at(i_s),h);
+      pfs::Draw2DHist(h2,plot_dir+"Corr_"+unisims_str.at(i_s)+".png");
+      delete h;
+      delete hf;
+      delete h2;
+    }
+
     plot_dir = "Analysis/"+label+"/Plots/SysTest/Reco/";
     TH2D* h_Cov_MCStat = static_cast<TH2D*>(f_in_hist->Get("Cov/Reco/MCStat/Cov_Tot"));
     pfs::Draw2DHist(h_Cov_MCStat,plot_dir+"Cov_MCStat.png");
@@ -86,6 +101,14 @@ void SysTest(){
       delete h;
     }
 
+    TH2D* h_unisim = (TH2D*)h_FCov->Clone("h_unisim");
+    h_unisim->Reset();
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) h_unisim->Add((TH2D*)f_in_hist->Get(("Cov/Reco/"+unisims_str.at(i_s)+"/FCov_Tot").c_str()));
+    h_FE.push_back((TH1D*)f_in_hist->Get("CV/Reco/h_Tot")->Clone("h_FE_Unisim"));
+    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_unisim->GetBinContent(i,i)));
+    colors.push_back(unisim_color);
+    legs.push_back("Unisim");
+
     h_FE.push_back((TH1D*)f_in_hist->Get("CV/Reco/h_Tot")->Clone("h_FE_MCStat"));
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
     colors.push_back(stat_color[kMCStat]);
@@ -102,6 +125,22 @@ void SysTest(){
     legs.push_back("Total");
 
     pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE.png");
+
+    // Plot comparing the unisim errors to one another
+    colors.clear();
+    legs.clear();
+    h_FE.clear();
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      h_FE.push_back((TH1D*)f_in_hist->Get("CV/Reco/h_Tot")->Clone(("h_FE_"+unisims_str.at(i_s)).c_str()));
+      TH2D* h = (TH2D*)f_in_hist->Get(("Cov/Reco/"+unisims_str.at(i_s)+"/FCov_Tot").c_str()); 
+      for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
+      colors.push_back(i_s+2);
+      legs.push_back(unisims_str.at(i_s));
+      delete h;
+    } 
+    
+    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Unisim.png");
+        
 
   }
 
