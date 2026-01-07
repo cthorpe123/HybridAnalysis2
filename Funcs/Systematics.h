@@ -107,8 +107,8 @@ void CalcCovUnisim(std::string sys,const TH1D* h_CV,TH1D* h_Var,TH2D*& h_Cov,TH2
   h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
   h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
 
-  for(int i_bx=1;i_bx<h_CV->GetNbinsX()+1;i_bx++){
-    for(int i_by=1;i_by<h_CV->GetNbinsX()+1;i_by++){
+  for(int i_bx=0;i_bx<h_CV->GetNbinsX()+2;i_bx++){
+    for(int i_by=0;i_by<h_CV->GetNbinsX()+2;i_by++){
       double x = h_CV->GetBinContent(i_bx);
       double y = h_CV->GetBinContent(i_by);
       double cov = (h_Var->GetBinContent(i_bx) - x)*(h_Var->GetBinContent(i_by) - y);
