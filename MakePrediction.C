@@ -28,23 +28,23 @@ void MakePrediction(){
     TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     // Build the CV prediction
-    TH1D* h_CV_Tot = static_cast<TH1D*>(f_in_hist->Get("CV/Reco/h_Tot"));
+    TH1D* h_CV_Tot = static_cast<TH1D*>(f_in_hist->Get("Reco/CV/h_Tot"));
 
     std::vector<TH1D*> h_CV;
     std::vector<int> fill_colors;
     std::vector<std::string> legs;
     for(size_t i_c=0;i_c<categories.size();i_c++){
       if(i_c == kData) continue;
-      h_CV.push_back(static_cast<TH1D*>(f_in_hist->Get(("CV/Reco/h_"+categories.at(i_c)).c_str())));
+      h_CV.push_back(static_cast<TH1D*>(f_in_hist->Get(("Reco/CV/h_"+categories.at(i_c)).c_str())));
       fill_colors.push_back(cat_colors[i_c]); 
       legs.push_back(categories.at(i_c));
     }
 
-    TH2D* h_Cov = static_cast<TH2D*>(f_in_hist->Get("Cov/Reco/Total/Cov_Tot"));
+    TH2D* h_Cov = static_cast<TH2D*>(f_in_hist->Get("Reco/Cov/Total/Cov_Tot"));
     for(int i=0;i<h_CV_Tot->GetNbinsX()+2;i++) h_CV_Tot->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
 
     // If not blindded, load the data
-    TH1D* h_Data = !blinded ? (TH1D*)f_in_hist->Get("CV/Reco/h_Data") : nullptr; 
+    TH1D* h_Data = !blinded ? (TH1D*)f_in_hist->Get("Reco/CV/h_Data") : nullptr; 
 
     std::string plot_dir = "Analysis/"+label+"/Plots/MakePrediction/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());

@@ -456,10 +456,12 @@ void HistogramManager::Write()
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
   _f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
   _WriteReco();
+
   if(_save_truth){
     _WriteTruth();
     _WriteJoint();
   }
+
   _f_out->Close();
 }
 
@@ -468,6 +470,8 @@ void HistogramManager::Write()
 
 void HistogramManager::_WriteReco()
 {
+  _f_out->mkdir("Reco");
+  _f_out->cd("Reco");
 
   // Make copies of histograms with error equal to bin count instead of sqrt(sum(weights^2)) for data stat error
   TH1D* h_CV_Reco_Tot_E = (TH1D*)_h_CV_Reco_Tot->Clone("_h_CV_Reco_Tot_E");
@@ -540,20 +544,20 @@ void HistogramManager::_WriteReco()
 
  
   // Central value reco histograms
-  _f_out->mkdir("CV");
-  _f_out->mkdir("CV/Reco");
-  _f_out->cd("CV/Reco"); 
+  _f_out->mkdir("Reco/CV");
+  _f_out->cd("Reco/CV");
+  //_f_out->mkdir("CV/Reco");
+  //_f_out->cd("CV/Reco"); 
   _h_CV_Reco_Tot->Write("h_Tot");  
   for(size_t i_c=0;i_c<categories.size();i_c++) _h_CV_Reco_Cat.at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
   _f_out->cd();
 
   // Variation reco histograms
   if(_keep_all){
-    _f_out->mkdir("Vars");
-    _f_out->mkdir("Vars/Reco");
+    _f_out->mkdir("Reco/Vars");
     for(int i_s=0;i_s<kSystMAX;i_s++){
-      _f_out->mkdir(("Vars/Reco/"+sys_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Reco/"+sys_str.at(i_s)).c_str());
+      _f_out->mkdir(("Reco/Vars/"+sys_str.at(i_s)).c_str());
+      _f_out->cd(("Reco/Vars/"+sys_str.at(i_s)).c_str());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         _h_Vars_Reco_Tot.at(i_s).at(i_u)->Write(Form("h_Tot_%i",i_u));
         for(size_t i_c=0;i_c<categories.size();i_c++) 
@@ -562,8 +566,8 @@ void HistogramManager::_WriteReco()
       _f_out->cd();
     }
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      _f_out->mkdir(("Vars/Reco/"+unisims_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Reco/"+unisims_str.at(i_s)).c_str());
+      _f_out->mkdir(("Reco/Vars/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Reco/Vars/"+unisims_str.at(i_s)).c_str());
       _h_Unisim_Vars_Reco_Tot.at(i_s)->Write("h_Tot");
       for(size_t i_c=0;i_c<categories.size();i_c++) 
         _h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s)->Write(("h_"+categories.at(i_c)).c_str());
@@ -572,11 +576,10 @@ void HistogramManager::_WriteReco()
   }
 
   // Reco covariance matrices - multisims 
-  _f_out->mkdir("Cov");
-  _f_out->mkdir("Cov/Reco");
+  _f_out->mkdir("Reco/Cov");
   for(int i_s=0;i_s<kSystMAX;i_s++){
-    _f_out->mkdir(("Cov/Reco/"+sys_str.at(i_s)).c_str());
-    _f_out->cd(("Cov/Reco/"+sys_str.at(i_s)).c_str());
+    _f_out->mkdir(("Reco/Cov/"+sys_str.at(i_s)).c_str());
+    _f_out->cd(("Reco/Cov/"+sys_str.at(i_s)).c_str());
     TH2D *C,*FC;
     CalcCovMultisim(sys_str.at(i_s),_h_Vars_Reco_Tot.at(i_s),C,FC);
     C->Write("Cov_Tot");
@@ -599,11 +602,9 @@ void HistogramManager::_WriteReco()
   } 
 
   // Reco covariance matrices - unisims 
-  _f_out->mkdir("Cov");
-  _f_out->mkdir("Cov/Reco");
   for(int i_s=0;i_s<kUnisimMAX;i_s++){
-    _f_out->mkdir(("Cov/Reco/"+unisims_str.at(i_s)).c_str());
-    _f_out->cd(("Cov/Reco/"+unisims_str.at(i_s)).c_str());
+    _f_out->mkdir(("Reco/Cov/"+unisims_str.at(i_s)).c_str());
+    _f_out->cd(("Reco/Cov/"+unisims_str.at(i_s)).c_str());
     TH2D *C,*FC;
     CalcCovUnisim(unisims_str.at(i_s),_h_CV_Reco_Tot,_h_Unisim_Vars_Reco_Tot.at(i_s),C,FC);
     C->Write("Cov_Tot");
@@ -626,8 +627,8 @@ void HistogramManager::_WriteReco()
   } 
 
   // Reco stat covariance matrices
-  _f_out->mkdir("Cov/Reco/MCStat");
-  _f_out->cd("Cov/Reco/MCStat");
+  _f_out->mkdir("Reco/Cov/MCStat");
+  _f_out->cd("Reco/Cov/MCStat");
   TH2D* h_Cov_MCStat_Reco = Make2DHist("Cov_MCStat",_h_tp);
   TH2D* h_FCov_MCStat_Reco = Make2DHist("FCov_MCStat",_h_tp);
   for(int i=0;i<h_Cov_MCStat_Reco->GetNbinsX()+2;i++){
@@ -653,8 +654,8 @@ void HistogramManager::_WriteReco()
   }  
   _f_out->cd();
 
-  _f_out->mkdir("Cov/Reco/EstDataStat");
-  _f_out->cd("Cov/Reco/EstDataStat");
+  _f_out->mkdir("Reco/Cov/EstDataStat");
+  _f_out->cd("Reco/Cov/EstDataStat");
   TH2D* h_Cov_EstDataStat_Reco = Make2DHist("Cov_EstDataStat",_h_tp);
   TH2D* h_FCov_EstDataStat_Reco = Make2DHist("FCov_EstDataStat",_h_tp);
   for(int i=0;i<h_Cov_EstDataStat_Reco->GetNbinsX()+2;i++){
@@ -676,8 +677,8 @@ void HistogramManager::_WriteReco()
   }  
   _f_out->cd();
 
-  _f_out->mkdir("Cov/Reco/Total");
-  _f_out->cd("Cov/Reco/Total");
+  _f_out->mkdir("Reco/Cov/Total");
+  _f_out->cd("Reco/Cov/Total");
   h_Cov->Write("Cov_Tot");
   h_FCov->Write("FCov_Tot");
   for(size_t i_c=0;i_c<categories.size();i_c++){
@@ -685,8 +686,8 @@ void HistogramManager::_WriteReco()
     h_FCov_Cat.at(i_c)->Write(("FCov_"+categories.at(i_c)).c_str());
   }
   
-  _f_out->mkdir("Cov/Reco/Sys");
-  _f_out->cd("Cov/Reco/Sys");
+  _f_out->mkdir("Reco/Cov/Sys");
+  _f_out->cd("Reco/Cov/Sys");
   h_Cov_Sys->Write("Cov_Tot");
   h_FCov_Sys->Write("FCov_Tot");
   for(size_t i_c=0;i_c<categories.size();i_c++){
@@ -697,14 +698,12 @@ void HistogramManager::_WriteReco()
   _f_out->cd();
 
   if(_h_Special_Reco_Tot.size()){
-    _f_out->mkdir("Special");
-    _f_out->mkdir("Special/Reco");
-    _f_out->cd("Special/Reco");
+    _f_out->mkdir("Reco/Special");
     std::map<std::string,TH1D*>::iterator it;
     for(it=_h_Special_Reco_Tot.begin();it!=_h_Special_Reco_Tot.end();it++){
       std::string name = it->first;
-      _f_out->mkdir(("Special/Reco/"+name).c_str());
-      _f_out->cd(("Special/Reco/"+name).c_str());
+      _f_out->mkdir(("Reco/Special/"+name).c_str());
+      _f_out->cd(("Reco/Special/"+name).c_str());
       _h_Special_Reco_Tot.at(name)->Write("h_Tot");
       for(size_t i_c=0;i_c<categories.size();i_c++)
         _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
@@ -721,8 +720,8 @@ void HistogramManager::_WriteTruth()
 {
 
   _f_out->cd();
-  _f_out->mkdir("CV");
-  _f_out->mkdir("CV/Truth");
+  _f_out->mkdir("Truth");
+  _f_out->cd("Truth");
 
   // Make copies of histograms with error equal to bin count instead of sqrt(sum(weights^2)) for data stat error
   TH1D* h_CV_Truth_Signal_E = (TH1D*)_h_CV_Truth_Signal->Clone("_h_CV_Truth_Signal_E");
@@ -766,37 +765,36 @@ void HistogramManager::_WriteTruth()
       DivideByBinWidth(_h_Unisim_Vars_Truth_Signal.at(i_s));
     } 
   }
- 
-  _f_out->cd("CV/Truth");
+
+  _f_out->mkdir("Truth/CV"); 
+  _f_out->cd("Truth/CV");
   _h_CV_Truth_Signal->Write("h_Signal");  
   _f_out->cd();
 
   // Variation truth histograms
   if(_keep_all){
-    _f_out->mkdir("Vars");
-    _f_out->mkdir("Vars/Truth");
+    _f_out->mkdir("Truth/Vars");
     for(int i_s=0;i_s<kSystMAX;i_s++){
-      _f_out->mkdir(("Vars/Truth/"+sys_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Truth/"+sys_str.at(i_s)).c_str());
+      _f_out->mkdir(("Truth/Vars/"+sys_str.at(i_s)).c_str());
+      _f_out->cd(("Truth/Vars/"+sys_str.at(i_s)).c_str());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         _h_Vars_Truth_Signal.at(i_s).at(i_u)->Write(Form("h_Signal_%i",i_u));
       }
       _f_out->cd();
     }
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      _f_out->mkdir(("Vars/Truth/"+unisims_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Truth/"+unisims_str.at(i_s)).c_str());
+      _f_out->mkdir(("Truth/Vars/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Truth/Vars/"+unisims_str.at(i_s)).c_str());
       _h_Unisim_Vars_Truth_Signal.at(i_s)->Write("h_Signal");
       _f_out->cd();
     }
   }
 
   // Truth covariance matrices - multisim 
-  _f_out->mkdir("Cov");
-  _f_out->mkdir("Cov/Truth");
+  _f_out->mkdir("Truth/Cov");
   for(int i_s=0;i_s<kSystMAX;i_s++){
-    _f_out->mkdir(("Cov/Truth/"+sys_str.at(i_s)).c_str());
-    _f_out->cd(("Cov/Truth/"+sys_str.at(i_s)).c_str());
+    _f_out->mkdir(("Truth/Cov/"+sys_str.at(i_s)).c_str());
+    _f_out->cd(("Truth/Cov/"+sys_str.at(i_s)).c_str());
     TH2D *C,*FC;
     CalcCovMultisim(sys_str.at(i_s),_h_Vars_Truth_Signal.at(i_s),C,FC);
     C->Write("Cov_Signal");
@@ -810,8 +808,8 @@ void HistogramManager::_WriteTruth()
 
   // Truth covariance matrices - unisim 
   for(int i_s=0;i_s<kUnisimMAX;i_s++){
-    _f_out->mkdir(("Cov/Truth/"+unisims_str.at(i_s)).c_str());
-    _f_out->cd(("Cov/Truth/"+unisims_str.at(i_s)).c_str());
+    _f_out->mkdir(("Truth/Cov/"+unisims_str.at(i_s)).c_str());
+    _f_out->cd(("Truth/Cov/"+unisims_str.at(i_s)).c_str());
     TH2D *C,*FC;
     CalcCovUnisim(unisims_str.at(i_s),_h_CV_Truth_Signal,_h_Unisim_Vars_Truth_Signal.at(i_s),C,FC);
     C->Write("Cov_Signal");
@@ -824,8 +822,8 @@ void HistogramManager::_WriteTruth()
   } 
 
   // Truth stat covariance matrices
-  _f_out->mkdir("Cov/Truth/MCStat");
-  _f_out->cd("Cov/Truth/MCStat");
+  _f_out->mkdir("Truth/Cov/MCStat");
+  _f_out->cd("Truth/Cov/MCStat");
   TH2D* h_Cov_MCStat_Truth = Make2DHist("Cov_MCStat",_h_tp_truth);
   TH2D* h_FCov_MCStat_Truth = Make2DHist("FCov_MCStat",_h_tp_truth);
   for(int i=0;i<h_Cov_MCStat_Truth->GetNbinsX()+2;i++){
@@ -838,8 +836,8 @@ void HistogramManager::_WriteTruth()
   h_FCov_MCStat_Truth->Write("FCov_Signal");
 
   _f_out->cd();
-  _f_out->mkdir("Cov/Truth/EstDataStat");
-  _f_out->cd("Cov/Truth/EstDataStat");
+  _f_out->mkdir("Truth/Cov/EstDataStat");
+  _f_out->cd("Truth/Cov/EstDataStat");
   TH2D* h_Cov_EstDataStat_Truth = Make2DHist("Cov_EstDataStat",_h_tp);
   TH2D* h_FCov_EstDataStat_Truth = Make2DHist("FCov_EstDataStat",_h_tp);
   for(int i=0;i<h_Cov_EstDataStat_Truth->GetNbinsX()+2;i++){
@@ -849,34 +847,31 @@ void HistogramManager::_WriteTruth()
   h_Cov_EstDataStat_Truth->Write("Cov_Signal"); 
   h_FCov_EstDataStat_Truth->Write("FCov_Signal");
 
-  _f_out->mkdir("Cov/Truth/Total");
-  _f_out->cd("Cov/Truth/Total");
+  _f_out->mkdir("Truth/Cov/Total");
+  _f_out->cd("Truth/Cov/Total");
   h_Cov->Write("Cov_Signal");
   h_FCov->Write("FCov_Signal");
 
-  _f_out->mkdir("Cov/Truth/Sys");
-  _f_out->cd("Cov/Truth/Sys");
+  _f_out->mkdir("Truth/Cov/Sys");
+  _f_out->cd("Truth/Cov/Sys");
   h_Cov_Sys->Write("Cov_Signal");
   h_FCov_Sys->Write("FCov_Signal");
 
   _f_out->cd();
 
   if(_h_Special_Truth_Signal.size()){
-    _f_out->mkdir("Special");
-    _f_out->mkdir("Special/Truth");
-    _f_out->cd("Special/Truth");
+    _f_out->mkdir("Truth/Special");
+    _f_out->cd("Truth/Special");
     std::map<std::string,TH1D*>::iterator it;
     for(it=_h_Special_Truth_Signal.begin();it!=_h_Special_Truth_Signal.end();it++){
       std::string name = it->first;
-      _f_out->mkdir(("Special/Truth/"+name).c_str());
-      _f_out->cd(("Special/Truth/"+name).c_str());
+      _f_out->mkdir(("Truth/Special/"+name).c_str());
+      _f_out->cd(("Truth/Special/"+name).c_str());
       _h_Special_Truth_Signal.at(name)->Write("h_Signal");
     }
   } 
 
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////
 // Write the truth histograms to file
@@ -885,8 +880,7 @@ void HistogramManager::_WriteJoint()
 {
 
   _f_out->cd();
-  _f_out->mkdir("CV");
-  _f_out->mkdir("CV/Joint");
+  _f_out->mkdir("Joint");
 
   if(_divide_by_bin_width){
     for(int i_t=0;i_t<_nbins_t;i_t++){
@@ -905,44 +899,45 @@ void HistogramManager::_WriteJoint()
     }
   }
 
-  _f_out->cd("CV/Joint");
+  _f_out->mkdir("Joint/CV");
+  _f_out->cd("Joint/CV");
   _h_CV_Joint_Signal->Write("h_Signal");  
   _f_out->cd();
 
   // Variation truth histograms
   if(_keep_all){
-    _f_out->mkdir("Vars");
-    _f_out->mkdir("Vars/Joint");
+    _f_out->mkdir("Joint/Vars");
     for(int i_s=0;i_s<kSystMAX;i_s++){
-      _f_out->mkdir(("Vars/Joint/"+sys_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Joint/"+sys_str.at(i_s)).c_str());
+      _f_out->mkdir(("Joint/Vars/"+sys_str.at(i_s)).c_str());
+      _f_out->cd(("Joint/Vars/"+sys_str.at(i_s)).c_str());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         _h_Vars_Joint_Signal.at(i_s).at(i_u)->Write(Form("h_Signal_%i",i_u));
       }
       _f_out->cd();
     }
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      _f_out->mkdir(("Vars/Joint/"+unisims_str.at(i_s)).c_str());
-      _f_out->cd(("Vars/Joint/"+unisims_str.at(i_s)).c_str());
+      _f_out->mkdir(("Joint/Vars/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Joint/Vars/"+unisims_str.at(i_s)).c_str());
       _h_Unisim_Vars_Joint_Signal.at(i_s)->Write("h_Signal");
       _f_out->cd();
     }
   }
 
   if(_h_Special_Joint_Signal.size()){
-    _f_out->mkdir("Special");
-    _f_out->mkdir("Special/Joint");
-    _f_out->cd("Special/Joint");
+    _f_out->mkdir("Joint/Special");
+    _f_out->cd("Joint/Special");
     std::map<std::string,TH2D*>::iterator it;
     for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
       std::string name = it->first;
-      _f_out->mkdir(("Special/Joint/"+name).c_str());
-      _f_out->cd(("Special/Joint/"+name).c_str());
+      _f_out->mkdir(("Joint/Special/"+name).c_str());
+      _f_out->cd(("Joint/Special/"+name).c_str());
       _h_Special_Joint_Signal.at(name)->Write("h_Signal");
     }
   } 
   
 }
+
+///////////////////////////////////////////////////////////////////////
 
 }
 
