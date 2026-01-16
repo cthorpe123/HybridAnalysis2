@@ -3,6 +3,7 @@
 
 #include "Systematics.h"
 #include "BranchList.h"
+#include "Funcs.h"
 
 using namespace syst;
 
@@ -704,9 +705,15 @@ void HistogramManager::_WriteReco()
       std::string name = it->first;
       _f_out->mkdir(("Reco/Special/"+name).c_str());
       _f_out->cd(("Reco/Special/"+name).c_str());
+      double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
+      if(_shape_only) _h_Special_Reco_Tot.at(name)->Scale(1.0/integral);
+      if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Reco_Tot.at(name));
       _h_Special_Reco_Tot.at(name)->Write("h_Tot");
-      for(size_t i_c=0;i_c<categories.size();i_c++)
+      for(size_t i_c=0;i_c<categories.size();i_c++){
+        if(_shape_only) _h_Special_Reco_Cat.at(name).at(i_c)->Scale(1.0/integral);
+        if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Reco_Cat.at(name).at(i_c));
         _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
+      }
     }
     _f_out->cd();
   } 
@@ -867,6 +874,9 @@ void HistogramManager::_WriteTruth()
       std::string name = it->first;
       _f_out->mkdir(("Truth/Special/"+name).c_str());
       _f_out->cd(("Truth/Special/"+name).c_str());
+      double integral = _h_Special_Truth_Signal.at(name)->Integral() + _h_Special_Truth_Signal.at(name)->GetBinContent(0) + _h_Special_Truth_Signal.at(name)->GetBinContent(_nbins_t+1);
+      if(_shape_only) _h_Special_Truth_Signal.at(name)->Scale(1.0/integral);
+      if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Truth_Signal.at(name));
       _h_Special_Truth_Signal.at(name)->Write("h_Signal");
     }
   } 
@@ -879,12 +889,9 @@ void HistogramManager::_WriteTruth()
 void HistogramManager::_WriteJoint()
 {
 
-  _f_out->cd();
-  _f_out->mkdir("Joint");
-
   if(_divide_by_bin_width){
-    for(int i_t=0;i_t<_nbins_t;i_t++){
-      for(int i_r=0;i_r<_nbins_t;i_r++){
+    for(int i_t=1;i_t<_nbins_t+1;i_t++){
+      for(int i_r=1;i_r<_nbins_t+1;i_r++){
         double a = _h_tp->GetBinWidth(i_r)*_h_tp_truth->GetBinWidth(i_t);
         _h_CV_Joint_Signal->SetBinContent(i_t,i_r,_h_CV_Joint_Signal->GetBinContent(i_t,i_r)/a);
         for(int i_s=0;i_s<kSystMAX;i_s++){
@@ -895,9 +902,53 @@ void HistogramManager::_WriteJoint()
         for(int i_s=0;i_s<kUnisimMAX;i_s++){
           _h_Unisim_Vars_Joint_Signal.at(i_s)->SetBinContent(i_t,i_r,_h_Unisim_Vars_Joint_Signal.at(i_s)->GetBinContent(i_t,i_r)/a);
         }
+
+        std::map<std::string,TH2D*>::iterator it;
+        for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
+          std::string name = it->first;
+          _h_Special_Joint_Signal.at(name)->SetBinContent(i_t,i_r,_h_Special_Joint_Signal.at(name)->GetBinContent(i_t,i_r)/a);
+        }
+
       }
     }
+
   }
+
+  _f_out->cd();
+  _f_out->mkdir("Response");
+  _f_out->mkdir("Response/CV");
+  _f_out->cd("Response/CV");
+  TH2D* h_CV_Response_Signal = (TH2D*)_h_CV_Joint_Signal->Clone("h_CV_Response_Signal");  
+  NormaliseResponse(_h_CV_Truth_Signal,h_CV_Response_Signal); 
+  h_CV_Response_Signal->Write("h_Signal");
+
+  if(_keep_all){
+    _f_out->mkdir("Response/Vars");
+    for(int i_s=0;i_s<kSystMAX;i_s++){
+      _f_out->mkdir(("Response/Vars/"+sys_str.at(i_s)).c_str());
+      _f_out->cd(("Response/Vars/"+sys_str.at(i_s)).c_str());
+      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+        TH2D* h = (TH2D*)_h_Vars_Joint_Signal.at(i_s).at(i_u)->Clone("h_CV_Response_Signal");  
+        NormaliseResponse(_h_Vars_Truth_Signal.at(i_s).at(i_u),h);
+        h->Write(Form("h_Signal_%i",i_u));
+      }
+      _f_out->cd();
+    }
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      _f_out->mkdir(("Response/Vars/"+unisims_str.at(i_s)).c_str());
+      _f_out->cd(("Response/Vars/"+unisims_str.at(i_s)).c_str());
+      TH2D* h = (TH2D*)_h_Unisim_Vars_Joint_Signal.at(i_s)->Clone("h_Signal");
+      NormaliseResponse(_h_Unisim_Vars_Truth_Signal.at(i_s),h);
+      h->Write("h_Signal");
+      _f_out->cd();
+    }
+  }
+
+  
+
+
+  _f_out->cd();
+  _f_out->mkdir("Joint");
 
   _f_out->mkdir("Joint/CV");
   _f_out->cd("Joint/CV");
