@@ -246,6 +246,7 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
 ///////////////////////////////////////////////////////////////////////
 // Given the true dist and joint truth/reco dist for selected events
 // renormalise the 2D hist to give the response 
+
 TH1D* Multiply(TH1D* h_true,TH2D* h_res){
 
   std::vector<double> bins;

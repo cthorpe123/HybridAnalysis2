@@ -13,8 +13,13 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = true;
-  bool load_syst = false;
+  is_dirt = false;
+  bool load_syst = true;
+
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  //const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
+  //double POT_weight = 1.0; 
+  //int detvar_univ = -1; // which detvar are you looking at
 
   // Main run4b files
   const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
@@ -23,9 +28,9 @@ void Filter(){
   //double POT_weight = 1.0; 
   //int detvar_univ = -1; // which detvar are you looking at
 
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
-  //double POT_weight = 1.332E+20/7.88166e+20; 
-  //int detvar_univ = -1; // which detvar are you looking at
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  double POT_weight = 1.332E+20/7.88166e+20; 
+  int detvar_univ = -1; // which detvar are you looking at
 
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //double POT_weight = 31582916.0/88445969.0;
@@ -41,9 +46,9 @@ void Filter(){
   //double POT_weight = 1.332E+20/7.88166e+20; 
   //int detvar_univ = -1; // which detvar are you looking at
   
-  const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
-  double POT_weight = 1.332E+20/7.88166e+20; 
-  int detvar_univ = -1; // which detvar are you looking at
+  //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";
+  //double POT_weight = 1.332E+20/7.88166e+20; 
+  //int detvar_univ = -1; // which detvar are you looking at
 
   //const std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";
   //double POT_weight = 1.332E+20/7.88166e+20; 

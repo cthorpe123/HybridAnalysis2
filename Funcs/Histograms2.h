@@ -240,7 +240,7 @@ void HistogramManager::_SetupJointHistograms()
   std::string t_title = _h_tp_truth->GetXaxis()->GetTitle();
   std::string r_title = _h_tp->GetXaxis()->GetTitle();
   std::string title = ";"+t_title+";"+r_title+";";
-  _h_CV_Joint_Signal = new TH2D("h_CV_Joint_Signal",title.c_str(),_nbins_t,&_bin_edges_t[0],_nbins_r,&_bin_edges_r[0]);
+  _h_CV_Joint_Signal = new TH2D(("h_CV_Joint_Signal_"+_label).c_str(),title.c_str(),_nbins_t,&_bin_edges_t[0],_nbins_r,&_bin_edges_r[0]);
   _h_CV_Joint_Signal->Sumw2();
 
   for(int i_s=0;i_s<kSystMAX;i_s++){

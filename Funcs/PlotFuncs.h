@@ -52,10 +52,12 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   c2->cd();
   p_middle->Draw();
   p_middle->SetRightMargin(0.03);
+  p_middle->SetLeftMargin(0.11);
+  if(draw_u && draw_o) p_middle->SetLeftMargin(0.13);
   if(draw_u){
     p_U->Draw();
-    p_U->SetLeftMargin(0.37);
-    p_U->SetRightMargin(0.04);
+    p_U->SetLeftMargin(0.44);
+    p_U->SetRightMargin(0.1);
     p_U->cd();
     hs_U->Draw("nostack HIST");       
     //hs_U->SetMaximum(GetMax(h_v_Tot_U)*1.1);
@@ -63,13 +65,13 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
     hs_U->GetYaxis()->SetTitleSize(0.1);
     hs_U->GetYaxis()->SetLabelSize(0.11);
     hs_U->GetYaxis()->SetLabelOffset(0.04);
-    hs_U->GetYaxis()->SetTitleOffset(1.8);
+    //hs_U->GetYaxis()->SetTitleOffset(1.8);
     c2->cd();
   }
   if(draw_o){
     p_O->Draw(); 
-    p_O->SetRightMargin(0.37);
-    p_O->SetLeftMargin(0.04);
+    p_O->SetRightMargin(0.44);
+    p_O->SetLeftMargin(0.1);
     p_O->cd();
     hs_O->Draw("nostack HIST Y+");       
     //hs_O->SetMaximum(GetMax(h_v_Tot_O)*1.1);
@@ -150,32 +152,34 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   c2->cd();
   p_middle->Draw();
   p_middle->SetRightMargin(0.03);
+  p_middle->SetLeftMargin(0.11);
+  if(draw_u && draw_o) p_middle->SetLeftMargin(0.13);
   if(draw_u){
     p_U->Draw();
-    p_U->SetLeftMargin(0.37);
-    p_U->SetRightMargin(0.04);
+    p_U->SetLeftMargin(0.44);
+    p_U->SetRightMargin(0.1);
     p_U->cd();
     hs_U->Draw("HIST");       
     h_tot_U->Draw("same e2");
     if(h_data != nullptr) h_data_U->Draw("same e1");
     hs_U->SetMaximum(GetMax(h_tot_U)*1.1);
     hs_U->GetXaxis()->SetLabelSize(0.16);
-    hs_U->GetYaxis()->SetTitleSize(0.1);
+    hs_U->GetYaxis()->SetTitleSize(0.11);
     hs_U->GetYaxis()->SetLabelSize(0.11);
     hs_U->GetYaxis()->SetLabelOffset(0.04);
-    hs_U->GetYaxis()->SetTitleOffset(1.8);
+    //hs_U->GetYaxis()->SetTitleOffset(1.8);
     c2->cd();
   }
   if(draw_o){
     p_O->Draw(); 
-    p_O->SetRightMargin(0.37);
-    p_O->SetLeftMargin(0.04);
+    p_O->SetRightMargin(0.44);
+    p_O->SetLeftMargin(0.1);
     p_O->cd();
     hs_O->Draw("HIST Y+");       
     h_tot_O->Draw("same e2");
     if(h_data != nullptr) h_data_O->Draw("same e1");
     hs_O->SetMaximum(GetMax(h_tot_O)*1.1);
-    hs_O->GetYaxis()->SetTitleSize(0.1);
+    hs_O->GetYaxis()->SetTitleSize(0.11);
     hs_O->GetXaxis()->SetLabelSize(0.16);
     hs_O->GetYaxis()->SetTitleOffset(1.8);
     hs_O->GetYaxis()->SetLabelSize(0.11);

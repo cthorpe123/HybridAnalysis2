@@ -16,10 +16,13 @@ void MakePrediction(){
 
   bool add_detvars = false;
   bool blinded = true;
-  bool draw_underflow = false;
+  bool draw_underflow = true;
   bool draw_overflow = false;
 
-  std::vector<std::string> label_v = {"MuonMom"};
+  //std::vector<std::string> label_v = {"MuonMom","MuonCosTheta","ProtonE"};
+  //for(int i_e=0;i_e<ee::kMAX;i_e++) label_v.push_back(ee::estimators_str.at(i_e));
+
+  std::vector<std::string> label_v = {"PionE","ShowerE","W"};
 
   for(size_t i_f=0;i_f<label_v.size();i_f++){
     std::string label = label_v.at(i_f);

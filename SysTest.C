@@ -14,10 +14,13 @@ using namespace syst;
 
 void SysTest(){
 
-  std::vector<std::string> label_v = {"MuonMom"};
+  std::vector<std::string> label_v = {"MuonMom","MuonCosTheta","ProtonE"};
+  for(int i_e=0;i_e<ee::kMAX;i_e++) label_v.push_back(ee::estimators_str.at(i_e));
+
+  //std::vector<std::string> label_v = {"PionE","ShowerE","W"};
 
   bool draw_underflow = false;
-  bool draw_overflow = true;
+  bool draw_overflow = false;
 
   bool add_detvars = false;
   bool blinded = true;

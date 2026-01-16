@@ -47,8 +47,8 @@ void CalcW2(){
     h_RecoW_v.push_back(new TH1D(("h_RecoW_"+meth).c_str(),";Reco W (GeV);Events",40,0.9,5.0));
     h_TrueW_RecoW_v.push_back(new TH2D(("h_TrueW_RecoW_"+meth).c_str(),";True W (GeV);Reco W (GeV);Events",40,0.9,5.0,40,0.9,5.0));
     h_TrueW_RecoW_AltBin_v.push_back(new TH2D(("h_TrueW_RecoW_AltBin_"+meth).c_str(),";True W (GeV);Reco W (GeV);Events",40,0.9,5.0,400,0.0,10.0));
-    h_ErrorW_v.push_back(new TH1D(("h_ErrorW_"+meth).c_str(),";(Reco - True)/True;Events",51,-2,2));
-    h_ErrorW_HighW_v.push_back(new TH1D(("h_ErrorW_HighW_"+meth).c_str(),";(Reco - True)/True;Events",51,-2,2));
+    h_ErrorW_v.push_back(new TH1D(("h_ErrorW_"+meth).c_str(),";(Reco - True)/True;Events",51,-1,2));
+    h_ErrorW_HighW_v.push_back(new TH1D(("h_ErrorW_HighW_"+meth).c_str(),";(Reco - True)/True;Events",51,-1,2));
     h_ShowerMass_v.push_back(new TH1D(("h_ShowerMass_"+meth).c_str(),";Shower W (GeV);Events",40,-0.01,0.5));
     h_PiZero_ErrorW_v.push_back(new TH1D(("h_PiZero_ErrorW_"+meth).c_str(),";(Reco - True)/True;Events",51,-2,2));
 
@@ -71,7 +71,7 @@ void CalcW2(){
 
     std::vector<bool> sel_v = {sel_pd,sel_wc,sel_lt};    
     std::vector<double> W_v = {W_pd,W_wc,W_lt};    
-    std::vector<TLorentzVector*> shower_p4_v = {shower_p4_pd,shower_p4_wc,shower_p4_lt};
+    std::vector<TLorentzVector*> gamma_p4_v = {gamma_p4_pd,gamma_p4_wc,gamma_p4_lt};
 
     for(int i=0;i<kMethMAX;i++){
       if(!sel_v.at(i)) continue;
@@ -81,7 +81,7 @@ void CalcW2(){
         h_TrueW_RecoW_AltBin_v.at(i)->Fill(W_t,W_v.at(i));
         h_ErrorW_v.at(i)->Fill((W_v.at(i) - W_t)/W_t);
         if(W_t > 1.0) h_ErrorW_HighW_v.at(i)->Fill((W_v.at(i) - W_t)/W_t);
-        h_ShowerMass_v.at(i)->Fill(shower_p4_v.at(i)->M());
+        h_ShowerMass_v.at(i)->Fill(gamma_p4_v.at(i)->M());
         if(npi0_t == 1) h_PiZero_ErrorW_v.at(i)->Fill((W_v.at(i) - W_t)/W_t);   
         h_Selected_v.at(i)->Fill(W_t);
         if(abs(W_v.at(i) - W_t)/W_t < FOM_Cut) h_SelectedCorr_v.at(i)->Fill(W_t);
