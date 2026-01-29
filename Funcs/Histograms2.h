@@ -27,7 +27,6 @@ class HistogramManager {
     void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight);
     void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight);
 
-    void DBBW() { _divide_by_bin_width = true; }
     void ShapeOnly() { _shape_only = true; }
     void KeepOU(){ _keep_overflow_underflow_ = true; }
     void KeepAll(){ _keep_all = true; }
@@ -38,7 +37,6 @@ class HistogramManager {
 
     const std::string _label;
     const bool _save_truth;
-    bool _divide_by_bin_width = false;
     bool _shape_only = false; 
     bool _keep_overflow_underflow_ = false;
     bool _keep_all = false;
@@ -103,13 +101,14 @@ HistogramManager::HistogramManager(std::string label,bool save_truth) : _label(l
 void HistogramManager::LoadTemplate()
 {
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
-  _h_tp = (TH1D*)f_tp->Get(("h_template_"+_label).c_str());
+  _h_tp = (TH1D*)f_tp->Get("h_template");
   _h_tp->SetDirectory(0);
   f_tp->Close();
+  _h_tp->SetName(("h_template_"+_label).c_str()); 
 
   if(_save_truth){ 
     TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
-    _h_tp_truth = (TH1D*)f_tp_truth->Get(("h_template_"+_label).c_str());
+    _h_tp_truth = (TH1D*)f_tp_truth->Get("h_template");
     _h_tp_truth->SetDirectory(0);
     f_tp_truth->Close();
     _h_tp_truth->SetName(("h_template_truth_"+_label).c_str()); 
@@ -268,7 +267,7 @@ void HistogramManager::AddSpecialUniv(std::string name)
     _h_Special_Reco_Cat.at(name).push_back((TH1D*)_h_tp->Clone(("h_Special_Reco_"+categories.at(i_c)+"_"+name+"_"+_label).c_str()));
  
   if(_save_truth){
-    _h_Special_Truth_Signal[name] = (TH1D*)_h_tp->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
+    _h_Special_Truth_Signal[name] = (TH1D*)_h_tp_truth->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
     _h_Special_Joint_Signal[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
   }
  
@@ -402,6 +401,8 @@ void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,doub
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
+
   _h_Special_Truth_Signal.at(name)->Fill(var_t,POT_weight*weightSplineTimesTune*weight);
 
 }
@@ -525,23 +526,6 @@ void HistogramManager::_WriteReco()
       }
     }
   } 
-
-  if(_divide_by_bin_width){
-    DivideByBinWidth(_h_CV_Reco_Tot);
-    DivideByBinWidth(h_CV_Reco_Tot_E);
-    for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_CV_Reco_Cat.at(i_c));
-    for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(h_CV_Reco_Cat_E.at(i_c));
-    for(size_t i_s=0;i_s<kSystMAX;i_s++){
-      for(size_t i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        DivideByBinWidth(_h_Vars_Reco_Tot.at(i_s).at(i_u));
-        for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_Vars_Reco_Cat.at(i_c).at(i_s).at(i_u));
-      }
-    } 
-    for(size_t i_s=0;i_s<kUnisimMAX;i_s++){
-      DivideByBinWidth(_h_Unisim_Vars_Reco_Tot.at(i_s));
-      for(size_t i_c=0;i_c<categories.size();i_c++) DivideByBinWidth(_h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s));
-    } 
-  }
 
  
   // Central value reco histograms
@@ -707,11 +691,9 @@ void HistogramManager::_WriteReco()
       _f_out->cd(("Reco/Special/"+name).c_str());
       double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
       if(_shape_only) _h_Special_Reco_Tot.at(name)->Scale(1.0/integral);
-      if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Reco_Tot.at(name));
       _h_Special_Reco_Tot.at(name)->Write("h_Tot");
       for(size_t i_c=0;i_c<categories.size();i_c++){
         if(_shape_only) _h_Special_Reco_Cat.at(name).at(i_c)->Scale(1.0/integral);
-        if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Reco_Cat.at(name).at(i_c));
         _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
       }
     }
@@ -759,19 +741,6 @@ void HistogramManager::_WriteTruth()
       h->Scale(1.0/integral);
     }
   } 
-
-  if(_divide_by_bin_width){
-    DivideByBinWidth(_h_CV_Truth_Signal);
-    DivideByBinWidth(h_CV_Truth_Signal_E);
-    for(int i_s=0;i_s<kSystMAX;i_s++){
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        DivideByBinWidth(_h_Vars_Truth_Signal.at(i_s).at(i_u));
-      }
-    } 
-    for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      DivideByBinWidth(_h_Unisim_Vars_Truth_Signal.at(i_s));
-    } 
-  }
 
   _f_out->mkdir("Truth/CV"); 
   _f_out->cd("Truth/CV");
@@ -876,7 +845,6 @@ void HistogramManager::_WriteTruth()
       _f_out->cd(("Truth/Special/"+name).c_str());
       double integral = _h_Special_Truth_Signal.at(name)->Integral() + _h_Special_Truth_Signal.at(name)->GetBinContent(0) + _h_Special_Truth_Signal.at(name)->GetBinContent(_nbins_t+1);
       if(_shape_only) _h_Special_Truth_Signal.at(name)->Scale(1.0/integral);
-      if(_divide_by_bin_width) DivideByBinWidth(_h_Special_Truth_Signal.at(name));
       _h_Special_Truth_Signal.at(name)->Write("h_Signal");
     }
   } 
@@ -889,37 +857,13 @@ void HistogramManager::_WriteTruth()
 void HistogramManager::_WriteJoint()
 {
 
-  if(_divide_by_bin_width){
-    for(int i_t=1;i_t<_nbins_t+1;i_t++){
-      for(int i_r=1;i_r<_nbins_t+1;i_r++){
-        double a = _h_tp->GetBinWidth(i_r)*_h_tp_truth->GetBinWidth(i_t);
-        _h_CV_Joint_Signal->SetBinContent(i_t,i_r,_h_CV_Joint_Signal->GetBinContent(i_t,i_r)/a);
-        for(int i_s=0;i_s<kSystMAX;i_s++){
-          for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-            _h_Vars_Joint_Signal.at(i_s).at(i_u)->SetBinContent(i_t,i_r,_h_Vars_Joint_Signal.at(i_s).at(i_u)->GetBinContent(i_t,i_r)/a);
-          }
-        }
-        for(int i_s=0;i_s<kUnisimMAX;i_s++){
-          _h_Unisim_Vars_Joint_Signal.at(i_s)->SetBinContent(i_t,i_r,_h_Unisim_Vars_Joint_Signal.at(i_s)->GetBinContent(i_t,i_r)/a);
-        }
-
-        std::map<std::string,TH2D*>::iterator it;
-        for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
-          std::string name = it->first;
-          _h_Special_Joint_Signal.at(name)->SetBinContent(i_t,i_r,_h_Special_Joint_Signal.at(name)->GetBinContent(i_t,i_r)/a);
-        }
-
-      }
-    }
-
-  }
-
   _f_out->cd();
   _f_out->mkdir("Response");
   _f_out->mkdir("Response/CV");
   _f_out->cd("Response/CV");
   TH2D* h_CV_Response_Signal = (TH2D*)_h_CV_Joint_Signal->Clone("h_CV_Response_Signal");  
   NormaliseResponse(_h_CV_Truth_Signal,h_CV_Response_Signal); 
+
   h_CV_Response_Signal->Write("h_Signal");
 
   if(_keep_all){
@@ -944,8 +888,21 @@ void HistogramManager::_WriteJoint()
     }
   }
 
-  
-
+  if(_h_Special_Joint_Signal.size()){
+    _f_out->mkdir("Response/Special");
+    std::map<std::string,TH2D*>::iterator it;
+    for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
+      std::string name = it->first;
+      _f_out->mkdir(("Response/Special/"+name).c_str());
+      _f_out->cd(("Response/Special/"+name).c_str());
+      TH2D* h = (TH2D*)_h_Special_Joint_Signal.at(name)->Clone("h_Signal");
+      //for(int i=1;i<_h_Special_Truth_Signal.at(name)->GetNbinsX()+1;i++) 
+      //  std::cout << _h_Special_Truth_Signal.at(name)->GetBinContent(i) << std::endl;
+      NormaliseResponse(_h_Special_Truth_Signal.at(name),h);
+      h->Write("h_Signal");
+      _f_out->cd();
+    }
+  } 
 
   _f_out->cd();
   _f_out->mkdir("Joint");
@@ -976,13 +933,14 @@ void HistogramManager::_WriteJoint()
 
   if(_h_Special_Joint_Signal.size()){
     _f_out->mkdir("Joint/Special");
-    _f_out->cd("Joint/Special");
+    //_f_out->cd("Joint/Special");
     std::map<std::string,TH2D*>::iterator it;
     for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
       std::string name = it->first;
       _f_out->mkdir(("Joint/Special/"+name).c_str());
       _f_out->cd(("Joint/Special/"+name).c_str());
       _h_Special_Joint_Signal.at(name)->Write("h_Signal");
+      _f_out->cd();
     }
   } 
   

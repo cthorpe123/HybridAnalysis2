@@ -100,7 +100,7 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
 
 void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name){
 
-  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";Events").c_str());
+  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot->GetXaxis()->GetTitle())+";Events").c_str());
   THStack* hs_U = new THStack("hs_U",";;Events");
   THStack* hs_O = new THStack("hs_O",";;Events");
   TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);

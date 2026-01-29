@@ -166,7 +166,7 @@ void MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double 
   TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",bin_edges.size()-1,&bin_edges[0]); 
   h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
   h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
-  h_template->Write();
+  h_template->Write("h_template");
   f_out->Close();
 
 }
@@ -256,10 +256,11 @@ TH1D* Multiply(TH1D* h_true,TH2D* h_res){
     
   TH1D* h_reco = new TH1D((string(h_true->GetName())+"_folded").c_str(),"",n_bins,bins_a);
 
-  for(int j=1;j<n_bins;j++){
+  for(int j=0;j<n_bins+2;j++){
     double content = 0.0;
-    for(int i=1;i<h_true->GetNbinsX()+1;i++)
+    for(int i=0;i<h_true->GetNbinsX()+2;i++){
       content += h_true->GetBinContent(i)*h_res->GetBinContent(i,j);
+    }
     h_reco->SetBinContent(j,content);
   }
 
