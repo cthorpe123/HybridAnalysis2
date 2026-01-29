@@ -247,6 +247,7 @@ void HistogramManager::_SetupJointHistograms()
     _h_Vars_Joint_Signal.push_back(std::vector<TH2D*>());
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
       _h_Vars_Joint_Signal.back().push_back((TH2D*)_h_CV_Joint_Signal->Clone(("h_Vars_Joint_Signal_"+sys_str.at(i_s)+"_"+std::to_string(i_u)+"_"+_label).c_str()));
+      _h_Vars_Joint_Signal.back().back()->Sumw2();
     }
   }
 
@@ -262,13 +263,19 @@ void HistogramManager::AddSpecialUniv(std::string name)
 {
 
   _h_Special_Reco_Tot[name] = (TH1D*)_h_tp->Clone(("h_Special_Reco_Tot_"+name+"_"+_label).c_str()); 
+  _h_Special_Reco_Tot[name]->Sumw2();
+
   _h_Special_Reco_Cat[name] = std::vector<TH1D*>();
-  for(size_t i_c=0;i_c<categories.size();i_c++)
+  for(size_t i_c=0;i_c<categories.size();i_c++){
     _h_Special_Reco_Cat.at(name).push_back((TH1D*)_h_tp->Clone(("h_Special_Reco_"+categories.at(i_c)+"_"+name+"_"+_label).c_str()));
- 
+    _h_Special_Reco_Cat.at(name).back()->Sumw2();
+  } 
+
   if(_save_truth){
     _h_Special_Truth_Signal[name] = (TH1D*)_h_tp_truth->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
+    _h_Special_Truth_Signal[name]->Sumw2(); 
     _h_Special_Joint_Signal[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
+    _h_Special_Joint_Signal[name]->Sumw2(); 
   }
  
 }

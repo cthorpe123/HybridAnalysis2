@@ -205,16 +205,16 @@ double GetMax(const TH1D* h){
 ///////////////////////////////////////////////////////////////////////
 // Unroll a 2D dist into one large 1D dist
 
-TH1D* Unroll2DDist(TH2D* h,std::vector<std::pair<int,int>> skip={}){
+TH1D* Unroll2DDist(TH2D* h,std::string name,std::vector<std::pair<int,int>> skip={}){
 
   int nbins_x = h->GetNbinsX();
   int nbins_y = h->GetNbinsY();
-  std::string name = string(h->GetName())+"_unroll";
-  TH1D* h_unroll = new TH1D(name.c_str(),"",nbins_x*nbins_y-skip.size(),0.5,nbins_x*nbins_y-skip.size()+0.5);
+  int nbins = (nbins_x+2)*(nbins_y+2)-skip.size();
+  TH1D* h_unroll = new TH1D(name.c_str(),"",nbins,0.5,nbins+0.5);
 
   int ctr = 1;
-  for(int i=1;i<nbins_x+1;i++){
-    for(int j=1;j<nbins_y+1;j++){
+  for(int i=0;i<nbins_x+2;i++){
+    for(int j=0;j<nbins_y+2;j++){
       if(std::find(skip.begin(),skip.end(),std::make_pair(i,j)) != skip.end()) continue;
       h_unroll->SetBinContent(ctr,h->GetBinContent(i,j));
       h_unroll->SetBinError(ctr,h->GetBinError(i,j));
