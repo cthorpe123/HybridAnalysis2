@@ -13,8 +13,8 @@ void Filter(){
 
   is_data = false;
   is_ext = false;
-  is_dirt = false;
-  bool load_syst = true;
+  is_dirt = true;
+  bool load_syst = false;
 
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   //const std::string file = "Merged_larpid_patch_smart_patch_test10_full_more.root";
@@ -28,17 +28,17 @@ void Filter(){
   //double POT_weight = 1.0; 
   //int detvar_univ = -1; // which detvar are you looking at
 
-  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
-  double POT_weight = 1.332E+20/7.88166e+20; 
-  int detvar_univ = -1; // which detvar are you looking at
+  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  //double POT_weight = 1.332E+20/7.88166e+20; 
+  //int detvar_univ = -1; // which detvar are you looking at
 
   //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";
   //double POT_weight = 31582916.0/88445969.0;
   //int detvar_univ = -1; // which detvar are you looking at
 
-  //const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
-  //double POT_weight = 1.332E+20/3.06E+20;
-  //int detvar_univ = -1; // which detvar are you looking at
+  const std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";
+  double POT_weight = 1.332E+20/3.06E+20;
+  int detvar_univ = -1; // which detvar are you looking at
 
 
   // Runs 4c -5, give same pot weight as run 4b for now so we can use to pad statistics
@@ -318,16 +318,16 @@ void Filter(){
       nu_vtx_t = TVector3(true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z);
 
       if(mc_pdg->size() && abs(mc_pdg->at(0)) == 13) muon_mom_t = TVector3(mc_px->at(0),mc_py->at(0),mc_pz->at(0));
-      has_muon_t = mc_pdg->size() && abs(mc_pdg->at(0)) == 13 && muon_mom_t.Mag() > 0.1;
+      has_muon_t = mc_pdg->size() && abs(mc_pdg->at(0)) == 13 && muon_mom_t.Mag() > thresholds.at(13).first;
       muon_contained_t = has_muon_t && isContained(mc_endx->at(0),mc_endy->at(0),mc_endz->at(0));
 
       for(size_t i_p=0;i_p<mc_pdg->size();i_p++){
         TVector3 mom(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p));
-        if(mc_pdg->at(i_p) == 2212 && mom.Mag() > 0.3){
+        if(mc_pdg->at(i_p) == 2212 && mom.Mag() > thresholds.at(2212).first){
           nprot_t++;
           proton_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
         }
-        if(abs(mc_pdg->at(i_p)) == 211 && mom.Mag() > 0.1){
+        if(abs(mc_pdg->at(i_p)) == 211 && mom.Mag() > thresholds.at(211).first){
           npi_t++;
           pion_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
         }
@@ -345,7 +345,7 @@ void Filter(){
 
       for(int i=0;i<truth_Ntrack;i++){
         if(truth_pdg[i] == 22 && std::find(pi0_ids.begin(),pi0_ids.end(),truth_mother[i]) != pi0_ids.end()){
-          if(TVector3(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2]).Mag() > 0.025){
+          if(TVector3(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2]).Mag() > thresholds.at(22).first){
             gamma_p4_t += TLorentzVector(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2],truth_startMomentum[i][3]);               
             nsh_t++;
           }
@@ -353,7 +353,7 @@ void Filter(){
       }
 
       W_t = (proton_p4_t + pion_p4_t + gamma_p4_t).M();
-      is_signal_t = abs(nu_pdg) == 14 && ccnc == 0 && in_tpc_t && muon_mom_t.Mag() > 0.1 && nprot_t > 0; 
+      is_signal_t = abs(nu_pdg) == 14 && ccnc == 0 && in_tpc_t && muon_mom_t.Mag() > thresholds.at(13).first && nprot_t > 0; 
 
       // Energy estimators
       if(is_signal_t){
@@ -375,7 +375,7 @@ void Filter(){
       muon_mom_pd = TVector3(trk_range_muon_mom_v->at(pd_muon)*trk_dir_x_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_y_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_z_v->at(pd_muon));
       muon_mom_mcs_pd = TVector3(trk_mcs_muon_mom_v->at(pd_muon)*trk_dir_x_v->at(pd_muon),trk_mcs_muon_mom_v->at(pd_muon)*trk_dir_y_v->at(pd_muon),trk_mcs_muon_mom_v->at(pd_muon)*trk_dir_z_v->at(pd_muon));
     }
-    has_muon_pd = pd_muon != -1 && muon_mom_pd.Mag() > 0.1;
+    has_muon_pd = pd_muon != -1 && muon_mom_pd.Mag() > thresholds.at(13).first;
     muon_contained_pd = has_muon_pd && isContained(trk_end_x_v->at(pd_muon),trk_end_y_v->at(pd_muon),trk_end_z_v->at(pd_muon));
 
     std::vector<TLorentzVector> pd_proton_v = pd::RecoProton4MomV(trk_llr_pid_score_v,trk_len_v,trk_dir_x_v,trk_dir_y_v,trk_dir_z_v,pd_muon);
@@ -406,7 +406,7 @@ void Filter(){
       muon_mom_mcs_wc = muon_mom_wc*(mcs_emu_MCS/muon_mom_wc.Mag());
       muon_mom_len_wc = muon_mom_wc*(mcs_emu_tracklen/muon_mom_wc.Mag()/1.04);
     } 
-   has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > 0.1;
+   has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > thresholds.at(13).first;
     muon_contained_wc = has_muon_wc && isContained(reco_endXYZT[wc_muon][0],reco_endXYZT[wc_muon][1],reco_endXYZT[wc_muon][2]);
     
 
@@ -436,7 +436,7 @@ void Filter(){
       double mom = sqrt(trackRecoE[lt_muon]*trackRecoE[lt_muon]/1e6 + 2*0.106*trackRecoE[lt_muon]/1e3);
       muon_mom_lt = TVector3(mom*trackStartDirX[lt_muon],mom*trackStartDirY[lt_muon],mom*trackStartDirZ[lt_muon]);
     }
-    has_muon_lt = lt_muon != -1 && muon_mom_lt.Mag() > 0.1;
+    has_muon_lt = lt_muon != -1 && muon_mom_lt.Mag() > thresholds.at(13).first;
     muon_contained_lt = has_muon_lt && isContained(trackEndPosX[lt_muon],trackEndPosY[lt_muon],trackEndPosZ[lt_muon]);
 
     std::vector<TLorentzVector> lt_proton_v = lt::RecoProton4MomV(nTracks,trackIsSecondary,trackPID,trackRecoE,trackStartDirX,trackStartDirY,trackStartDirZ);
@@ -464,7 +464,7 @@ void Filter(){
     int h8_muon = pd_muon;
     if(h8_muon != -1)
       muon_mom_h8 = muon_contained_pd ? TVector3(muon_mom_pd.X(),muon_mom_pd.Y(),muon_mom_pd.Z()) : TVector3(muon_mom_mcs_pd.X(),muon_mom_mcs_pd.Y(),muon_mom_mcs_pd.Z());
-    has_muon_h8 = pd_muon != -1 && muon_mom_pd.Mag() > 0.1;
+    has_muon_h8 = pd_muon != -1 && muon_mom_pd.Mag() > thresholds.at(13).first;
     muon_contained_h8 = muon_contained_pd;
 
     nprot_h8 = lt_proton_v.size();
