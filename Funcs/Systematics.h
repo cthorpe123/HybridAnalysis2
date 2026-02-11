@@ -74,7 +74,7 @@ void CalcCovMultisim(std::string sys,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D
   h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title+";"+axis_title+";").c_str(),n_bins,bins_a,n_bins,bins_a);
 
   for(int i_bx=0;i_bx<h_Vars.at(0)->GetNbinsX()+2;i_bx++){
-    for(int i_by=0;i_by<h_Vars.at(0)->GetNbinsX()+2;i_by++){
+    for(int i_by=i_bx;i_by<h_Vars.at(0)->GetNbinsX()+2;i_by++){
 
       double x = Mean(h_Vars,i_bx);
       double y = Mean(h_Vars,i_by);
@@ -86,6 +86,9 @@ void CalcCovMultisim(std::string sys,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D
         
       h_Cov->SetBinContent(i_bx,i_by,cov); 
       h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
+        
+      h_Cov->SetBinContent(i_by,i_bx,cov); 
+      h_FCov->SetBinContent(i_by,i_bx,cov/x/y); 
 
     }
   }

@@ -56,6 +56,8 @@ class HistogramManager {
     std::vector<std::vector<std::vector<TH1D*>>> _h_Vars_Reco_Cat;
     std::vector<std::vector<TH1D*>> _h_Unisim_Vars_Reco_Cat;
     std::map<std::string,std::vector<TH1D*>> _h_Special_Reco_Cat;
+  
+   
  
     // Truth histograms, only filled for the signal
     TH1D* _h_CV_Truth_Signal;
@@ -68,6 +70,7 @@ class HistogramManager {
     std::vector<std::vector<TH2D*>> _h_Vars_Joint_Signal;
     std::vector<TH2D*> _h_Unisim_Vars_Joint_Signal;
     std::map<std::string,TH2D*> _h_Special_Joint_Signal;
+    std::map<std::string,TH2D*> _h_Special_Joint_Signal_W2X;
 
     int _nbins_t;    
     std::vector<double> _bin_edges_t;
@@ -266,6 +269,7 @@ void HistogramManager::AddSpecialUniv(std::string name)
   _h_Special_Reco_Tot[name]->Sumw2();
 
   _h_Special_Reco_Cat[name] = std::vector<TH1D*>();
+  _h_Special_Reco_Cat[name] = std::vector<TH1D*>();
   for(size_t i_c=0;i_c<categories.size();i_c++){
     _h_Special_Reco_Cat.at(name).push_back((TH1D*)_h_tp->Clone(("h_Special_Reco_"+categories.at(i_c)+"_"+name+"_"+_label).c_str()));
     _h_Special_Reco_Cat.at(name).back()->Sumw2();
@@ -276,6 +280,8 @@ void HistogramManager::AddSpecialUniv(std::string name)
     _h_Special_Truth_Signal[name]->Sumw2(); 
     _h_Special_Joint_Signal[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
     _h_Special_Joint_Signal[name]->Sumw2(); 
+    _h_Special_Joint_Signal_W2X[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_W2X_"+name+"_"+_label).c_str()); 
+    _h_Special_Joint_Signal_W2X[name]->Sumw2(); 
   }
  
 }
@@ -409,7 +415,6 @@ void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,doub
   if(category == -1) std::cout << "Bad event" << std::endl;
 
   if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
-
   _h_Special_Truth_Signal.at(name)->Fill(var_t,POT_weight*weightSplineTimesTune*weight);
 
 }
@@ -429,7 +434,10 @@ void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,doubl
 
   if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
-  if(!is_data) _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
+  if(!is_data){
+    _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
+  }
+  
   _h_Special_Reco_Cat.at(name).at(category)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
 
 }
@@ -453,6 +461,7 @@ void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool se
   if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
 
   _h_Special_Joint_Signal.at(name)->Fill(var_t,var_r,POT_weight*weightSplineTimesTune*weight);
+  _h_Special_Joint_Signal_W2X.at(name)->Fill(var_t,var_r,(POT_weight*weightSplineTimesTune)*(POT_weight*weightSplineTimesTune)*weight);
 
 }
 
@@ -896,19 +905,39 @@ void HistogramManager::_WriteJoint()
   }
 
   if(_h_Special_Joint_Signal.size()){
+
     _f_out->mkdir("Response/Special");
+
     std::map<std::string,TH2D*>::iterator it;
     for(it=_h_Special_Joint_Signal.begin();it!=_h_Special_Joint_Signal.end();it++){
       std::string name = it->first;
       _f_out->mkdir(("Response/Special/"+name).c_str());
+      _f_out->mkdir(("Response/Special/"+name+"/StatErr").c_str());
+      _f_out->cd(("Response/Special/"+name+"/StatErr").c_str());
+
+      // Calculation of MC stat error in difference 
+      // between CV response matrix and special universe response matrix
+      TH2D* h_SCov = (TH2D*)_h_CV_Joint_Signal->Clone("h_SCov");
+      for(int i=0;i<_nbins_t+2;i++){
+        for(int j=0;j<_nbins_r+2;j++){
+          double W = _h_CV_Truth_Signal->GetBinContent(i);
+          double WX = _h_Special_Truth_Signal.at(name)->GetBinContent(i);
+          double w2x2 = _h_Special_Joint_Signal.at(name)->GetBinError(i,j)*_h_Special_Joint_Signal.at(name)->GetBinError(i,j);
+          double w2 = _h_CV_Joint_Signal->GetBinError(i,j)*_h_CV_Joint_Signal->GetBinError(i,j);
+          double w2x = _h_Special_Joint_Signal_W2X.at(name)->GetBinContent(i,j);
+          h_SCov->SetBinContent(i,j,w2x2/WX/WX + w2/W/W - 2*w2x/W/WX);
+        } 
+      }
+      h_SCov->Write("h_StatCov");
+
+      _f_out->cd();
       _f_out->cd(("Response/Special/"+name).c_str());
       TH2D* h = (TH2D*)_h_Special_Joint_Signal.at(name)->Clone("h_Signal");
-      //for(int i=1;i<_h_Special_Truth_Signal.at(name)->GetNbinsX()+1;i++) 
-      //  std::cout << _h_Special_Truth_Signal.at(name)->GetBinContent(i) << std::endl;
       NormaliseResponse(_h_Special_Truth_Signal.at(name),h);
       h->Write("h_Signal");
       _f_out->cd();
     }
+
   } 
 
   _f_out->cd();
