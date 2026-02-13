@@ -703,7 +703,46 @@ void HistogramManager::_WriteReco()
     std::map<std::string,TH1D*>::iterator it;
     for(it=_h_Special_Reco_Tot.begin();it!=_h_Special_Reco_Tot.end();it++){
       std::string name = it->first;
+      std::cout << name << std::endl;
       _f_out->mkdir(("Reco/Special/"+name).c_str());
+
+      // Calculate the CV truth folded through the special universe response
+      _f_out->mkdir(("Reco/Special/"+name+"/FoldedCV").c_str());
+      _f_out->cd(("Reco/Special/"+name+"/FoldedCV").c_str());
+      TH2D* h_Res = (TH2D*)_h_Special_Joint_Signal.at(name)->Clone("h_Res"); 
+      NormaliseResponse(_h_Special_Truth_Signal.at(name),h_Res);
+      TH1D* h_Reco_Special_FF = Multiply(_h_CV_Truth_Signal,h_Res); 
+      h_Reco_Special_FF->Write("h_Signal"); 
+
+      // Calculate the stat error in the difference between the CV
+      // and the CV truth X special response
+      _f_out->cd(); 
+      _f_out->mkdir(("Reco/Special/"+name+"/SpecialStatCov").c_str());
+      _f_out->cd(("Reco/Special/"+name+"/SpecialStatCov").c_str());
+      TH2D* h_Cov_SpecialStat = (TH2D*)h_Cov->Clone("Cov_SpecialStat"); 
+      h_Cov->Reset();
+      for(int i=0;i<_nbins_r+2;i++){
+        double var = 0.0;
+        for(int j=0;j<_nbins_t+2;j++){
+          if(!(_h_CV_Truth_Signal->GetBinContent(j) > 0)) continue;
+          double W = _h_CV_Truth_Signal->GetBinContent(j);
+          double WX = _h_Special_Truth_Signal.at(name)->GetBinContent(j); 
+          double w2x2 = _h_Special_Joint_Signal.at(name)->GetBinError(j,i)*_h_Special_Joint_Signal.at(name)->GetBinError(j,i);
+          double w2 = _h_CV_Joint_Signal->GetBinError(j,i)*_h_CV_Joint_Signal->GetBinError(j,i);
+          double w2x =  _h_Special_Joint_Signal_W2X.at(name)->GetBinContent(j,i);
+          //std::cout << "W = " <<  W << " WX = " << WX << std::endl;
+          //std::cout << "w2 = " << w2 << " w2x2 = " << w2x2 << " w2x = " << w2x << std::endl;
+          //std::cout << "W*W/WX/WX*w2x2 = " << W*W/WX/WX*w2x2 << " w2 =" << w2 << " 2*W/WX*w2x = " << 2*W/WX*w2x << std::endl;
+          //std::cout << W*W/WX/WX*w2x2 + w2 - 2*W/WX*w2x << std::endl;
+          var += W*W/WX/WX*w2x2 + w2 - 2*W/WX*w2x; 
+        }
+        h_Cov->SetBinContent(i,i,var);
+        std::cout << _h_CV_Reco_Cat.at(kSignal)->GetBinContent(i) << " " << h_Reco_Special_FF->GetBinContent(i) << "  " << sqrt(var);
+        std::cout << "  " << (_h_CV_Reco_Cat.at(kSignal)->GetBinContent(i) - h_Reco_Special_FF->GetBinContent(i))/sqrt(var) << std::endl; 
+      }
+      h_Cov->Write("Cov_SpecialStat");
+ 
+      _f_out->cd(); 
       _f_out->cd(("Reco/Special/"+name).c_str());
       double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
       if(_shape_only) _h_Special_Reco_Tot.at(name)->Scale(1.0/integral);

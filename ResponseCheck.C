@@ -8,14 +8,23 @@
 #include "BranchList.h"
 #include "EnergyEstimatorFuncs.h"
 #include "Systematics.h"
+#include "PlotFuncs.h"
+
+// Try forward folding the CV truth through the response
+// calulated in the CV and special universes, calculate chi2
+// between the CV and each special prediction
 
 void ResponseCheck(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  std::vector<std::string> label_v = {"W"};
-  std::vector<std::string> special_univ_v = {"ExtraGamma","ExtraProt","ExtraPi"};
+  const bool include_data_stat = true;
+  bool draw_underflow = false;
+  bool draw_overflow = true;
+
+  std::vector<std::string> label_v = {"MuonMom"};
+  std::vector<std::string> special_univ_v = {"ExtraPi","ExtraPi2","ExtraP","ExtraP2"};
 
   for(size_t i_f=0;i_f<label_v.size();i_f++){
 
@@ -23,65 +32,75 @@ void ResponseCheck(){
     std::string plot_dir = "Analysis/"+label+"/Plots/ResponseCheck/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
-    TFile* f_in_res = TFile::Open(("Analysis/"+label+"/rootfiles/Response.root").c_str());
+    TFile* f_in = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
 
-    TH1D* h_CV_Joint_Unrol = (TH1D*)f_in_res->Get("h_CV_Joint_Unrolled"); 
-    TH2D* h_Cov = (TH2D*)f_in_res->Get("Cov_Tot"); 
+    // Get the CV reco prediction with signal only
+    TH1D* h_CV = (TH1D*)f_in->Get("Reco/CV/h_Tot");
+    TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
 
-    for(int i=1;i<h_Cov->GetNbinsX()+1;i++)
-      if(!(h_CV_Joint_Unrol->GetBinContent(i) > 0)) 
-        std::cout << "Bad response" << std::endl;
+    // Get the CV background prediction
+    TH1D* h_CV_BG = (TH1D*)h_CV->Clone("h_CV_BG");
+    std::vector<TH1D*> h_v;
+    std::vector<int> fill_colors;
+    std::vector<std::string> legs;
+    h_CV_BG->Reset();
+    for(int i_c=0;i_c<kData;i_c++){
+      h_v.push_back((TH1D*)f_in->Get(("Reco/CV/h_"+categories.at(i_c)).c_str()));
+      fill_colors.push_back(cat_colors[i_c]); 
+      legs.push_back(categories.at(i_c));
+      if(i_c == kSignal) continue;
+      h_CV_BG->Add(h_v.back());
+    } 
 
-    for(int i=1;i<h_CV_Joint_Unrol->GetNbinsX()+1;i++)
-      h_CV_Joint_Unrol->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
-
-    h_CV_Joint_Unrol->SetLineColor(1);
-    h_CV_Joint_Unrol->SetLineWidth(2);
-
-    TMatrixDSym m_Cov = syst::MakeCovMat(h_Cov); 
-    m_Cov.Invert();
-
-    for(std::string su : special_univ_v){
-
-       TH1D* h_cv_joint_unrol = (TH1D*)h_CV_Joint_Unrol->Clone("h_cv_joint_unrol");
-       TH1D* h_su_joint_unrol = (TH1D*)f_in_res->Get(("h_Special_Joint_"+su+"_Unrolled").c_str());
-        
-       double sq_md = 0.0;
-       for(int i=1;i<h_CV_Joint_Unrol->GetNbinsX()+1;i++)
-         for(int j=1;j<h_CV_Joint_Unrol->GetNbinsX()+1;j++)
-           sq_md += (h_su_joint_unrol->GetBinContent(i) - h_cv_joint_unrol->GetBinContent(i))*m_Cov[i-1][j-1]*(h_su_joint_unrol->GetBinContent(j) - h_cv_joint_unrol->GetBinContent(j));
-       std::cout << label << " " << su << " sq_md/ndof = " << sq_md << "/" << h_cv_joint_unrol->GetNbinsX() << " = " << sq_md/h_cv_joint_unrol->GetNbinsX() << std::endl;
-      
-       THStack* hs = new THStack("hs","hs");
-
-       hs->Add(h_cv_joint_unrol,"e1");
-       l->AddEntry(h_cv_joint_unrol,"CV","M");
-
-       h_su_joint_unrol->SetLineColor(2);
-       h_su_joint_unrol->SetLineWidth(2);
-       hs->Add(h_su_joint_unrol,"HIST");
-       l->AddEntry(h_su_joint_unrol,su.c_str(),"L");
-
-       hs->Draw("nostack");
-       l->Draw();
-       c->Print((plot_dir+"UnrolledResponses_"+su+".png").c_str()); 
-       c->Clear();
-
-       h_su_joint_unrol->Divide(h_cv_joint_unrol);
-       h_cv_joint_unrol->Divide(h_cv_joint_unrol); 
-
-       hs->Draw("nostack");
-       l->Draw();
-       c->Print((plot_dir+"UnrolledResponsesRatio_"+su+".png").c_str()); 
-       c->Clear();
-
-       delete hs;
-       delete h_cv_joint_unrol;
-
-        l->Clear();
+    TH2D* h_Cov = (TH2D*)f_in->Get("Reco/Cov/Total/Cov_Signal");   
+    h_Cov->Reset();
+    for(int i_s=0;i_s<syst::kSystMAX;i_s++){
+      std::vector<TH1D*> h;
+      for(int i_u=0;i_u<syst::sys_nuniv.at(i_s);i_u++){
+        h.push_back(Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+syst::sys_str.at(i_s)+"/h_Signal_"+std::to_string(i_u)).c_str())));
+        for(int i_c=0;i_c<kData;i_c++){
+          if(i_c == kSignal) continue;
+          h.back()->Add((TH1D*)f_in->Get(("Reco/Vars/"+syst::sys_str.at(i_s)+"/h_"+categories.at(i_c)+"_"+std::to_string(i_u)).c_str()));
+        } 
+      }
+      TH2D *c,*fc; 
+      syst::CalcCovMultisim(syst::sys_str.at(i_s),h,c,fc); 
+      h_Cov->Add(c);
     }
+
+    // Add the data stat error
+    for(int i_c=0;i_c<kData;i_c++){
+      if(i_c == kSignal) continue;
+      h_Cov->Add((TH2D*)f_in->Get(("Reco/Cov/MCStatError/Cov_"+categories.at(i_c)).c_str()));
+    }
+ 
+    if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
+
+    for(std::string spec : special_univ_v){
+
+      std::cout << spec << std::endl;
+
+      // CV folded through response calculated in special universe
+      TH1D* h_FF_Spec = (TH1D*)f_in->Get(("Reco/Special/"+spec+"/FoldedCV/h_Signal").c_str());
+      TH2D* h_Stat_Cov = (TH2D*)f_in->Get(("Reco/Special/"+spec+"/SpecialStatCov/Cov_SpecialStat").c_str());
+   
+      h_FF_Spec->Add(h_CV_BG);
+
+      h_Stat_Cov->Add(h_Cov);
+          
+      for(int i=0;i<h_FF_Spec->GetNbinsX()+2;i++){
+        h_FF_Spec->SetBinError(i,1e-10);
+        h_CV->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
+      }
+    
+      TH1D* h_CV_tmp = (TH1D*)h_CV->Clone("h_CV_tmp");    
+      pfs::DrawStacked(h_v,fill_colors,legs,h_CV_tmp,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"FF_Signal_"+spec+".png"); 
+      delete h_CV_tmp; 
+
+    }
+
 
   }
 
-} 
+}
 

@@ -16,7 +16,7 @@ void MDTest(){
   bool draw_underflow = false;
   bool draw_overflow = false;
 
-  std::vector<std::string> to_check = {"CV"};
+  std::vector<std::string> to_check = {};
   for(std::string u : special_univ) to_check.push_back("Special/"+u);
 
   for(std::string label : label_v){
@@ -24,7 +24,6 @@ void MDTest(){
     std::cout << "Doing MD check with " << label << std::endl;
 
     TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_hist_2 = TFile::Open(("Analysis/"+label+"2/rootfiles/Histograms.root").c_str());
 
     TH2D* h_res = (TH2D*)f_in_hist->Get("Response/CV/h_Signal"); 
     std::vector<std::pair<int,int>> empty;
@@ -37,8 +36,8 @@ void MDTest(){
     TH1D* h_res_u = Unroll2DDist(h_res,"h_res_u",empty);
 
     TH2D* h_Cov = Make2DHist("h_Cov_Res_Unroll",h_res_u);
-    for(int i=0;i<h_res_u->GetNbinsX()+2;i++)
-      h_Cov->SetBinContent(i,i,h_res_u->GetBinError(i)*h_res_u->GetBinError(i));
+    //for(int i=0;i<h_res_u->GetNbinsX()+2;i++)
+    //  h_Cov->SetBinContent(i,i,h_res_u->GetBinError(i)*h_res_u->GetBinError(i));
 
     for(int i_s=0;i_s<syst::kSystMAX;i_s++){
       std::cout << "Calculating cov for " << syst::sys_str.at(i_s) << std::endl;
@@ -51,7 +50,6 @@ void MDTest(){
        for(TH1D* x : h) delete x;       
        h.clear();
     }
-
 
     for(int i_s=0;i_s<syst::kUnisimMAX;i_s++){
       TH1D* h = Unroll2DDist((TH2D*)f_in_hist->Get(("Response/Vars/"+syst::unisims_str.at(i_s)+"/h_Signal").c_str()),"h",empty);
@@ -68,13 +66,17 @@ void MDTest(){
       TH2D* h_Cov_tmp = (TH2D*)h_Cov->Clone("h_Cov_tmp");
 
       // Add the stat error from the CV of the second subset of events
-      TH2D* h_res2 = (TH2D*)f_in_hist_2->Get(("Response/"+u+"/h_Signal").c_str()); 
+      TH2D* h_res2 = (TH2D*)f_in_hist->Get(("Response/"+u+"/h_Signal").c_str()); 
       TH1D* h_res_u2 = Unroll2DDist(h_res2,"h_res_u2",empty);
-      TH2D* h_Cov_Stat2 = Make2DHist("h_Cov_Res_Unroll_2",h_res_u2);
-      for(int i=0;i<h_res_u2->GetNbinsX()+2;i++)
-        h_Cov_Stat2->SetBinContent(i,i,h_res_u2->GetBinError(i)*h_res_u2->GetBinError(i));
 
-      h_Cov_tmp->Add(h_Cov_Stat2);
+      // Get the stat error in the difference between the CV and special universe
+      TH1D* h_Cov_Stat_Diff_u = Unroll2DDist((TH2D*)f_in_hist->Get(("Response/"+u+"/StatErr/h_StatCov").c_str()),"Cov_Stat_Diff_u",empty);
+      TH2D* h_Cov_Stat_Diff_2D = Make2DHist("Cov_Stat_Diff_2",h_Cov_Stat_Diff_u);
+
+      for(int i=0;i<h_res_u2->GetNbinsX()+2;i++)
+        h_Cov_Stat_Diff_2D->SetBinContent(i,i,h_Cov_Stat_Diff_u->GetBinContent(i));
+
+      h_Cov_tmp->Add(h_Cov_Stat_Diff_2D);
 
       TMatrixDSym m_Cov = MakeCovMat(h_Cov_tmp);
       m_Cov.Invert();
@@ -89,10 +91,10 @@ void MDTest(){
 
       delete h_Cov_tmp;
       delete h_res_u2;
-      delete h_Cov_Stat2;
+      delete h_Cov_Stat_Diff_u;
+      delete h_Cov_Stat_Diff_2D;
 
     } 
- 
 
   }
 
