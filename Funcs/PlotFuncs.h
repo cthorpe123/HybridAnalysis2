@@ -23,8 +23,9 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str());
   THStack* hs_U = new THStack("hs_U",";;FE");
   THStack* hs_O = new THStack("hs_O",";;FE");
-  TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
-  l2->SetNColumns(2);
+  //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
+  TLegend* l2 = new TLegend(0.0,0.9,1.0,1.0);
+  l2->SetNColumns(legs.size());
 
   std::vector<TH1D*> h_O(h_v.size());
   std::vector<TH1D*> h_U(h_v.size());
@@ -98,13 +99,14 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
 // Draw a set of histograms on one canvas, not stacked together,
 // as lines
 
-void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name){
+void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
 
   THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot->GetXaxis()->GetTitle())+";Events").c_str());
   THStack* hs_U = new THStack("hs_U",";;Events");
   THStack* hs_O = new THStack("hs_O",";;Events");
-  TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
-  l2->SetNColumns(2);
+  TLegend* l2 = draw_o && draw_u ? new TLegend(0.13,0.91,0.97,1.0): new TLegend(0.11,0.91,0.97,1.0);
+  l2->SetNColumns(legs.size());
+  l2->SetBorderSize(0);
 
   std::vector<TH1D*> h_O(h_v.size());
   std::vector<TH1D*> h_U(h_v.size());
@@ -188,12 +190,20 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   }    
 
   p_middle->cd(); 
+
+  TLegend *l_Chi2 = draw_o && draw_u ? new TLegend(0.15,0.83,0.37,0.895) : new TLegend(0.13,0.83,0.37,0.895);
+  l_Chi2->SetBorderSize(0);
+  l_Chi2->SetMargin(0.005);
+  l_Chi2->SetTextAlign(12);
+  l_Chi2->SetTextSize(0.05);
+  l_Chi2->SetHeader(("#chi^{2}/ndof = " + to_string_with_precision(chi2.first,1) + "/" + std::to_string(chi2.second)).c_str());
+
   hs_middle->Draw("HIST");
   h_tot->Draw("same e2");
   if(h_data != nullptr) h_data->Draw("same e1");
-  hs_middle->SetMaximum(GetMax(h_tot)*1.1);
+  hs_middle->SetMaximum(GetMax(h_tot)*1.15);
   l2->Draw();
-
+  if(chi2.second > 0) l_Chi2->Draw();
   c2->cd();
   c2->Print(name.c_str());
   delete c2;

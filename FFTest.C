@@ -106,7 +106,7 @@ void FFTest(){
       std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
     
       TH1D* h_CV_tmp = (TH1D*)h_CV->Clone("h_CV_tmp");    
-      pfs::DrawStacked(h_v,fill_colors,legs,h_CV_tmp,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"FF_Signal_"+spec+".png"); 
+      pfs::DrawStacked(h_v,fill_colors,legs,h_CV_tmp,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"FF_Signal_"+spec+".png",chi2); 
       delete h_CV_tmp; 
 
     }
