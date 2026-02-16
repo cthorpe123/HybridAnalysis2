@@ -77,7 +77,7 @@ void MDTest(){
         h_Cov_Stat_Diff_2D->SetBinContent(i,i,h_Cov_Stat_Diff_u->GetBinContent(i));
 
       h_Cov_tmp->Add(h_Cov_Stat_Diff_2D);
-
+/*
       TMatrixDSym m_Cov = MakeCovMat(h_Cov_tmp);
       m_Cov.Invert();
 
@@ -86,8 +86,10 @@ void MDTest(){
       for(int i=1;i<h_res_u2->GetNbinsX()+1;i++)
         for(int j=1;j<h_res_u2->GetNbinsX()+1;j++)
           md += (h_res_u2->GetBinContent(i) - h_res_u->GetBinContent(i))*m_Cov[i-1][j-1]*(h_res_u2->GetBinContent(j) - h_res_u->GetBinContent(j));
+*/
 
-      std::cout << md << "/" << h_res_u2->GetNbinsX() << " = " << md/h_res_u2->GetNbinsX() << std::endl;
+      std::pair<double,int> chi2 = Chi2(h_res_u2,h_res_u,h_Cov_tmp);
+      std::cout << chi2.first << "/" << chi2.second << " = " << chi2.first/chi2.second << std::endl;
 
       delete h_Cov_tmp;
       delete h_res_u2;

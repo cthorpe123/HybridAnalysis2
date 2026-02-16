@@ -250,7 +250,6 @@ void HistogramManager::_SetupJointHistograms()
     _h_Vars_Joint_Signal.push_back(std::vector<TH2D*>());
     for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
       _h_Vars_Joint_Signal.back().push_back((TH2D*)_h_CV_Joint_Signal->Clone(("h_Vars_Joint_Signal_"+sys_str.at(i_s)+"_"+std::to_string(i_u)+"_"+_label).c_str()));
-      _h_Vars_Joint_Signal.back().back()->Sumw2();
     }
   }
 
@@ -279,9 +278,7 @@ void HistogramManager::AddSpecialUniv(std::string name)
     _h_Special_Truth_Signal[name] = (TH1D*)_h_tp_truth->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
     _h_Special_Truth_Signal[name]->Sumw2(); 
     _h_Special_Joint_Signal[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_"+name+"_"+_label).c_str()); 
-    _h_Special_Joint_Signal[name]->Sumw2(); 
     _h_Special_Joint_Signal_W2X[name] = (TH2D*)_h_CV_Joint_Signal->Clone(("h_Special_Truth_Signal_W2X_"+name+"_"+_label).c_str()); 
-    _h_Special_Joint_Signal_W2X[name]->Sumw2(); 
   }
  
 }
@@ -711,7 +708,7 @@ void HistogramManager::_WriteReco()
       _f_out->cd(("Reco/Special/"+name+"/FoldedCV").c_str());
       TH2D* h_Res = (TH2D*)_h_Special_Joint_Signal.at(name)->Clone("h_Res"); 
       NormaliseResponse(_h_Special_Truth_Signal.at(name),h_Res);
-      TH1D* h_Reco_Special_FF = Multiply(_h_CV_Truth_Signal,h_Res); 
+      TH1D* h_Reco_Special_FF = Multiply(_h_CV_Truth_Signal,h_Res,"h_Reco_Special_FF"); 
       h_Reco_Special_FF->Write("h_Signal"); 
 
       // Calculate the stat error in the difference between the CV
@@ -730,15 +727,9 @@ void HistogramManager::_WriteReco()
           double w2x2 = _h_Special_Joint_Signal.at(name)->GetBinError(j,i)*_h_Special_Joint_Signal.at(name)->GetBinError(j,i);
           double w2 = _h_CV_Joint_Signal->GetBinError(j,i)*_h_CV_Joint_Signal->GetBinError(j,i);
           double w2x =  _h_Special_Joint_Signal_W2X.at(name)->GetBinContent(j,i);
-          //std::cout << "W = " <<  W << " WX = " << WX << std::endl;
-          //std::cout << "w2 = " << w2 << " w2x2 = " << w2x2 << " w2x = " << w2x << std::endl;
-          //std::cout << "W*W/WX/WX*w2x2 = " << W*W/WX/WX*w2x2 << " w2 =" << w2 << " 2*W/WX*w2x = " << 2*W/WX*w2x << std::endl;
-          //std::cout << W*W/WX/WX*w2x2 + w2 - 2*W/WX*w2x << std::endl;
           var += W*W/WX/WX*w2x2 + w2 - 2*W/WX*w2x; 
         }
         h_Cov->SetBinContent(i,i,var);
-        std::cout << _h_CV_Reco_Cat.at(kSignal)->GetBinContent(i) << " " << h_Reco_Special_FF->GetBinContent(i) << "  " << sqrt(var);
-        std::cout << "  " << (_h_CV_Reco_Cat.at(kSignal)->GetBinContent(i) - h_Reco_Special_FF->GetBinContent(i))/sqrt(var) << std::endl; 
       }
       h_Cov->Write("Cov_SpecialStat");
  

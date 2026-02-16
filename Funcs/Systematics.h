@@ -138,20 +138,20 @@ TH2D* CalcCorrelationMatrix(std::string sys,const TH2D* h_Cov){
 
 ///////////////////////////////////////////////////////////////////////
 // Convert a 2D histogram into a tmatrix 
-
-TMatrixDSym MakeCovMat(TH2D* h){
+/*
+TMatrixDSym MakeCovMat(TH2D* h,bool over=false,bool under=false){
 
   TMatrixDSym m(h->GetNbinsX());
-  for(int i=1;i<h->GetNbinsX()+1;i++)
-    for(int j=1;j<h->GetNbinsX()+1;j++)
-      m[i-1][j-1] = h->GetBinContent(i,j);
+  for(int i=0;i<h->GetNbinsX()+2;i++)
+    for(int j=0;j<h->GetNbinsX()+2;j++)
+      m[i][j] = h->GetBinContent(i,j);
 
   return m;
 }
-
+*/
 ///////////////////////////////////////////////////////////////////////
 // Convert a 2D histogram into a tmatrix 
-
+/*
 std::vector<TH1D*> PadUniverses(TH1D* h,TH2D* h_cov,int nuniv){
 
   //std::cout << "Doing PadUniverses" << std::endl;
@@ -185,7 +185,7 @@ std::vector<TH1D*> PadUniverses(TH1D* h,TH2D* h_cov,int nuniv){
   return univ;
 
 }
-
+*/
 ///////////////////////////////////////////////////////////////////////
 // Select the correct unisim weight 
 
@@ -196,6 +196,35 @@ double ChooseUnisimWeight(int u,std::map<std::string,std::vector<double>>* w){
  
   return 0;
 }
+
+///////////////////////////////////////////////////////////////////////
+// Calculate chi2 between two histograms 
+
+std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false){
+
+  int min_bin = under ? 0 : 1;  
+  int max_bin = over ? h1->GetNbinsX()+2 : h1->GetNbinsX()+1;
+
+  TMatrixDSym m(max_bin-min_bin);
+  for(int i=min_bin;i<max_bin;i++){
+    for(int j=min_bin;j<max_bin;j++){
+      m[i-min_bin][j-min_bin] = h_Cov->GetBinContent(i,j);
+    }
+  }
+
+  m.Invert();
+ 
+  double chi2 = 0;
+  for(int i=min_bin;i<max_bin;i++){
+    for(int j=min_bin;j<max_bin;j++){
+      chi2 += (h1->GetBinContent(i) - h2->GetBinContent(i))*m[i-min_bin][j-min_bin]*(h1->GetBinContent(j) - h2->GetBinContent(j));
+    }
+  }
+
+  return {chi2,max_bin-min_bin};
+
+}
+
 
 }
 

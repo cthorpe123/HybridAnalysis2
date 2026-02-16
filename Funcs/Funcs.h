@@ -247,14 +247,14 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
 // Given the true dist and joint truth/reco dist for selected events
 // renormalise the 2D hist to give the response 
 
-TH1D* Multiply(TH1D* h_true,TH2D* h_res){
+TH1D* Multiply(TH1D* h_true,TH2D* h_res,std::string name){
 
   std::vector<double> bins;
   for(int i=1;i<h_res->GetNbinsY()+2;i++) bins.push_back(h_res->GetYaxis()->GetBinLowEdge(i));
   int n_bins = bins.size()-1;
   double* bins_a = &bins[0];
     
-  TH1D* h_reco = new TH1D((string(h_true->GetName())+"_folded").c_str(),"",n_bins,bins_a);
+  TH1D* h_reco = new TH1D(name.c_str(),"",n_bins,bins_a);
 
   for(int j=0;j<n_bins+2;j++){
     double content = 0.0;
