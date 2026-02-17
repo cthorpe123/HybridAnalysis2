@@ -700,7 +700,6 @@ void HistogramManager::_WriteReco()
     std::map<std::string,TH1D*>::iterator it;
     for(it=_h_Special_Reco_Tot.begin();it!=_h_Special_Reco_Tot.end();it++){
       std::string name = it->first;
-      std::cout << name << std::endl;
       _f_out->mkdir(("Reco/Special/"+name).c_str());
 
       // Calculate the CV truth folded through the special universe response
