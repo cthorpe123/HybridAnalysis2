@@ -146,7 +146,8 @@ bool MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double 
                         : TFile::Open(("Analysis/"+label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
 
   // If stats in channel are too low to have more than 1 bin
-  if(h_data->Integral() < _EPSILON_ || 1.0/sqrt(h_data->Integral()) > target_fe){
+  if(h_data->Integral() < _EPSILON_ || 1.0/sqrt(h_data->Integral()) >= target_fe){
+    std::cout << "Histogram is empty or doesn't contain enough data to generate at least one bin with target FE, saving single bin" << std::endl;
     TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",1,h_data->GetBinLowEdge(1),h_data->GetBinLowEdge(h_data->GetNbinsX()+1)); 
     h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
     h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
