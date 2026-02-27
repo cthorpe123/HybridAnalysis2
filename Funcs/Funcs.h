@@ -81,6 +81,25 @@ void DivideByBinWidth(TH1D* h) {
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Take 1D hist divide by bin width 
+
+void DivideByBinWidth2D(TH2D* h) {
+  int NBins_X = h->GetXaxis()->GetNbins();
+  int NBins_Y = h->GetYaxis()->GetNbins();
+  for (int i=1;i<NBins_X+1;i++){
+    for (int j=1;j<NBins_Y+1;j++){
+      double Area = h->GetXaxis()->GetBinWidth(i)*h->GetYaxis()->GetBinWidth(j);
+      double CurrentEntry = h->GetBinContent(i,j);
+      double NewEntry = CurrentEntry / Area;
+      double CurrentError = h->GetBinError(i,j);
+      double NewError = CurrentError / Area;
+      h->SetBinContent(i,j,NewEntry); 
+      h->SetBinError(i,j,NewError); 
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
 // Calculate bias/variance in reconstructed variable afo true variable 
 // given their joint dist 
 

@@ -32,7 +32,11 @@ class HistogramManager {
     void KeepAll(){ _keep_all = true; }
 
     void Write();
-    
+
+    TH1D* GetRecoTemplate(){ return (TH1D*)_h_tp->Clone("reco_template"); }
+    TH1D* GetTruthTemplate(){ return (TH1D*)_h_tp_truth->Clone("truth_template"); }
+    TH2D* GetJointTemplate(){ return (TH2D*)_h_tp_joint->Clone("joint_template"); }
+ 
   private:
 
     const std::string _label;
@@ -44,6 +48,7 @@ class HistogramManager {
     // histogram templates
     TH1D* _h_tp = nullptr;
     TH1D* _h_tp_truth = nullptr;
+    TH2D* _h_tp_joint = nullptr;
 
     // Reco histograms 
     TH1D* _h_CV_Reco_Tot;
@@ -56,8 +61,6 @@ class HistogramManager {
     std::vector<std::vector<std::vector<TH1D*>>> _h_Vars_Reco_Cat;
     std::vector<std::vector<TH1D*>> _h_Unisim_Vars_Reco_Cat;
     std::map<std::string,std::vector<TH1D*>> _h_Special_Reco_Cat;
-  
-   
  
     // Truth histograms, only filled for the signal
     TH1D* _h_CV_Truth_Signal;
@@ -245,6 +248,8 @@ void HistogramManager::_SetupJointHistograms()
   std::string title = ";"+t_title+";"+r_title+";";
   _h_CV_Joint_Signal = new TH2D(("h_CV_Joint_Signal_"+_label).c_str(),title.c_str(),_nbins_t,&_bin_edges_t[0],_nbins_r,&_bin_edges_r[0]);
   _h_CV_Joint_Signal->Sumw2();
+
+  _h_tp_joint = new TH2D(("h_template_joint_"+_label).c_str(),title.c_str(),_nbins_t,&_bin_edges_t[0],_nbins_r,&_bin_edges_r[0]);
 
   for(int i_s=0;i_s<kSystMAX;i_s++){
     _h_Vars_Joint_Signal.push_back(std::vector<TH2D*>());
