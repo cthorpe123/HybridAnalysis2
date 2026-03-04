@@ -14,7 +14,7 @@ class HistogramManager {
   public: 
 
     HistogramManager(std::string label,bool save_truth=false);
-    void LoadTemplate();
+    void LoadTemplate(std::string t = "");
     void SetTemplate(std::string axis_title,int nbins,double low,double high);
     void SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r);
 
@@ -104,16 +104,18 @@ HistogramManager::HistogramManager(std::string label,bool save_truth) : _label(l
 ///////////////////////////////////////////////////////////////////////
 // initial setup - load template histogram from file
 
-void HistogramManager::LoadTemplate()
+void HistogramManager::LoadTemplate(std::string t)
 {
-  TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
+  if(t == "") t = _label;
+
+  TFile* f_tp = TFile::Open(("Analysis/"+t+"/rootfiles/BinningTemplate.root").c_str());
   _h_tp = (TH1D*)f_tp->Get("h_template");
   _h_tp->SetDirectory(0);
   f_tp->Close();
   _h_tp->SetName(("h_template_"+_label).c_str()); 
 
   if(_save_truth){ 
-    TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
+    TFile* f_tp_truth = TFile::Open(("Analysis/"+t+"/rootfiles/TruthBinningTemplate.root").c_str());
     _h_tp_truth = (TH1D*)f_tp_truth->Get("h_template");
     _h_tp_truth->SetDirectory(0);
     f_tp_truth->Close();
