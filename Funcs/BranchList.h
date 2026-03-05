@@ -382,6 +382,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   weightSpline = 1.0;
   weightSplineTimesTune = 1.0;
   weightTune = 1.0;
+  is_signal_t = false; 
 
   t_in->SetBranchAddress("run",&run);
   t_in->SetBranchAddress("subrun",&subrun);
