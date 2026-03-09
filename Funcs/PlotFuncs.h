@@ -7,7 +7,7 @@ namespace pfs {
 // Draw 2D histogram
 
 void Draw2DHist(TH2D* h,std::string name){
-  TCanvas* c = new TCanvas("c","c");
+  TCanvas* c = new TCanvas("c2","c2");
   h->Draw("colz");
   h->SetStats(0);
   c->Print(name.c_str());

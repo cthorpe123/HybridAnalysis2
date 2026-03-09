@@ -288,7 +288,7 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
 // Given the true dist and joint truth/reco dist for selected events
 // renormalise the 2D hist to give the response 
 
-TH1D* Multiply(TH1D* h_true,TH2D* h_res,std::string name){
+TH1D* Multiply(TH1D* h_true,TH2D* h_res,std::string name,bool over=false,bool under=false){
 
   std::vector<double> bins;
   for(int i=1;i<h_res->GetNbinsY()+2;i++) bins.push_back(h_res->GetYaxis()->GetBinLowEdge(i));
@@ -297,9 +297,13 @@ TH1D* Multiply(TH1D* h_true,TH2D* h_res,std::string name){
     
   TH1D* h_reco = new TH1D(name.c_str(),"",n_bins,bins_a);
 
-  for(int j=0;j<n_bins+2;j++){
+  int min_bin = under ? 0 : 1;  
+  int max_bin_j = over ? h_reco->GetNbinsX()+2 : h_reco->GetNbinsX()+1;
+  int max_bin_i = over ? h_true->GetNbinsX()+2 : h_true->GetNbinsX()+1;
+
+  for(int j=min_bin;j<max_bin_j;j++){
     double content = 0.0;
-    for(int i=0;i<h_true->GetNbinsX()+2;i++){
+    for(int i=min_bin;i<max_bin_i;i++){
       content += h_true->GetBinContent(i)*h_res->GetBinContent(i,j);
     }
     h_reco->SetBinContent(j,content);
