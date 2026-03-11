@@ -8,8 +8,10 @@
 #include "BranchList.h"
 #include "Systematics.h"
 #include "EnergyEstimatorFuncs.h"
+#include "BinningFuncs.h"
 
 using namespace syst;
+using namespace binning;
 
 // Tune binning so all bins have data FE of this value
 

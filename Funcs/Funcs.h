@@ -152,67 +152,6 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Generate variably binned histogram  
-
-bool MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double target_fe=0.05){
-
-  std::cout << "Generating binning template for " << label << std::endl;
-
-  const double _EPSILON_ = 1e-10;
-
-  gSystem->Exec(("mkdir -p Analysis/"+label+"/rootfiles/").c_str());
-  TFile* f_out = !truth ? TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE")
-                        : TFile::Open(("Analysis/"+label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
-
-  // If stats in channel are too low to have more than 1 bin
-  if(h_data->Integral() < _EPSILON_ || 1.0/sqrt(h_data->Integral()) >= target_fe){
-    std::cout << "Histogram is empty or doesn't contain enough data to generate at least one bin with target FE, saving single bin" << std::endl;
-    TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",1,h_data->GetBinLowEdge(1),h_data->GetBinLowEdge(h_data->GetNbinsX()+1)); 
-    h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
-    h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
-    h_template->Write("h_template");
-    f_out->Close();
-    if(h_data->Integral() > _EPSILON_) return true;   
-    else return false;
-  }
-
-  std::vector<double> bin_edges;
-
-  double events = 0;
-  for(int i=1;i<h_data->GetNbinsX()+1;i++){
-
-    if(h_data->GetBinContent(i) < _EPSILON_) continue;
-
-    if(!bin_edges.size()) bin_edges.push_back(h_data->GetBinLowEdge(i));
-
-    events += h_data->GetBinContent(i);
-    if(1.0/sqrt(events) < target_fe){
-      bin_edges.push_back(h_data->GetBinLowEdge(i+1));
-      events = 0;
-    } 
-
-  }
-
-  if(!(bin_edges.size()-1)){
-    std::cout << "No bin edges generated" << std::endl;
-    f_out->Close();
-    return false;
-  }
-
-  std::cout << "Number of bins generated " << bin_edges.size()-1 << std::endl;
-  std::cout << "Low edge = " << bin_edges.front() << " Hgh edge = " << bin_edges.back() << std::endl;
-
-  TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",bin_edges.size()-1,&bin_edges[0]); 
-  h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
-  h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
-  h_template->Write("h_template");
-  f_out->Close();
-
-  return true;
-
-}
-
-///////////////////////////////////////////////////////////////////////
 // Make histogram with underflow/overflow 1 bin histograms that can be 
 // plotted alongside 
 
