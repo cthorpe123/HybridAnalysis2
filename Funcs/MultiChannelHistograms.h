@@ -23,6 +23,11 @@ class MultiChannelHistogramManager {
     void KeepAll(){ _keep_all = true; _hm.KeepAll(); }
     void Write(){ _hm.Write(); }
 
+    void AddSpecialUniv(std::string name){ _hm.AddSpecialUniv(name); }
+    void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch="");
+    void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch="");
+    void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t="",std::string ch_r="");
+
   private:
 
     const std::string _label;
@@ -132,7 +137,6 @@ void MultiChannelHistogramManager::FillRecoHistograms(bool sel,double var_r,bool
   int ch_idx = 0;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
-
   int bin_r = _offset_r.at(ch_idx)+_h_tp_v.at(ch_idx)->FindBin(var_r);
 
   _hm.FillRecoHistograms(sel,bin_r,load_syst,weight);
@@ -146,7 +150,6 @@ void MultiChannelHistogramManager::FillTruthHistograms(bool sig,double var_t,boo
   int ch_idx = 0;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
-
   int bin_t = _offset_t.at(ch_idx)+_h_tp_truth_v.at(ch_idx)->FindBin(var_t);
 
   _hm.FillTruthHistograms(sig,bin_t,load_syst,weight);
@@ -161,17 +164,59 @@ void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var
   int ch_idx_t = 0;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
-  
   int bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
 
   int ch_idx_r = 0;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
-
   int bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
    
   _hm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
 
+}
+
+///////////////////////////////////////////////////////////////////////
+// Fill the special truth histograms
+
+void MultiChannelHistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch)
+{
+  int ch_idx = 0;
+  for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
+    if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
+  int bin_t = _offset_t.at(ch_idx)+_h_tp_truth_v.at(ch_idx)->FindBin(var_t);
+
+  _hm.FillSpecialTruthHistograms(name,sig,var_t,weight);
+}
+
+///////////////////////////////////////////////////////////////////////
+// Fill the special reco histograms
+
+void MultiChannelHistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch)
+{
+  int ch_idx = 0;
+  for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
+    if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
+  int bin_r = _offset_r.at(ch_idx)+_h_tp_v.at(ch_idx)->FindBin(var_r);
+
+  _hm.FillSpecialRecoHistograms(name,sel,var_r,weight);
+}
+
+///////////////////////////////////////////////////////////////////////
+// Fill the special histograms
+
+void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t,std::string ch_r)
+{
+  int ch_idx_t = 0;
+  for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
+    if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
+  int bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
+
+  int ch_idx_r = 0;
+  for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
+    if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
+  int bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
+
+  _hm.FillSpecialHistograms2D(name,sig,sel,var_t,var_r,weight);
 }
 
 ///////////////////////////////////////////////////////////////////////
