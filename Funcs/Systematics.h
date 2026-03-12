@@ -198,6 +198,50 @@ double ChooseUnisimWeight(int u,std::map<std::string,std::vector<double>>* w){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Invert a TMatrix that has empty rows/columns - useful when trying to
+// chi2 some histograms that might contain empty bins
+
+void InvertIgnoringEmpty(TMatrixDSym& m, double tol = 1e-12)
+{
+  int n = m.GetNrows();
+  std::vector<int> keep;
+
+  // Identify rows/cols that contain non-zero elements
+  for (int i = 0; i < n; ++i) {
+    bool nonzero = false;
+    for (int j = 0; j < n; ++j) {
+      if (std::fabs(m(i,j)) > tol || std::fabs(m(j,i)) > tol) {
+        nonzero = true;
+        break;
+      }
+    }
+    if (nonzero) keep.push_back(i);
+  }
+
+  int k = keep.size();
+  if (k == 0) return;
+
+  // Build the reduced matrix
+  TMatrixDSym sub(k);
+  for (int i = 0; i < k; ++i)
+    for (int j = 0; j < k; ++j)
+      sub(i,j) = m(keep[i], keep[j]);
+
+  sub.Invert();
+
+  // Expand again
+  TMatrixDSym result(n);
+  result.Zero();
+
+  for (int i = 0; i < k; ++i)
+    for (int j = 0; j < k; ++j)
+      result(keep[i], keep[j]) = sub(i,j);
+
+  m = result;
+
+}
+
+///////////////////////////////////////////////////////////////////////
 // Calculate chi2 between two histograms 
 
 std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false){
@@ -212,8 +256,8 @@ std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool un
     }
   }
 
-  m.Invert();
- 
+  InvertIgnoringEmpty(m);
+
   double chi2 = 0;
   for(int i=min_bin;i<max_bin;i++){
     for(int j=min_bin;j<max_bin;j++){
@@ -224,7 +268,6 @@ std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool un
   return {chi2,max_bin-min_bin};
 
 }
-
 
 }
 

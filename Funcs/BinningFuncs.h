@@ -121,6 +121,25 @@ bool MakeMultiChannelTemplate(std::string label,std::map<std::string,TH1D*> h_da
 
 }
 
+///////////////////////////////////////////////////////////////////////
+// Root TH1::Add occasionally fails to add two histograms with same 
+// limits - seems to be a bug.  
+
+void ForceAdd(TH1D* h1, TH1D* h2){
+  if(h1->GetNbinsX() != h2->GetNbinsX())
+    throw std::invalid_argument("binning::ForceAdd: histograms have different numbers of bins");
+  for(int i=0;i<h1->GetNbinsX()+2;i++){
+    double c1 = h1->GetBinContent(i);
+    double c2 = h2->GetBinContent(i);
+    double e1 = h1->GetBinError(i);
+    double e2 = h2->GetBinError(i);
+    h1->SetBinContent(i,c1+c2);
+    h1->SetBinError(i,sqrt(e1*e1+e2*e2));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+
 }
 
 #endif
