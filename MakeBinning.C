@@ -25,9 +25,9 @@ void MakeBinning(){
   h_m["MuonMom"] = new TH1D("h_MuonMom",";Reco Muon Momentum (GeV);Events/GeV",10000,0.0,2.0);
   h_m["MuonCosTheta"] = new TH1D("h_MuonCosTheta",";Reco Muon Cos(#theta);Events/Unit",10000,-1.0,1.0);
   h_m["NProt"] = new TH1D("h_NProt",";Reco N Protons;Events",10000,0.5,4.5);
-  h_m["ProtonKE"] = new TH1D("h_ProtonKE",";Reco Proton KE (GeV);Events/GeV",10000,0.0,1.0);
-  h_m["PionE"] = new TH1D("h_PionE",";Reco Pion E (GeV);Events/GeV",10000,0.0,1.0);
-  h_m["PiZeroE"] = new TH1D("h_PiZeroE",";Reco #pi^{0} E (GeV);Events/GeV",10000,0.0,1.0);
+  h_m["ProtonKE"] = new TH1D("h_ProtonKE",";Reco Proton KE (GeV);Events/GeV",10000,0.01,1.0);
+  h_m["PionE"] = new TH1D("h_PionE",";Reco Pion E (GeV);Events/GeV",10000,0.01,1.0);
+  h_m["PiZeroE"] = new TH1D("h_PiZeroE",";Reco #pi^{0} E (GeV);Events/GeV",10000,0.01,1.0);
 
   std::map<std::string,std::map<std::string,TH1D*>> h_true_m;
   for(const auto &item : h_m){
@@ -62,7 +62,7 @@ void MakeBinning(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 50000) break;
+      //if(ievent > 100000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
         
@@ -73,7 +73,7 @@ void MakeBinning(){
       std::map<std::string,double> vars_t = {
         {"MuonMom",muon_mom_t->Mag()},
         {"MuonCosTheta",muon_mom_t->CosTheta()},
-        {"NProt",nprot_t},
+        {"NProt",nprot_t-0.5},
         {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
         {"PionE",pion_p4_t->E()},
         {"PiZeroE",gamma_p4_t->E()}
@@ -82,7 +82,7 @@ void MakeBinning(){
       std::map<std::string,double> vars_h8 = {
         {"MuonMom",muon_mom_h8->Mag()},
         {"MuonCosTheta",muon_mom_h8->CosTheta()},
-        {"NProt",nprot_h8},
+        {"NProt",nprot_h8-0.5},
         {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
         {"PionE",pion_p4_h8->E()},
         {"PiZeroE",gamma_p4_h8->E()}
