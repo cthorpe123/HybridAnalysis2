@@ -29,8 +29,8 @@ class MultiChannelHistogramManager {
     void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch="");
     void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t="",std::string ch_r="");
 
-    TH1D* RestoreRecoBinning(const TH1D* h,std::string name) const;
-    TH2D* RestoreRecoBinning(const TH2D* h,std::string name) const;
+    void Restore(TH1D*& h) const;
+    void Restore(TH2D*& h) const;
 
   private:
 
@@ -244,13 +244,14 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
 // convert it back to the physics variable binning scheme - currently
 // only implemented for single reco channel
 
-TH1D* MultiChannelHistogramManager::RestoreRecoBinning(const TH1D* h,std::string name) const
+void MultiChannelHistogramManager::Restore(TH1D*& h) const
 {
   if(_ch_list_r.size() > 1)
     throw std::invalid_argument("MultiChannelHistogramManager::RestoreRecoBinning only implemented for one reco channel at the moment");
 
+  std::string name = string(h->GetName());
 
-  TH1D* h_out = (TH1D*)_h_tp_v.at(0)->Clone(name.c_str());  
+  TH1D* h_out = (TH1D*)_h_tp_v.at(0)->Clone((name+"_tmp").c_str());  
   std::cout << "1D: h_out->GetNbinsX() = " << h_out->GetNbinsX() << std::endl;
 
   // bin 1 of numeric binning scheme is underflow physical binning scheme 
@@ -259,18 +260,22 @@ TH1D* MultiChannelHistogramManager::RestoreRecoBinning(const TH1D* h,std::string
     h_out->SetBinError(i,h->GetBinError(i));
   }
   
-  return h_out; 
+  delete h;
+  h = h_out;
+  h->SetName(name.c_str());
 
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-TH2D* MultiChannelHistogramManager::RestoreRecoBinning(const TH2D* h,std::string name) const
+void MultiChannelHistogramManager::Restore(TH2D*& h) const
 {
   if(_ch_list_r.size() > 1)
     throw std::invalid_argument("MultiChannelHistogramManager::RestoreRecoBinning only implemented for one reco channel at the moment");
 
-  TH2D* h_out = Make2DHist(name,_h_tp_v.at(0));
+  std::string name = string(h->GetName());
+
+  TH2D* h_out = Make2DHist((name+"_tmp").c_str(),_h_tp_v.at(0));
   std::cout << "2D: h_out->GetNbinsX() = " << h_out->GetNbinsX() << std::endl;
 
   for(int i=0;i<h->GetNbinsX()+2;i++){
@@ -278,10 +283,11 @@ TH2D* MultiChannelHistogramManager::RestoreRecoBinning(const TH2D* h,std::string
       h_out->SetBinContent(i,j,h->GetBinContent(i,j));
       h_out->SetBinError(i,j,h->GetBinError(i,j));
     }
-    std::cout << i << " " << sqrt(h_out->GetBinContent(i,i)) << std::endl;
   } 
 
-  return h_out; 
+  delete h;
+  h = h_out;
+  h->SetName(name.c_str());
 
 }
 

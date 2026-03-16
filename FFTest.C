@@ -9,6 +9,7 @@
 #include "EnergyEstimatorFuncs.h"
 #include "Systematics.h"
 #include "PlotFuncs.h"
+#include "MultiChannelHistograms.h"
 
 using namespace syst;
 
@@ -16,7 +17,7 @@ using namespace syst;
 // calulated in the CV and special universes, calculate chi2
 // between the CV and each special prediction
 
-void FFTest(){
+void FFTestMB(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
@@ -28,13 +29,12 @@ void FFTest(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
-  const bool debug = false;
 
-  std::vector<std::string> label_v = {"MuonMom","ProtonE","W","PeLEELike0Pi"};
+  std::vector<std::string> label_v = {"MuonMom","MuonMom2"};
 
   // Special universe setup
   const int spline_pts = 100;
-  std::vector<std::string> special_univ = {"ExtraPi","ExtraG","ExtraP"};
+  std::vector<std::string> special_univ = {"ExtraPi"};
 
   for(size_t i_f=0;i_f<label_v.size();i_f++){
 
@@ -45,29 +45,39 @@ void FFTest(){
 
     TFile* f_in = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
 
+    // Load binning templates
+    hist::MultiChannelHistogramManager mchm(label);
+    mchm.LoadTemplates();
+
     std::vector<TH1D*> h_v;
     std::vector<int> fill_colors;
     std::vector<std::string> legs;
 
-    // Get the CV reco prediction with signal only
-    TH1D* h_CV = Multiply((TH1D*)f_in->Get("Truth/CV/h_Signal"),(TH2D*)f_in->Get("Response/CV/h_Signal"),"h_CV",draw_overflow,draw_underflow);
-    h_v.push_back((TH1D*)h_CV->Clone("Signal"));
-    fill_colors.push_back(cat_colors[kSignal]);
-    legs.push_back("Signal");
+    // Get the CV reco prediction with signal only, numeric binning 
+    //TH1D* h_CV = Multiply((TH1D*)f_in->Get("Truth/CV/h_Signal"),(TH2D*)f_in->Get("Response/CV/h_Signal"),"h_CV");
+    //mchm.Restore(h_CV);
+    //h_v.push_back((TH1D*)h_CV->Clone("Signal"));
+    //fill_colors.push_back(cat_colors[kSignal]);
+    //legs.push_back("Signal");
 
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
+    TH1D* h_CV = (TH1D*)f_in->Get("Reco/CV/h_Signal")->Clone("h_CV");
+    mchm.Restore(h_CV);
+    if(dbbw) DivideByBinWidth(h_CV);
 
     // Get the CV background prediction
     TH1D* h_CV_BG = (TH1D*)h_CV->Clone("h_CV_BG");
+    mchm.Restore(h_CV_BG);
     h_CV_BG->Reset();
     for(int i_c=0;i_c<kData;i_c++){
-      if(i_c == kSignal) continue;
       h_v.push_back((TH1D*)f_in->Get(("Reco/CV/h_"+categories.at(i_c)).c_str()));
+      mchm.Restore(h_v.back());
+      if(dbbw) DivideByBinWidth(h_v.back()); 
       fill_colors.push_back(cat_colors[i_c]); 
       legs.push_back(categories.at(i_c));
+      if(i_c == kSignal) continue;
       h_CV_BG->Add(h_v.back());
     } 
-
     h_CV->Add(h_CV_BG);
 
     // Calculate the covariance encoding systemaics in the CV prediction
@@ -79,7 +89,8 @@ void FFTest(){
       if(i_s == kFlux) continue;
       std::vector<TH1D*> h;
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        h.push_back(Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+sys_str.at(i_s)+"/h_Signal_"+std::to_string(i_u)).c_str()),("h_Signal_FF_"+sys_str.at(i_s)+"_"+std::to_string(i_u)).c_str(),draw_overflow,draw_underflow));
+        std::string name = "h_Signal_FF_"+sys_str.at(i_s)+"_"+std::to_string(i_u);
+        h.push_back(Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+sys_str.at(i_s)+"/h_Signal_"+std::to_string(i_u)).c_str()),name.c_str()));
         for(int i_c=0;i_c<kData;i_c++){
           if(i_c == kSignal) continue;
           h.back()->Add((TH1D*)f_in->Get(("Reco/Vars/"+sys_str.at(i_s)+"/h_"+categories.at(i_c)+"_"+std::to_string(i_u)).c_str()));
@@ -88,37 +99,24 @@ void FFTest(){
       TH2D *c,*fc; 
       CalcCovMultisim(sys_str.at(i_s),h,c,fc); 
       h_Cov->Add(c);
-      if(debug){
-        pfs::Draw2DHist(fc,plot_dir+"FCov_"+sys_str.at(i_s)+".png");
-      } 
+      for(TH1D* hh : h) delete hh;
+      h.clear();
    }
-
-    // Add the covariance from the flux (for signal and background) to the covariance matrix
-    //h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot"));
 
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
     for(int i=0;i<h_Cov_Flux->GetNbinsX()+2;i++)
       for(int j=0;j<h_Cov_Flux->GetNbinsY()+2;j++)
         if(i != j) h_Cov_Flux->SetBinContent(i,j,0.0);
     h_Cov->Add(h_Cov_Flux);
-    if(debug) pfs::Draw2DHist((TH2D*)f_in->Get("Reco/Cov/Flux/FCov_Tot"),plot_dir+"FCov_Flux.png");
 
     // Add the MC stat error on the BG to the covariance matrix 
     for(int i_c=0;i_c<kData;i_c++){
       if(i_c == kSignal) continue;
       h_Cov->Add((TH2D*)f_in->Get(("Reco/Cov/MCStat/Cov_"+categories.at(i_c)).c_str()));
-      if(debug) pfs::Draw2DHist((TH2D*)f_in->Get(("Reco/Cov/MCStat/Cov_"+categories.at(i_c)).c_str()),plot_dir+"FCov_MCStat_"+categories.at(i_c)+".png");
     }
 
     // If requested, also add the estimated stat error on the data
-    if(include_data_stat){
-      h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
-      if(debug){
-        pfs::Draw2DHist((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"),plot_dir+"FCov_EstDataStat.png");
-      }
-    }
-
-    if(dbbw) for(TH1D* h : h_v) DivideByBinWidth(h);
+    if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
 
     for(std::string s : special_univ){
 
@@ -132,7 +130,9 @@ void FFTest(){
         std::string spec = s + "_" + std::to_string(i); 
 
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
-        TH1D* h_FF_Spec = Multiply(h_CV_Truth,h_Res_Spec,"h_FF_Spec",draw_overflow,draw_underflow);
+        TH1D* h_FF_Spec = Multiply(h_CV_Truth,h_Res_Spec,"h_FF_Spec");
+        mchm.Restore(h_FF_Spec);
+        if(dbbw) DivideByBinWidth(h_FF_Spec);
         h_FF_Spec->Add(h_CV_BG);
 
         // Stat error in the difference between the FF signal in the CV universe and 
@@ -140,18 +140,14 @@ void FFTest(){
         TH2D* h_Stat_Cov = (TH2D*)f_in->Get(("Reco/Special/"+spec+"/SpecialStatCov/Cov_SpecialStat").c_str());
         h_Stat_Cov->Add(h_Cov);
 
-        if(draw_cov){
-          TH2D* h_Corr = CalcCorrelationMatrix("corr",h_Stat_Cov); 
-          h_Corr->Draw("colz");
-          h_Corr->SetStats(0);
-          c->Print((plot_dir+"/"+s+"/"+"FF_Signal_"+spec+"_Corr.png").c_str());   
-          delete h_Corr;
-        }
+        mchm.Restore(h_Stat_Cov);
+        if(dbbw) DivideByBinWidth2D(h_Stat_Cov);
 
         for(int i=0;i<h_FF_Spec->GetNbinsX()+2;i++){
           h_FF_Spec->SetBinError(i,1e-10);
           h_CV->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
         }
+
 
         if(diag_only){
           for(int i=0;i<h_FF_Spec->GetNbinsX()+2;i++)
@@ -162,17 +158,9 @@ void FFTest(){
         std::pair<double,int> chi2 = Chi2(h_CV,h_FF_Spec,h_Stat_Cov,draw_overflow,draw_underflow);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
+        
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+"FF_Signal_"+spec+".png",chi2); 
 
-        TH1D* h_CV_tmp = (TH1D*)h_CV->Clone("h_CV_tmp");    
-
-        if(dbbw){
-          DivideByBinWidth(h_CV_tmp);
-          DivideByBinWidth(h_FF_Spec);
-        }
-       
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_tmp,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+"FF_Signal_"+spec+".png",chi2); 
-        delete h_CV_tmp; 
-                
         delete h_FF_Spec;
 
       }

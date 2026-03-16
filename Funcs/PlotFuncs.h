@@ -212,6 +212,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   delete hs_O;
   delete h_tot_U;
   delete h_tot_O;
+
   if(h_data != nullptr){
     delete h_data_U;
     delete h_data_O;
@@ -221,6 +222,9 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
     delete h_U.at(i_s);
     delete h_O.at(i_s);
   }
+
+   h_U.clear();
+   h_O.clear();
 
 }
 
