@@ -252,7 +252,6 @@ void MultiChannelHistogramManager::Restore(TH1D*& h) const
   std::string name = string(h->GetName());
 
   TH1D* h_out = (TH1D*)_h_tp_v.at(0)->Clone((name+"_tmp").c_str());  
-  std::cout << "1D: h_out->GetNbinsX() = " << h_out->GetNbinsX() << std::endl;
 
   // bin 1 of numeric binning scheme is underflow physical binning scheme 
   for(int i=0;i<h_out->GetNbinsX()+2;i++){
@@ -276,7 +275,6 @@ void MultiChannelHistogramManager::Restore(TH2D*& h) const
   std::string name = string(h->GetName());
 
   TH2D* h_out = Make2DHist((name+"_tmp").c_str(),_h_tp_v.at(0));
-  std::cout << "2D: h_out->GetNbinsX() = " << h_out->GetNbinsX() << std::endl;
 
   for(int i=0;i<h->GetNbinsX()+2;i++){
     for(int j=0;j<h->GetNbinsY()+2;j++){
