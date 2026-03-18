@@ -68,8 +68,8 @@ class DetvarHistogramManager {
     void _SetupTruthHistograms();
     void _SetupJointHistograms();
     void _WriteReco();
-    //void _WriteTruth();
-    //void _WriteJoint();
+    void _WriteTruth();
+    void _WriteJoint();
 
     TFile* _f_out = nullptr;
 
@@ -283,13 +283,13 @@ void DetvarHistogramManager::Write()
   std::cout << "Writing histograms for " << _label << std::endl;
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
   _f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Detvars.root").c_str(),"RECREATE");
+
   _WriteReco();
-/*
   if(_save_truth){
     _WriteTruth();
     _WriteJoint();
   }
-*/
+
   _f_out->Close();
 }
 
@@ -368,7 +368,101 @@ void DetvarHistogramManager::_WriteReco()
     h_Cov_Cat.at(i_c)->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_Cat.at(i_c)->Write(("FCov_"+categories.at(i_c)).c_str());
   }
+
+  _f_out->cd();
  
+}
+
+///////////////////////////////////////////////////////////////////////
+// Write the truth histograms to file
+
+void DetvarHistogramManager::_WriteTruth()
+{
+  _f_out->mkdir("Truth");
+
+  // Histograms to store totals
+  TH2D* h_Cov = Make2DHist("h_Cov_Truth",_h_tp_truth); 
+  TH2D* h_FCov = Make2DHist("h_FCov_Truth",_h_tp_truth); 
+
+  _f_out->mkdir("Truth/CV");
+  _f_out->cd("Truth/CV");
+
+  _h_CV_Truth_Signal->Write("h_Signal");
+  _f_out->cd();
+
+  if(_keep_all){
+    _f_out->mkdir("Truth/Vars");
+    for(int i_s=0;i_s<kDetvarMAX;i_s++){
+      _f_out->mkdir(("Truth/Vars/"+detvar_str.at(i_s)).c_str());
+      _f_out->cd(("Truth/Vars/"+detvar_str.at(i_s)).c_str());
+      _h_Vars_Truth_Signal.at(i_s)->Write("h_Signal");
+      _f_out->cd();
+    }
+  }
+
+  _f_out->mkdir("Truth/Cov");
+  _f_out->cd("Truth/Cov");
+  for(int i_s=0;i_s<kDetvarMAX;i_s++){
+    _f_out->mkdir(("Truth/Cov/"+detvar_str.at(i_s)).c_str());
+    _f_out->cd(("Truth/Cov/"+detvar_str.at(i_s)).c_str());
+    TH2D *C,*FC;
+    CalcCovUnisim(detvar_str.at(i_s),_h_CV_Truth_Signal,_h_Vars_Truth_Signal.at(i_s),C,FC);
+    C->Write("Cov_Signal");
+    FC->Write("FCov_Signal");
+    h_Cov->Add(C);
+    h_FCov->Add(FC);
+    _f_out->cd();
+  }
+
+  _f_out->mkdir("Truth/Cov/Total");
+  _f_out->cd("Truth/Cov/Total");
+  h_Cov->Write("Cov_Tot"); 
+  h_FCov->Write("FCov_Tot"); 
+  _f_out->cd();
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Write the truth histograms to file
+
+void DetvarHistogramManager::_WriteJoint()
+{
+  _f_out->mkdir("Response");
+
+  _f_out->mkdir("Response/CV");
+  _f_out->cd("Response/CV");
+  TH2D* h_CV_Response_Signal = (TH2D*)_h_CV_Joint_Signal->Clone("h_CV_Response_Signal");  
+  NormaliseResponse(_h_CV_Truth_Signal,h_CV_Response_Signal); 
+  h_CV_Response_Signal->Write("h_Signal");
+
+  if(_keep_all){
+    _f_out->mkdir("Response/Vars");
+    for(int i_s=0;i_s<kDetvarMAX;i_s++){
+      _f_out->mkdir(("Response/Vars/"+detvar_str.at(i_s)).c_str());
+      _f_out->cd(("Response/Vars/"+detvar_str.at(i_s)).c_str());
+      TH2D* h = (TH2D*)_h_Vars_Joint_Signal.at(i_s)->Clone("h_CV_Response_Signal");  
+      NormaliseResponse(_h_Vars_Truth_Signal.at(i_s),h);
+      h->Write("h_Signal");
+      _f_out->cd();
+    }
+  }
+
+  _f_out->mkdir("Joint/CV");
+  _f_out->cd("Joint/CV");
+  _h_CV_Joint_Signal->Write("h_Signal");
+
+  _f_out->cd();
+
+  if(_keep_all){
+    _f_out->mkdir("Joint/Vars");
+    for(int i_s=0;i_s<kDetvarMAX;i_s++){
+      _f_out->mkdir(("Joint/Vars/"+detvar_str.at(i_s)).c_str());
+      _f_out->cd(("Joint/Vars/"+detvar_str.at(i_s)).c_str());
+      _h_Vars_Joint_Signal.at(i_s)->Write("h_Signal");
+      _f_out->cd();
+    }
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////
