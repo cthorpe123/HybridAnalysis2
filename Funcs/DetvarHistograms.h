@@ -26,14 +26,15 @@ class DetvarHistogramManager {
     void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,double weight=1.0);
 
     void ShapeOnly() { _shape_only = true; }
-    //void FillHistograms(double var,double weight=1.0);
-    //void Write();
+    void KeepAll(){ _keep_all = true; }
+    void Write();
 
   private:
 
     const std::string _label;
     const bool _save_truth;
     bool _shape_only = false; 
+    bool _keep_all = false;
 
     // histogram templates
     TH1D* _h_tp = nullptr;
@@ -66,7 +67,7 @@ class DetvarHistogramManager {
     void _SetupRecoHistograms();
     void _SetupTruthHistograms();
     void _SetupJointHistograms();
-    //void _WriteReco();
+    void _WriteReco();
     //void _WriteTruth();
     //void _WriteJoint();
 
@@ -273,86 +274,103 @@ void DetvarHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,dou
   else _h_Vars_Joint_Signal.at(detvar_univ)->Fill(var_t,var_r,POT_weight*weightSplineTimesTune);
 
 }
-/*
+
 ///////////////////////////////////////////////////////////////////////
-// Write the histograms 
+// Write the histograms to file
 
 void DetvarHistogramManager::Write()
 {
-
-  for(int i_s=0;i_s<kDetvarMAX;i_s++){
-    _h_Vars_Tot.at(i_s)->Add(_h_CV.at(kEXT));
-    _h_Vars_Tot.at(i_s)->Add(_h_CV.at(kDirt));
-    _h_Vars.at(kEXT).at(i_s)->Add(_h_CV.at(kEXT));
-    _h_Vars.at(kDirt).at(i_s)->Add(_h_CV.at(kDirt));
-  }
-
+  std::cout << "Writing histograms for " << _label << std::endl;
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
-  TFile* f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Detvars.root").c_str(),"RECREATE");
-
-  double integral = _h_CV_Tot->Integral("width");
-  if(_shape_only) _h_CV_Tot->Scale(1.0/integral);
-  _h_CV_Tot->Write("h_Detvar_CV_Tot");
-
-  for(size_t i_c=0;i_c<categories.size();i_c++){
-    if(_shape_only) _h_CV.at(i_c)->Scale(1.0/integral);
-    _h_CV.at(i_c)->Write(("h_Detvar_CV_"+categories.at(i_c)).c_str());
+  _f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Detvars.root").c_str(),"RECREATE");
+  _WriteReco();
+/*
+  if(_save_truth){
+    _WriteTruth();
+    _WriteJoint();
   }
-
-  std::vector<double> integral_v;
-  for(int i_s=0;i_s<kDetvarMAX;i_s++){
-    integral_v.push_back(_h_Vars_Tot.at(i_s)->Integral("width"));
-    if(_shape_only) _h_Vars_Tot.at(i_s)->Scale(1.0/integral_v.back());
-    _h_Vars_Tot.at(i_s)->Write(("h_Detvar_Vars_Tot_"+detvar_str.at(i_s)).c_str());
-  }  
-
-  for(size_t i_c=0;i_c<categories.size();i_c++){
-    for(int i_s=0;i_s<kDetvarMAX;i_s++){
-      if(_shape_only) _h_Vars.at(i_c).at(i_s)->Scale(1.0/integral_v.at(i_s));
-      _h_Vars.at(i_c).at(i_s)->Write(("h_Detvar_Vars_"+categories.at(i_c)+"_"+detvar_str.at(i_s)).c_str());  
-    }
-  }      
-
-  std::vector<TH2D*> h_Cov_Tot; 
-  std::vector<TH2D*> h_FCov_Tot; 
-  for(int i_s=0;i_s<kDetvarMAX;i_s++){
-    h_Cov_Tot.push_back(nullptr);
-    h_FCov_Tot.push_back(nullptr);
-    CalcCovUnisim(detvar_str.at(i_s),_h_CV_Tot,_h_Vars_Tot.at(i_s),h_Cov_Tot.back(),h_FCov_Tot.back());
-    h_Cov_Tot.back()->Write();
-    h_FCov_Tot.back()->Write();
-  }
-
-  TH2D* h_Cov = static_cast<TH2D*>(h_Cov_Tot.at(0)->Clone("Cov"));
-  TH2D* h_FCov = static_cast<TH2D*>(h_FCov_Tot.at(0)->Clone("FCov"));
-  h_Cov->Reset();
-  h_FCov->Reset();
-  for(int i_s=0;i_s<kSystMAX;i_s++){
-    h_Cov->Add(h_Cov_Tot.at(i_s));    
-    h_FCov->Add(h_FCov_Tot.at(i_s));    
-  }
-  h_Cov->Write();
-  h_FCov->Write();
-
-  std::vector<std::vector<TH2D*>> h_Cov_Cat; 
-  std::vector<std::vector<TH2D*>> h_FCov_Cat; 
-
-  for(size_t i_c=0;i_c<categories.size();i_c++){
-    h_Cov_Cat.push_back(std::vector<TH2D*>());
-    h_FCov_Cat.push_back(std::vector<TH2D*>());
-    for(int i_s=0;i_s<kDetvarMAX;i_s++){
-      h_Cov_Cat.back().push_back(nullptr);
-      h_FCov_Cat.back().push_back(nullptr);
-      CalcCovUnisim(categories.at(i_c)+"_"+detvar_str.at(i_s),_h_CV.at(i_c),_h_Vars.at(i_c).at(i_s),h_Cov_Cat.back().back(),h_FCov_Cat.back().back());
-      h_Cov_Cat.back().back()->Write();
-      h_FCov_Cat.back().back()->Write();
-    }
-  }       
-
-  f_out->Close();
-
-}
 */
+  _f_out->Close();
+}
+
+///////////////////////////////////////////////////////////////////////
+// Write the reco histograms to file
+
+void DetvarHistogramManager::_WriteReco()
+{
+  _f_out->mkdir("Reco");
+
+  // Add the EXT and dirt backgrounds to the variations
+  for(int i_s=0;i_s<kDetvarMAX;i_s++){
+    _h_Vars_Reco_Tot.at(i_s)->Add(_h_CV_Reco_Cat.at(kEXT));
+    _h_Vars_Reco_Tot.at(i_s)->Add(_h_CV_Reco_Cat.at(kDirt));
+    _h_Vars_Reco_Cat.at(kEXT).at(i_s)->Add(_h_CV_Reco_Cat.at(kEXT));
+    _h_Vars_Reco_Cat.at(kDirt).at(i_s)->Add(_h_CV_Reco_Cat.at(kDirt));
+  }
+
+  // Store the total covariance as well 
+  TH2D* h_Cov = Make2DHist("h_Cov",_h_tp); 
+  TH2D* h_FCov = Make2DHist("h_FCov",_h_tp); 
+  std::vector<TH2D*> h_Cov_Cat,h_FCov_Cat;
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    h_Cov_Cat.push_back(Make2DHist("h_Cov_"+categories.at(i_c),_h_tp));
+    h_FCov_Cat.push_back(Make2DHist("h_FCov_"+categories.at(i_c),_h_tp));
+  }
+
+  _f_out->mkdir("Reco/CV");
+  _f_out->cd("Reco/CV");
+
+  _h_CV_Reco_Tot->Write("h_Tot");
+  for(size_t i_c=0;i_c<categories.size();i_c++)
+    _h_CV_Reco_Cat.at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
+   
+  _f_out->cd();
+
+  if(_keep_all){
+    _f_out->mkdir("Reco/Vars");
+    for(int i_s=0;i_s<kDetvarMAX;i_s++){
+      _f_out->mkdir(("Reco/Vars/"+detvar_str.at(i_s)).c_str());
+      _f_out->cd(("Reco/Vars/"+detvar_str.at(i_s)).c_str());
+      _h_Vars_Reco_Tot.at(i_s)->Write("h_Tot");
+      for(size_t i_c=0;i_c<categories.size();i_c++)
+        _h_Vars_Reco_Cat.at(i_c).at(i_s)->Write(("h_"+categories.at(i_c)).c_str());
+      _f_out->cd();
+    }
+  }
+
+  _f_out->mkdir("Reco/Cov");
+  _f_out->cd("Reco/Cov");
+  for(int i_s=0;i_s<kDetvarMAX;i_s++){
+    _f_out->mkdir(("Reco/Cov/"+detvar_str.at(i_s)).c_str());
+    _f_out->cd(("Reco/Cov/"+detvar_str.at(i_s)).c_str());
+    TH2D *C,*FC;
+    CalcCovUnisim(detvar_str.at(i_s),_h_CV_Reco_Tot,_h_Vars_Reco_Tot.at(i_s),C,FC);
+    C->Write("Cov_Tot");
+    FC->Write("FCov_Tot");
+    h_Cov->Add(C);
+    h_FCov->Add(FC);
+    for(size_t i_c=0;i_c<categories.size();i_c++){
+      TH2D *C_Cat,*FC_Cat;
+      CalcCovUnisim(detvar_str.at(i_s)+"_"+categories.at(i_c),_h_CV_Reco_Cat.at(i_c),_h_Vars_Reco_Cat.at(i_c).at(i_s),C_Cat,FC_Cat);
+      C_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
+      FC_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
+      h_Cov_Cat.at(i_c)->Add(C_Cat);
+      h_FCov_Cat.at(i_c)->Add(FC_Cat);
+    }
+    _f_out->cd();
+  }
+
+  _f_out->mkdir("Reco/Cov/Total");
+  _f_out->cd("Reco/Cov/Total");
+  h_Cov->Write("Cov_Tot"); 
+  h_FCov->Write("FCov_Tot"); 
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    h_Cov_Cat.at(i_c)->Write(("Cov_"+categories.at(i_c)).c_str());
+    h_FCov_Cat.at(i_c)->Write(("FCov_"+categories.at(i_c)).c_str());
+  }
+ 
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 }
