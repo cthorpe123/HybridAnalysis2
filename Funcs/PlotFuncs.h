@@ -26,6 +26,7 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
   TLegend* l2 = new TLegend(0.0,0.9,1.0,1.0);
   l2->SetNColumns(legs.size());
+  l2->SetBorderSize(0);
 
   std::vector<TH1D*> h_O(h_v.size());
   std::vector<TH1D*> h_U(h_v.size());
