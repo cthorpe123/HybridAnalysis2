@@ -25,10 +25,16 @@ void MakeBinning(){
   h_m["MuonMom"] = new TH1D("h_MuonMom",";Reco Muon Momentum (GeV);Events/GeV",10000,0.0,2.0);
   h_m["MuonCosTheta"] = new TH1D("h_MuonCosTheta",";Reco Muon Cos(#theta);Events/Unit",10000,-1.0,1.0);
   h_m["NProt"] = new TH1D("h_NProt",";Reco N Protons;Events",10000,0.5,4.5);
-  h_m["ProtonKE"] = new TH1D("h_ProtonKE",";Reco Proton KE (GeV);Events/GeV",10000,0.01,1.0);
-  h_m["PionE"] = new TH1D("h_PionE",";Reco Pion E (GeV);Events/GeV",10000,0.01,1.0);
-  h_m["PiZeroE"] = new TH1D("h_PiZeroE",";Reco #pi^{0} E (GeV);Events/GeV",10000,0.01,1.0);
-
+  h_m["NPi"] = new TH1D("h_NPi",";Reco N #pi^{#pm};Events",10000,-0.5,4.5);
+  h_m["NSh"] = new TH1D("h_NSh",";Reco N #pi^{0};Events",10000,-0.5,4.5);
+  h_m["ProtonKE"] = new TH1D("h_ProtonKE",";Reco Proton KE (GeV);Events/GeV",10000,0.02,1.0);
+  h_m["PionE"] = new TH1D("h_PionE",";Reco Pion E (GeV);Events/GeV",10000,0.02,1.0);
+  h_m["PiZeroE"] = new TH1D("h_PiZeroE",";Reco #pi^{0} E (GeV);Events/GeV",10000,0.02,1.0);
+  h_m["W"] = new TH1D("h_W",";Reco W (GeV);Events/GeV",10000,0.0,5.0);
+  
+  for(int i_e=0;i_e<ee::kMAX;i_e++)
+    h_m[ee::estimators_str.at(i_e)] = new TH1D(("h_"+ee::estimators_str.at(i_e)).c_str(),";Est Neutrino Energy (GeV);Events",10000,0.0,2.5);
+   
   std::map<std::string,std::map<std::string,TH1D*>> h_true_m;
   for(const auto &item : h_m){
     h_true_m[item.first] = std::map<std::string,TH1D*>(); 
@@ -74,20 +80,31 @@ void MakeBinning(){
         {"MuonMom",muon_mom_t->Mag()},
         {"MuonCosTheta",muon_mom_t->CosTheta()},
         {"NProt",nprot_t-0.5},
+        {"NPi",npi_t-0.5},
+        {"NSh",nsh_t-0.5},
         {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
         {"PionE",pion_p4_t->E()},
-        {"PiZeroE",gamma_p4_t->E()}
+        {"PiZeroE",gamma_p4_t->E()}, 
+        {"W",W_t}
       };
+
+      for(int i_e=0;i_e<ee::kMAX;i_e++)
+        vars_t[ee::estimators_str.at(i_e)] = est_nu_e_t->at(i_e);
 
       std::map<std::string,double> vars_h8 = {
         {"MuonMom",muon_mom_h8->Mag()},
         {"MuonCosTheta",muon_mom_h8->CosTheta()},
         {"NProt",nprot_h8-0.5},
+        {"NPi",npi_h8-0.5},
+        {"NSh",nsh_h8-0.5},
         {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
         {"PionE",pion_p4_h8->E()},
-        {"PiZeroE",gamma_p4_h8->E()}
+        {"PiZeroE",gamma_p4_h8->E()},
+        {"W",W_h8}
       };
 
+      for(int i_e=0;i_e<ee::kMAX;i_e++)
+        vars_h8[ee::estimators_str.at(i_e)] = est_nu_e_h8->at(i_e);
 
       if(is_signal_t){
         for(const auto &item : h_true_m){
@@ -108,7 +125,6 @@ void MakeBinning(){
     }
 
   }
-
 
   for(const auto &item : h_m){
     std::string var = item.first;

@@ -17,11 +17,12 @@ using namespace syst;
 // calulated in the CV and special universes, calculate chi2
 // between the CV and each special prediction
 
-void FFTestMB(){
+void FFTest(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
+  bool add_detvars = true;
   const bool include_data_stat = true;
   const bool draw_underflow = false;
   const bool draw_overflow = false;
@@ -30,7 +31,7 @@ void FFTestMB(){
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  std::vector<std::string> label_v = {"MuonMom","MuonMom2"};
+  std::vector<std::string> label_v = {"MuonMom"};
 
   // Special universe setup
   const int spline_pts = 100;
@@ -44,6 +45,7 @@ void FFTestMB(){
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
     TFile* f_in = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     // Load binning templates
     hist::MultiChannelHistogramManager mchm(label);
@@ -101,7 +103,47 @@ void FFTestMB(){
       h_Cov->Add(c);
       for(TH1D* hh : h) delete hh;
       h.clear();
+      delete c;
+      delete fc;
    }
+
+    // Need to be a bit careful with detvars - calculate fractional covariance 
+    // in prediction using only detvar info, then scale this to the normal sample
+    if(add_detvars){
+
+      TH1D* h_CV_Truth_Detvar = (TH1D*)f_in_detvar->Get("Truth/CV/h_Signal");
+      TH1D* h_CV_Detvar = (TH1D*)f_in_detvar->Get("Reco/CV/h_Tot")->Clone("h_CV_Detvar");
+      TH1D* h_CV_tmp = (TH1D*)f_in->Get("Reco/CV/h_Tot")->Clone("h_CV_tmp");
+
+      for(int i_s=0;i_s<kDetvarMAX;i_s++){
+       
+        std::string name = "h_Signal_FF_"+detvar_str.at(i_s);
+        TH1D* h = Multiply(h_CV_Truth_Detvar,(TH2D*)f_in_detvar->Get(("Response/Vars/"+detvar_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
+        
+        for(int i_c=0;i_c<kData;i_c++){
+          if(i_c == kSignal) continue;
+          h->Add((TH1D*)f_in_detvar->Get(("Reco/Vars/"+detvar_str.at(i_s)+"/h_"+categories.at(i_c)).c_str()));
+        } 
+        
+
+        TH2D *c,*fc; 
+        CalcCovUnisim(detvar_str.at(i_s),h_CV_Detvar,h,c,fc); 
+        for(int i=0;i<h_CV->GetNbinsX()+2;i++){
+          for(int j=0;j<h_CV->GetNbinsX()+2;j++){
+            c->SetBinContent(i,j,fc->GetBinContent(i,j)*h_CV_tmp->GetBinContent(i)*h_CV_tmp->GetBinContent(j));
+          }
+        }
+
+        h_Cov->Add(c);
+        delete h;
+        delete c; 
+        delete fc;
+      }
+
+      delete h_CV_tmp;
+
+    }
+
 
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
     for(int i=0;i<h_Cov_Flux->GetNbinsX()+2;i++)

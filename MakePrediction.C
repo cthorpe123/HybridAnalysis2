@@ -13,18 +13,18 @@
 
 using namespace syst;
 
-void MakePredictionMB(){
+void MakePrediction(){
 
   bool add_detvars = false;
   bool blinded = true;
   bool draw_underflow = false;
-  bool draw_overflow = true;
-  bool divide_by_bin_width = true;
+  bool draw_overflow = false;
+  bool divide_by_bin_width = false;
 
-  std::vector<std::string> label_v = {"MuonMom","MuonMom2"};
+  std::vector<std::string> vars = {"MuonMom"};
 
-  for(size_t i_f=0;i_f<label_v.size();i_f++){
-    std::string label = label_v.at(i_f);
+  for(size_t i_f=0;i_f<vars.size();i_f++){
+    std::string label = vars.at(i_f);
 
     TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
     TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
@@ -49,6 +49,16 @@ void MakePredictionMB(){
     }
 
     TH2D* h_Cov = (TH2D*)(f_in_hist->Get("Reco/Cov/Total/Cov_Tot"));
+
+    // Detvar prediction isn't guaranteed to match CV's exposure - use FCov and scale
+    if(add_detvars){
+      TH2D* h_FCov_Detvar = (TH2D*)f_in_detvar->Get("Reco/Cov/Total/FCov_Tot");
+      for(int i=0;i<h_CV_Tot->GetNbinsX()+2;i++)
+        for(int j=0;j<h_CV_Tot->GetNbinsX()+2;j++)
+          h_FCov_Detvar->SetBinContent(i,j,h_FCov_Detvar->GetBinContent(i,j)*h_CV_Tot->GetBinContent(i)*h_CV_Tot->GetBinContent(j));
+      h_Cov->Add(h_FCov_Detvar); 
+    }
+
     mchm.Restore(h_Cov);
     for(int i=0;i<h_CV_Tot->GetNbinsX()+2;i++) h_CV_Tot->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
     if(divide_by_bin_width) DivideByBinWidth(h_CV_Tot);
