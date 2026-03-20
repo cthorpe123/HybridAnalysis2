@@ -14,15 +14,11 @@ using namespace syst;
 
 void SysTest(){
 
-  std::vector<std::string> label_v = {"MuonMom","MuonCosTheta","ProtonE"};
-  for(int i_e=0;i_e<ee::kMAX;i_e++) label_v.push_back(ee::estimators_str.at(i_e));
-
-  //std::vector<std::string> label_v = {"PionE","ShowerE","W"};
+  std::vector<std::string> label_v = {"MuonMom"};
 
   bool draw_underflow = false;
   bool draw_overflow = false;
-
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool blinded = true;
   bool show_truth = false;
 
@@ -81,6 +77,7 @@ void SysTest(){
       delete h2;
     }
 
+    // Print the stat error covariance and fractional covariance
     plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
     TH2D* h_Cov_MCStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/MCStat/Cov_"+plot).c_str()));
     pfs::Draw2DHist(h_Cov_MCStat,plot_dir+"Cov_MCStat.png");
@@ -94,7 +91,16 @@ void SysTest(){
     TH2D* h_FCov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/EstDataStat/FCov_"+plot).c_str()));
     pfs::Draw2DHist(h_FCov_EstDataStat,plot_dir+"FCov_EstDataStat.png");
 
-    plot_dir = "Analysis/"+label+"/Plots/SysTest/Reco/";
+    // Print the total detector covariance and fractional covariance
+    TH2D *h_Cov_Detvar = nullptr,*h_FCov_Detvar = nullptr;
+    if(add_detvars){
+      h_Cov_Detvar = (TH2D*)f_in_detvar->Get((dir+"/Cov/Total/Cov_"+plot).c_str());  
+      pfs::Draw2DHist(h_Cov_Detvar,plot_dir+"Cov_Detvar.png");
+      h_FCov_Detvar = (TH2D*)f_in_detvar->Get((dir+"/Cov/Total/FCov_"+plot).c_str());  
+      pfs::Draw2DHist(h_FCov_Detvar,plot_dir+"FCov_Detvar.png");
+    } 
+
+    plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
     std::vector<TH1D*> h_FE;
     std::vector<int> colors;
     std::vector<std::string> legs;
@@ -126,8 +132,15 @@ void SysTest(){
     colors.push_back(special_color[kEstDataStat]);
     legs.push_back("EstDataStat");
 
+    if(add_detvars){
+      h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_Detvar"));
+      for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_Detvar->GetBinContent(i,i)));
+      colors.push_back(detvar_color);
+      legs.push_back("Detvar");
+    }
+
     h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_FE_Total"));
-    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov->GetBinContent(i,i)));
+    for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,add_detvars ? sqrt(h_FCov->GetBinContent(i,i) + h_FCov_Detvar->GetBinContent(i,i)) : sqrt(h_FCov->GetBinContent(i,i)));
     colors.push_back(1);
     legs.push_back("Total");
 
@@ -147,6 +160,22 @@ void SysTest(){
     } 
     
     pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Unisim.png");
+
+    // Plot comparing the detvar uncertainties to one another
+    if(add_detvars){
+      colors.clear();
+      legs.clear();
+      h_FE.clear();
+      for(int i_s=0;i_s<kDetvarMAX;i_s++){
+        h_FE.push_back((TH1D*)f_in_detvar->Get((dir+"/CV/h_"+plot).c_str())->Clone(("h_FE_"+detvar_str.at(i_s)).c_str()));
+        TH2D* h = (TH2D*)f_in_detvar->Get((dir+"/Cov/"+detvar_str.at(i_s)+"/FCov_"+plot).c_str()); 
+        for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
+        colors.push_back(i_s+2);
+        legs.push_back(detvar_str.at(i_s));
+        delete h;
+      }
+      pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Detvar.png");
+    }
  
   }
 

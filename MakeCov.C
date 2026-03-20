@@ -29,7 +29,9 @@ void MakeCov(){
   };
 
   std::vector<std::string> channels = {"1p","2p","Other"};
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","ProtonKE","PionE","PiZeroE"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
+  for(int i_e=0;i_e<ee::kMAX;i_e++)
+    vars.push_back(ee::estimators_str.at(i_e));
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
   for(std::string var : vars){
@@ -56,7 +58,7 @@ void MakeCov(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 100000) break;
+      //if(ievent > 50000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
 
@@ -71,19 +73,31 @@ void MakeCov(){
         {"MuonMom",muon_mom_t->Mag()},
         {"MuonCosTheta",muon_mom_t->CosTheta()},
         {"NProt",nprot_t},
+        {"NPi",npi_t},
+        {"NSh",nsh_t},
         {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
         {"PionE",pion_p4_t->E()},
-        {"PiZeroE",gamma_p4_t->E()}
+        {"PiZeroE",gamma_p4_t->E()}, 
+        {"W",W_t}
       };
+
+      for(int i_e=0;i_e<ee::kMAX;i_e++)
+        vars_t[ee::estimators_str.at(i_e)] = est_nu_e_t->at(i_e);
 
       std::map<std::string,double> vars_h8 = {
         {"MuonMom",muon_mom_h8->Mag()},
         {"MuonCosTheta",muon_mom_h8->CosTheta()},
         {"NProt",nprot_h8},
+        {"NPi",npi_h8},
+        {"NSh",nsh_h8},
         {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
         {"PionE",pion_p4_h8->E()},
-        {"PiZeroE",gamma_p4_h8->E()}
+        {"PiZeroE",gamma_p4_h8->E()},
+        {"W",W_h8}
       };
+
+      for(int i_e=0;i_e<ee::kMAX;i_e++)
+        vars_h8[ee::estimators_str.at(i_e)] = est_nu_e_h8->at(i_e);
 
       for(const auto &item : h_m){
         std::string var = item.first;

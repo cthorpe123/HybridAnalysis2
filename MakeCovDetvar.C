@@ -8,7 +8,7 @@
 #include "BranchList.h"
 #include "EnergyEstimatorFuncs.h"
 #include "Systematics.h"
-#include "Histograms.h"
+#include "DetvarHistograms.h"
 
 using namespace syst;
 
@@ -17,22 +17,17 @@ void MakeCovDetvar(){
   const double scale = 1.0;
 
   // Label and set the branches defining the selection and systematics
-  std::string label = "RecoE_0p_Test";
-  hist::DetvarHistogramManager h(label);
+  std::string label = "MuonMom";
+  hist::DetvarHistogramManager h(label,true);
   h.LoadTemplate();
-  h.DBBW(); 
 
-  std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/detvar/";
+  std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files = {
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_cv_surprise_reco2_hist.root",
-    "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
-    "../Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root",
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lya_surprise_reco2_hist.root",
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lyd_surprise_reco2_hist.root",
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_lyr_surprise_reco2_hist.root",
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_SCE_surprise_reco2_hist.root",
-    "Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_recomb2_surprise_reco2_hist.root" 
-      //"Filtered_Merged_DetVar_Run45_v10_04_07_15_BNB_nu_overlay_WMX_surprise_TEST_reco2_hist.root",
+    "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_4d.root",
+    "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_4d.root",
+    "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_4d.root",
+    "Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
+    "Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root"
   };
 
  
@@ -45,15 +40,42 @@ void MakeCovDetvar(){
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
-      bool sel = in_tpc_pd && has_muon_pd && in_tpc_lt && !nprot_lt && !npi_lt && !nsh_lt;
-      if(!sel) continue;
-      double var = muon_mom_h8->Mag();
-      h.FillHistograms(var);
+
+      std::map<std::string,double> vars_t = {
+        {"MuonMom",muon_mom_t->Mag()},
+        {"MuonCosTheta",muon_mom_t->CosTheta()},
+        {"NProt",nprot_t},
+        {"NPi",npi_t},
+        {"NSh",nsh_t},
+        {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
+        {"PionE",pion_p4_t->E()},
+        {"PiZeroE",gamma_p4_t->E()}, 
+        {"W",W_t}
+      };
+
+      for(int i_e=0;i_e<ee::kMAX;i_e++)
+        vars_t[ee::estimators_str.at(i_e)] = est_nu_e_t->at(i_e);
+
+      std::map<std::string,double> vars_h8 = {
+        {"MuonMom",muon_mom_h8->Mag()},
+        {"MuonCosTheta",muon_mom_h8->CosTheta()},
+        {"NProt",nprot_h8},
+        {"NPi",npi_h8},
+        {"NSh",nsh_h8},
+        {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
+        {"PionE",pion_p4_h8->E()},
+        {"PiZeroE",gamma_p4_h8->E()},
+        {"W",W_h8}
+      };
+
+      const double& t = vars_t.at("MuonMom");
+      const double& r = vars_h8.at("MuonMom");
+      h.FillHistograms2D(is_signal_t,sel_h8,t,r);
 
     }
     f_in->Close();
   }
 
-  h.Write();
+  //h.Write();
 
 }
