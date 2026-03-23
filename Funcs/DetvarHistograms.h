@@ -21,9 +21,9 @@ class DetvarHistogramManager {
     void SetTemplate(std::string axis_title,int nbins,double low,double high);
     void SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r);
 
-    void FillTruthHistograms(bool sig,double var_t,double weight=1.0);
-    void FillRecoHistograms(bool sel,double var_r,double weight=1.0);
-    void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,double weight=1.0);
+    void FillTruthHistograms(bool sig,double var_t,bool load_syst,double weight=1.0);
+    void FillRecoHistograms(bool sel,double var_r,bool load_syst,double weight=1.0);
+    void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0);
 
     void ShapeOnly() { _shape_only = true; }
     void KeepAll(){ _keep_all = true; }
@@ -108,7 +108,7 @@ void DetvarHistogramManager::LoadTemplate(std::string t)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// initial setup - load template histogram from file
+// initial setup - Set binning scheme manually
 
 void DetvarHistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low_r,double high_r)
 {
@@ -122,7 +122,7 @@ void DetvarHistogramManager::SetTemplate(std::string axis_title,int nbins_r,doub
 
 
 ///////////////////////////////////////////////////////////////////////
-// initial setup - load template histogram from file
+// initial setup - Set binning scheme manually 
 
 void DetvarHistogramManager::SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
 {
@@ -211,7 +211,7 @@ void DetvarHistogramManager::_SetupJointHistograms()
 ///////////////////////////////////////////////////////////////////////
 // Fill the histograms
 
-void DetvarHistogramManager::FillTruthHistograms(bool sig,double var_t,double weight=1.0)
+void DetvarHistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,double weight=1.0)
 {
   if(!sig) return;
 
@@ -230,7 +230,7 @@ void DetvarHistogramManager::FillTruthHistograms(bool sig,double var_t,double we
 ///////////////////////////////////////////////////////////////////////
 // Fill the histograms
 
-void DetvarHistogramManager::FillRecoHistograms(bool sel,double var_r,double weight=1.0)
+void DetvarHistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,double weight=1.0)
 {
   if(!sel) return;
   
@@ -255,7 +255,7 @@ void DetvarHistogramManager::FillRecoHistograms(bool sel,double var_r,double wei
 ///////////////////////////////////////////////////////////////////////
 // Fill the histograms
 
-void DetvarHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double var_r,double weight=1.0)
+void DetvarHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0)
 {
 
  FillTruthHistograms(sig,var_t,weight);

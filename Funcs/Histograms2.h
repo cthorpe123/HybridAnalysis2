@@ -126,7 +126,7 @@ void HistogramManager::LoadTemplate(std::string t)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// initial setup - load template histogram from file
+// initial setup - Set binning manually 
 
 void HistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low_r,double high_r)
 {
@@ -140,7 +140,7 @@ void HistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low
 
 
 ///////////////////////////////////////////////////////////////////////
-// initial setup - load template histogram from file
+// initial setup - Set binning manually 
 
 void HistogramManager::SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
 {

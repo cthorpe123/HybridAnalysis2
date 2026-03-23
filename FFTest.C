@@ -31,16 +31,19 @@ void FFTest(){
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  std::vector<std::string> label_v = {"MuonMom"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
+  for(int i_e=0;i_e<ee::kMAX;i_e++)
+    vars.push_back(ee::estimators_str.at(i_e));
 
   // Special universe setup
   const int spline_pts = 100;
   std::vector<std::string> special_univ = {"ExtraPi"};
 
-  for(size_t i_f=0;i_f<label_v.size();i_f++){
+  for(size_t i_f=0;i_f<vars.size();i_f++){
 
-    std::string label = label_v.at(i_f);
-    std::cout << "label = " << label << std::endl;
+    std::string label = vars.at(i_f);
+    std::cout << label << std::endl;
+
     std::string plot_dir = "Analysis/"+label+"/Plots/FFTest/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 

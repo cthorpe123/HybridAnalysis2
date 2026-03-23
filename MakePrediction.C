@@ -15,13 +15,15 @@ using namespace syst;
 
 void MakePrediction(){
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool blinded = true;
   bool draw_underflow = false;
   bool draw_overflow = false;
-  bool divide_by_bin_width = false;
+  bool divide_by_bin_width = true;
 
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
+  for(int i_e=0;i_e<ee::kMAX;i_e++)
+    vars.push_back(ee::estimators_str.at(i_e));
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
     std::string label = vars.at(i_f);

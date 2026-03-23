@@ -2,6 +2,7 @@
 #define _MultiChannelHistograms_h_
 
 #include "Histograms2.h"
+#include "DetvarHistograms.h"
 
 // Wrapper class that acts as an interface between functions trying to 
 // performa analysis with multiple channels and the histogram manager 
@@ -16,13 +17,14 @@ class MultiChannelHistogramManager {
     void SetRecoChannelList(std::vector<std::string> ch_v={});
     void SetTrueChannelList(std::vector<std::string> ch_v={});
     void LoadTemplates();
+    void DetvarMode(){ _detvar_mode = true; }
     void MakeHM();    
 
     void FillTruthHistograms(bool sig,double var_t,bool load_syst,std::string ch="",double weight=1.0);
     void FillRecoHistograms(bool sel,double var_r,bool load_syst,std::string ch="",double weight=1.0);
     void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t="",std::string ch_r="",double weight=1.0);
-    void KeepAll(){ _keep_all = true; _hm.KeepAll(); }
-    void Write(){ _hm.Write(); }
+    void KeepAll(){ _keep_all = true; _hm.KeepAll();  _dhm.KeepAll();}
+    void Write(){ if(!_detvar_mode) _hm.Write(); else _dhm.Write(); }
 
     void AddSpecialUniv(std::string name){ _hm.AddSpecialUniv(name); }
     void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch="");
@@ -38,6 +40,7 @@ class MultiChannelHistogramManager {
     const bool _save_truth;
     bool _keep_all;
     bool _hm_loaded = false;  
+    bool _detvar_mode = false;
  
     std::vector<std::string> _ch_list_r;
     std::vector<std::string> _ch_list_t;
@@ -51,13 +54,14 @@ class MultiChannelHistogramManager {
     int _tot_bins_t = 0; 
 
     HistogramManager _hm;
+    DetvarHistogramManager _dhm;
 
 };
 
 ///////////////////////////////////////////////////////////////////////
 // initial setup 
 
-MultiChannelHistogramManager::MultiChannelHistogramManager(std::string label,bool save_truth) : _label(label), _save_truth(save_truth), _hm(label,save_truth)
+MultiChannelHistogramManager::MultiChannelHistogramManager(std::string label,bool save_truth) : _label(label), _save_truth(save_truth), _hm(label,save_truth), _dhm(label,save_truth)
 {
   std::cout << "Setting up MultiChannelHistogramManager for " << _label << std::endl;
 }
@@ -143,8 +147,14 @@ void MultiChannelHistogramManager::MakeHM()
 {
   // Arrange the bins such that 0 corresponds to underflow of first channel, 1 the first bin of the first channel
   // and the last bin is the overflow of the last channel, and the second to last bin the hhighest bing of the last channel 
-  if(_save_truth) _hm.SetTemplate("",_tot_bins_t-2,0.5,_tot_bins_t-1.5,_tot_bins_r-2,0.5,_tot_bins_r-1.5);
-  else _hm.SetTemplate("",_tot_bins_r-2,0.5,_tot_bins_r-1.5);
+  if(_save_truth){
+    if(!_detvar_mode) _hm.SetTemplate("",_tot_bins_t-2,0.5,_tot_bins_t-1.5,_tot_bins_r-2,0.5,_tot_bins_r-1.5);
+    else _dhm.SetTemplate("",_tot_bins_t-2,0.5,_tot_bins_t-1.5,_tot_bins_r-2,0.5,_tot_bins_r-1.5);
+  }
+  else {
+    if(!_detvar_mode) _hm.SetTemplate("",_tot_bins_r-2,0.5,_tot_bins_r-1.5);
+    else _dhm.SetTemplate("",_tot_bins_r-2,0.5,_tot_bins_r-1.5);
+  }
 
   bool _hm_loaded = true;  
 }
@@ -159,7 +169,8 @@ void MultiChannelHistogramManager::FillRecoHistograms(bool sel,double var_r,bool
     if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
   int bin_r = _offset_r.at(ch_idx)+_h_tp_v.at(ch_idx)->FindBin(var_r);
 
-  _hm.FillRecoHistograms(sel,bin_r,load_syst,weight);
+  if(!_detvar_mode) _hm.FillRecoHistograms(sel,bin_r,load_syst,weight);
+  else _dhm.FillRecoHistograms(sel,bin_r,load_syst,weight);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -172,7 +183,8 @@ void MultiChannelHistogramManager::FillTruthHistograms(bool sig,double var_t,boo
     if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
   int bin_t = _offset_t.at(ch_idx)+_h_tp_truth_v.at(ch_idx)->FindBin(var_t);
 
-  _hm.FillTruthHistograms(sig,bin_t,load_syst,weight);
+  if(!_detvar_mode) _hm.FillTruthHistograms(sig,bin_t,load_syst,weight);
+  else _dhm.FillTruthHistograms(sig,bin_t,load_syst,weight);
 
 }
 
@@ -191,7 +203,8 @@ void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
   int bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
    
-  _hm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
+  if(!_detvar_mode) _hm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
+  else _dhm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
 
 }
 
@@ -200,6 +213,8 @@ void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var
 
 void MultiChannelHistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch)
 {
+  if(_detvar_mode) return;
+  
   int ch_idx = 0;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
@@ -213,6 +228,8 @@ void MultiChannelHistogramManager::FillSpecialTruthHistograms(std::string name,b
 
 void MultiChannelHistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch)
 {
+  if(_detvar_mode) return;
+
   int ch_idx = 0;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
@@ -226,6 +243,8 @@ void MultiChannelHistogramManager::FillSpecialRecoHistograms(std::string name,bo
 
 void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t,std::string ch_r)
 {
+  if(_detvar_mode) return;
+
   int ch_idx_t = 0;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
