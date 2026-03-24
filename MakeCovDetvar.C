@@ -31,7 +31,6 @@ void MakeCovDetvar(){
     h_m.at(var).MakeHM();
   } 
 
-
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files = {
     "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_4d.root",
@@ -43,8 +42,8 @@ void MakeCovDetvar(){
     "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root"
-    /*"run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root",
+    "run4d/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
+    "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyr_surprise_reco2_hist_5.root",
@@ -53,7 +52,7 @@ void MakeCovDetvar(){
     "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
+    "run5/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
   };
 
   for(int i_f=0;i_f<files.size();i_f++){

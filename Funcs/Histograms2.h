@@ -637,8 +637,10 @@ void HistogramManager::_WriteReco()
   TH2D* h_Cov_MCStat_Reco = Make2DHist("Cov_MCStat",_h_tp);
   TH2D* h_FCov_MCStat_Reco = Make2DHist("FCov_MCStat",_h_tp);
   for(int i=0;i<h_Cov_MCStat_Reco->GetNbinsX()+2;i++){
-    h_Cov_MCStat_Reco->SetBinContent(i,i,pow(_h_CV_Reco_Tot->GetBinError(i),2));
-    h_FCov_MCStat_Reco->SetBinContent(i,i,pow(_h_CV_Reco_Tot->GetBinError(i)/_h_CV_Reco_Tot->GetBinContent(i),2));
+    if(_h_CV_Reco_Tot->GetBinContent(i) > 0){
+      h_Cov_MCStat_Reco->SetBinContent(i,i,pow(_h_CV_Reco_Tot->GetBinError(i),2));
+      h_FCov_MCStat_Reco->SetBinContent(i,i,pow(_h_CV_Reco_Tot->GetBinError(i)/_h_CV_Reco_Tot->GetBinContent(i),2));
+    }
   }
   h_Cov->Add(h_Cov_MCStat_Reco);
   h_FCov->Add(h_FCov_MCStat_Reco);
@@ -649,8 +651,10 @@ void HistogramManager::_WriteReco()
     TH2D* h_Cov_MCStat_Reco_Cat = Make2DHist("Cov_MCStat_"+categories.at(i_c),_h_tp);
     TH2D* h_FCov_MCStat_Reco_Cat = Make2DHist("FCov_MCStat_"+categories.at(i_c),_h_tp);
     for(int i=0;i<h_Cov_MCStat_Reco->GetNbinsX()+2;i++){
-      h_Cov_MCStat_Reco_Cat->SetBinContent(i,i,pow(_h_CV_Reco_Cat.at(i_c)->GetBinError(i),2));
-      h_FCov_MCStat_Reco_Cat->SetBinContent(i,i,pow(_h_CV_Reco_Cat.at(i_c)->GetBinError(i)/_h_CV_Reco_Cat.at(i_c)->GetBinContent(i),2));
+      if(_h_CV_Reco_Cat.at(i_c)->GetBinContent(i) > 0){
+        h_Cov_MCStat_Reco_Cat->SetBinContent(i,i,pow(_h_CV_Reco_Cat.at(i_c)->GetBinError(i),2));
+        h_FCov_MCStat_Reco_Cat->SetBinContent(i,i,pow(_h_CV_Reco_Cat.at(i_c)->GetBinError(i)/_h_CV_Reco_Cat.at(i_c)->GetBinContent(i),2));
+      }
     }
     h_Cov_MCStat_Reco_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_MCStat_Reco_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
@@ -664,8 +668,10 @@ void HistogramManager::_WriteReco()
   TH2D* h_Cov_EstDataStat_Reco = Make2DHist("Cov_EstDataStat",_h_tp);
   TH2D* h_FCov_EstDataStat_Reco = Make2DHist("FCov_EstDataStat",_h_tp);
   for(int i=0;i<h_Cov_EstDataStat_Reco->GetNbinsX()+2;i++){
-    h_Cov_EstDataStat_Reco->SetBinContent(i,i,pow(h_CV_Reco_Tot_E->GetBinError(i),2));
-    h_FCov_EstDataStat_Reco->SetBinContent(i,i,pow(h_CV_Reco_Tot_E->GetBinError(i)/h_CV_Reco_Tot_E->GetBinContent(i),2));
+    if(h_CV_Reco_Tot_E->GetBinContent(i) > 0){
+      h_Cov_EstDataStat_Reco->SetBinContent(i,i,pow(h_CV_Reco_Tot_E->GetBinError(i),2));
+      h_FCov_EstDataStat_Reco->SetBinContent(i,i,pow(h_CV_Reco_Tot_E->GetBinError(i)/h_CV_Reco_Tot_E->GetBinContent(i),2));
+    }
   }
   h_Cov_EstDataStat_Reco->Write("Cov_Tot"); 
   h_FCov_EstDataStat_Reco->Write("FCov_Tot");
@@ -674,8 +680,10 @@ void HistogramManager::_WriteReco()
     TH2D* h_Cov_EstDataStat_Reco_Cat = Make2DHist("Cov_EstDataStat_"+categories.at(i_c),_h_tp);
     TH2D* h_FCov_EstDataStat_Reco_Cat = Make2DHist("FCov_EstDataStat_"+categories.at(i_c),_h_tp);
     for(int i=0;i<h_Cov_EstDataStat_Reco->GetNbinsX()+2;i++){
-      h_Cov_EstDataStat_Reco_Cat->SetBinContent(i,i,pow(h_CV_Reco_Cat_E.at(i_c)->GetBinError(i),2));
-      h_FCov_EstDataStat_Reco_Cat->SetBinContent(i,i,pow(h_CV_Reco_Cat_E.at(i_c)->GetBinError(i)/h_CV_Reco_Cat_E.at(i_c)->GetBinContent(i),2));
+      if(h_CV_Reco_Cat_E.at(i_c)->GetBinContent(i) > 0){
+        h_Cov_EstDataStat_Reco_Cat->SetBinContent(i,i,pow(h_CV_Reco_Cat_E.at(i_c)->GetBinError(i),2));
+        h_FCov_EstDataStat_Reco_Cat->SetBinContent(i,i,pow(h_CV_Reco_Cat_E.at(i_c)->GetBinError(i)/h_CV_Reco_Cat_E.at(i_c)->GetBinContent(i),2));
+      }
     }
     h_Cov_EstDataStat_Reco_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_EstDataStat_Reco_Cat->Write(("FCov_"+categories.at(i_c)).c_str());

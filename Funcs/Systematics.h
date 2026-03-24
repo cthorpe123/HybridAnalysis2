@@ -78,17 +78,18 @@ void CalcCovMultisim(std::string sys,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D
 
       double x = Mean(h_Vars,i_bx);
       double y = Mean(h_Vars,i_by);
-
+     
       double cov = 0;
       for(int i_u=0;i_u<h_Vars.size();i_u++)
         cov += (h_Vars.at(i_u)->GetBinContent(i_bx) - x)*(h_Vars.at(i_u)->GetBinContent(i_by) - y);
       cov /= h_Vars.size(); 
-        
-      h_Cov->SetBinContent(i_bx,i_by,cov); 
-      h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
-        
-      h_Cov->SetBinContent(i_by,i_bx,cov); 
-      h_FCov->SetBinContent(i_by,i_bx,cov/x/y); 
+
+      if(x > 0 && y > 0){
+        h_Cov->SetBinContent(i_bx,i_by,cov); 
+        h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
+        h_Cov->SetBinContent(i_by,i_bx,cov); 
+        h_FCov->SetBinContent(i_by,i_bx,cov/x/y); 
+      }
 
     }
   }
@@ -115,8 +116,10 @@ void CalcCovUnisim(std::string sys,const TH1D* h_CV,TH1D* h_Var,TH2D*& h_Cov,TH2
       double x = h_CV->GetBinContent(i_bx);
       double y = h_CV->GetBinContent(i_by);
       double cov = (h_Var->GetBinContent(i_bx) - x)*(h_Var->GetBinContent(i_by) - y);
-      h_Cov->SetBinContent(i_bx,i_by,cov); 
-      h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
+      if(x > 0 && y > 0){
+        h_Cov->SetBinContent(i_bx,i_by,cov); 
+        h_FCov->SetBinContent(i_bx,i_by,cov/x/y); 
+      }
     }
   }
 
