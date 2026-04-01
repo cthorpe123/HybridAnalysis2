@@ -44,6 +44,10 @@ int SimpleNueSelection(Int_t nShowers,Int_t showerIsSecondary[],Int_t showerPID[
   return reco_electron;
 }
 
+  
+// Search for reconstruction artefacts
+const double cut_c = 0.2;
+const double cut_f_low = 0.00, cut_f_high = 0.4;
 
 std::vector<TLorentzVector> RecoProton4MomV(Int_t nTracks,Int_t trackIsSecondary[],Int_t trackPID[],Float_t trackRecoE[],Float_t trackStartDirX[],Float_t trackStartDirY[],Float_t trackStartDirZ[]){
   std::vector<TLorentzVector> p4;
@@ -55,6 +59,24 @@ std::vector<TLorentzVector> RecoProton4MomV(Int_t nTracks,Int_t trackIsSecondary
     }
   }
   SortTLorentzVector(p4);
+
+  bool bad = true;
+  while(bad){
+    bad = false;
+    for(size_t i=0;i<p4.size();i++){
+      for(size_t j=i+1;j<p4.size();j++){
+        double c = p4.at(i).Vect().Angle(p4.at(j).Vect());
+        double f = abs(p4.at(i).Vect().Mag() - p4.at(j).Vect().Mag())/(p4.at(i).Vect().Mag() + p4.at(j).Vect().Mag());
+        if(c < cut_c && f > cut_f_low && f < cut_f_high){
+          p4.erase(p4.begin()+j);
+          bad = true;
+          break;
+        }
+      }
+      if(bad) break;
+    }
+  }
+
   return p4;
 }
 
