@@ -8,6 +8,7 @@
 #include "EnergyEstimatorFuncs.h"
 #include "BranchList.h"
 #include "Systematics.h"
+#include "WeightFuncs.h"
 
 void Filter(){
 
@@ -15,17 +16,19 @@ void Filter(){
   double POT_weight;
   int detvar_univ = -1;
 
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+
   // Main run4b files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4b/";
-  // detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";      POT_weight = 1.332E+20/7.88166e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";             POT_weight = 1.332E+20/3.06E+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
-  //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  POT_weight = 31582916.0/88445969.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
+  std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  POT_weight = 31582916.0/88445969.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
 
   // Main run4c files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4c/";
-  // detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_4c.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";    POT_weight = 9.116e+19/4.71538e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root";  POT_weight = 9.116e+19/1.79969e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
@@ -33,7 +36,7 @@ void Filter(){
 
   // Main run4d files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4d/";
-  // detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_4d.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root";    POT_weight = 1.453e+20/8.96646e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root";  POT_weight = 1.453e+20/3.48312e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
@@ -41,7 +44,7 @@ void Filter(){
 
   // Main run5 files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5/";
-  // detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";    POT_weight = 1.296e+20/1.00693e+21; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  POT_weight = 1.296e+20/3.53071e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
@@ -60,8 +63,8 @@ void Filter(){
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root"; POT_weight = 1.453e+20/1.1876039e+21; detvar_univ = syst::kWMYZ;
 
   // Run 5 Detvars
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5_detvar/";
-  is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5_detvar/";
+  //is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/6.9167433e+20; detvar_univ = -1;
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/1.1357305e+21; detvar_univ = syst::kLYAtt;
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/6.5623306e+20; detvar_univ = syst::kLYDown;
@@ -130,6 +133,15 @@ void Filter(){
   int nsh_t; 
   std::vector<double> est_nu_e_t;
 
+  double asym_all_t;
+  double asym_prot_t;
+  double asym_pi_t;
+  double asym_sh_t;
+  double cone_all_t;
+  double cone_prot_t;
+  double cone_pi_t;
+  double cone_sh_t;
+
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
     t_out->Branch("in_tpc_t",&in_tpc_t);
@@ -147,6 +159,14 @@ void Filter(){
     t_out->Branch("npi0_t",&npi0_t);
     t_out->Branch("nsh_t",&npi0_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
+    t_out->Branch("asym_all_t",&asym_all_t);
+    t_out->Branch("asym_prot_t",&asym_prot_t);
+    t_out->Branch("asym_pi_t",&asym_pi_t);
+    t_out->Branch("asym_sh_t",&asym_sh_t);
+    t_out->Branch("cone_all_t",&cone_all_t);
+    t_out->Branch("cone_prot_t",&cone_prot_t);
+    t_out->Branch("cone_pi_t",&cone_pi_t);
+    t_out->Branch("cone_sh_t",&cone_sh_t);
   }
 
   // PD Reco branches
@@ -294,7 +314,7 @@ void Filter(){
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-    //if(ievent > 1000) break;
+    //if(ievent > 10000) break;
     if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
     t_in->GetEntry(ievent);
 
@@ -315,6 +335,15 @@ void Filter(){
     gamma_p4_t = TLorentzVector(0,0,0,0);
     est_nu_e_t = std::vector<double>(ee::kMAX,-1);
 
+    asym_all_t = -1;
+    asym_prot_t = -1;
+    asym_pi_t = -1;
+    asym_sh_t = -1;
+    cone_all_t = -1;
+    cone_prot_t = -1;
+    cone_pi_t = -1;
+    cone_sh_t = -1;
+
     if(!is_data && !is_ext && !is_dirt){
 
       // Select out signal events
@@ -325,19 +354,32 @@ void Filter(){
       has_muon_t = mc_pdg->size() && abs(mc_pdg->at(0)) == 13 && muon_mom_t.Mag() > thresholds.at(13).first;
       muon_contained_t = has_muon_t && isContained(mc_endx->at(0),mc_endy->at(0),mc_endz->at(0));
 
+      std::vector<TVector3> p_v;
+      p_v.push_back(muon_mom_t);
+
+      std::vector<TVector3> p_v_prot;
+      std::vector<TVector3> p_v_pi;
+      std::vector<TVector3> p_v_sh;
+
       for(size_t i_p=0;i_p<mc_pdg->size();i_p++){
         TVector3 mom(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p));
         if(mc_pdg->at(i_p) == 2212 && mom.Mag() > thresholds.at(2212).first){
           nprot_t++;
           proton_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
+          p_v.push_back(mom);
+          p_v_prot.push_back(mom);
         }
         if(abs(mc_pdg->at(i_p)) == 211 && mom.Mag() > thresholds.at(211).first){
           npi_t++;
           pion_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
+          p_v.push_back(mom);
+          p_v_pi.push_back(mom);
         }
         if(mc_pdg->at(i_p) == 111){
           npi0_t++;
           pi0_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
+          p_v.push_back(mom);
+          p_v_sh.push_back(mom);
         }
       } 
 
@@ -368,6 +410,19 @@ void Filter(){
       else if(abs(nu_pdg) == 12 && in_tpc_t) category = kNue;
       else if(in_tpc_t) category = kBG;
       else category = kOutFV;
+
+      // Variables for reweighting along
+      if(is_signal_t){
+        asym_all_t = weight::Asymmetry(p_v);
+        asym_prot_t = weight::Asymmetry(p_v_prot);
+        asym_pi_t = weight::Asymmetry(p_v_pi);
+        asym_sh_t = weight::Asymmetry(p_v_sh);
+        cone_all_t = weight::Cone(p_v);
+        cone_prot_t = weight::Cone(p_v_prot);
+        cone_pi_t = weight::Cone(p_v_pi);
+        cone_sh_t = weight::Cone(p_v_sh);
+      }
+
     }
 
     // Muon ID with each framework
@@ -410,7 +465,7 @@ void Filter(){
       muon_mom_mcs_wc = muon_mom_wc*(mcs_emu_MCS/muon_mom_wc.Mag());
       muon_mom_len_wc = muon_mom_wc*(mcs_emu_tracklen/muon_mom_wc.Mag()/1.04);
     } 
-   has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > thresholds.at(13).first;
+    has_muon_wc = wc_muon != -1 && muon_mom_wc.Mag() > thresholds.at(13).first;
     muon_contained_wc = has_muon_wc && isContained(reco_endXYZT[wc_muon][0],reco_endXYZT[wc_muon][1],reco_endXYZT[wc_muon][2]);
     
 
@@ -460,7 +515,6 @@ void Filter(){
     est_nu_e_lt = std::vector<double>(ee::kMAX,-1);
     TLorentzVector plepton_lt(muon_mom_lt.X(),muon_mom_lt.Y(),muon_mom_lt.Z(),sqrt(muon_mom_lt.Mag()*muon_mom_lt.Mag() + ml*ml));
     if(sel_lt) est_nu_e_lt = ee::GetEnergyEst(plepton_lt,W_lt,proton_p4_lt,nprot_lt,pion_p4_lt,npi_lt,gamma_p4_lt,nsh_lt);
-
 
     // H8 Reco - Lantern for the hadronic system, Pandora Range for contained muons, MCS for uncontained
     in_tpc_h8 = inActiveTPC(vtxX,vtxY,vtxZ);
