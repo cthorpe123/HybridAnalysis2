@@ -51,6 +51,8 @@ std::map<int,std::pair<double,double>> thresholds = {
   {22,{0.05,5.0}}
 };
 
+double ke(const TLorentzVector& p4){ return p4.E() - p4.M(); }
+
 ///////////////////////////////////////////////////////////////////////
 // Take 2D hist and normalise each vertical strip to 1 
 

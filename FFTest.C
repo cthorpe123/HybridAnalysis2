@@ -36,8 +36,8 @@ void FFTest(){
     vars.push_back(ee::estimators_str.at(i_e));
 
   // Special universe setup
-  const int spline_pts = 100;
-  std::vector<std::string> special_univ = {"ExtraPi"};
+  const int spline_pts = 20;
+  std::vector<std::string> special_univ = {"Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi"};
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -67,6 +67,7 @@ void FFTest(){
 
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
     TH1D* h_CV = (TH1D*)f_in->Get("Reco/CV/h_Signal")->Clone("h_CV");
+    TH2D* h_CV_Res = (TH2D*)f_in->Get("Response/CV/h_Signal");
     mchm.Restore(h_CV);
     if(dbbw) DivideByBinWidth(h_CV);
 
@@ -193,7 +194,6 @@ void FFTest(){
           h_CV->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
         }
 
-
         if(diag_only){
           for(int i=0;i<h_FF_Spec->GetNbinsX()+2;i++)
             for(int j=0;j<h_FF_Spec->GetNbinsX()+2;j++)
@@ -208,6 +208,20 @@ void FFTest(){
 
         delete h_FF_Spec;
 
+        // Instead of multiplying the CV truth by the spec response, multiply the spec truth by 
+        // the CV response 
+        TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
+        TH1D* h_FF_Spec_2 = Multiply(h_Spec_Truth,h_CV_Res,"h_FF_Spec_2");
+        mchm.Restore(h_FF_Spec_2);
+        if(dbbw) DivideByBinWidth(h_FF_Spec_2);
+        h_FF_Spec_2->Add(h_CV_BG);
+           
+        for(int i=0;i<h_FF_Spec_2->GetNbinsX()+2;i++)
+          h_FF_Spec_2->SetBinError(i,1e-10);
+ 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec_2,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+"Modified_Signal_"+spec+".png"); 
+
+        delete h_FF_Spec_2;
       }
 
       if(draw_chi2_curve){

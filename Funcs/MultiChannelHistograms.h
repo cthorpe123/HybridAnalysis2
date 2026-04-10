@@ -31,7 +31,7 @@ class MultiChannelHistogramManager {
     void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch="");
     void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t="",std::string ch_r="");
 
-    void Restore(TH1D*& h) const;
+    void Restore(TH1D*& h,bool truth=false) const;
     void Restore(TH2D*& h) const;
 
   private:
@@ -263,14 +263,14 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
 // convert it back to the physics variable binning scheme - currently
 // only implemented for single reco channel
 
-void MultiChannelHistogramManager::Restore(TH1D*& h) const
+void MultiChannelHistogramManager::Restore(TH1D*& h,bool truth) const
 {
   if(_ch_list_r.size() > 1)
     throw std::invalid_argument("MultiChannelHistogramManager::RestoreRecoBinning only implemented for one reco channel at the moment");
 
   std::string name = string(h->GetName());
 
-  TH1D* h_out = (TH1D*)_h_tp_v.at(0)->Clone((name+"_tmp").c_str());  
+  TH1D* h_out = truth ? (TH1D*)_h_tp_truth_v.at(0)->Clone((name+"_tmp").c_str()) : (TH1D*)_h_tp_v.at(0)->Clone((name+"_tmp").c_str());  
 
   // bin 1 of numeric binning scheme is underflow physical binning scheme 
   for(int i=0;i<h_out->GetNbinsX()+2;i++){
