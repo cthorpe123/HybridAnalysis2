@@ -17,44 +17,25 @@ using namespace binning;
 
 void MakeBinning(){
 
-  std::vector<std::string> channels = {"1p","2p","3p","Other"};
+  std::vector<std::string> channels_t = {"All"};
+  std::vector<std::string> channels_r = {"All"};
 
   std::string vars;
   std::map<std::string,TH1D*> h_m;
+  std::map<std::string,std::map<std::string,TH1D*>> h_reco_m,h_true_m;
   
   h_m["MuonMom"] = new TH1D("h_MuonMom",";Reco Muon Momentum (GeV);Events/GeV",10000,0.0,2.0);
-  h_m["MuonCosTheta"] = new TH1D("h_MuonCosTheta",";Reco Muon Cos(#theta);Events/Unit",10000,-1.0,1.0);
-  h_m["NProt"] = new TH1D("h_NProt",";Reco N Protons;Events",10000,0.5,4.5);
-  h_m["NPi"] = new TH1D("h_NPi",";Reco N #pi^{#pm};Events",10000,-0.5,4.5);
-  h_m["NSh"] = new TH1D("h_NSh",";Reco N #pi^{0};Events",10000,-0.5,4.5);
-  h_m["ProtonKE"] = new TH1D("h_ProtonKE",";Reco Proton KE (GeV);Events/GeV",10000,0.02,1.0);
-  h_m["PionE"] = new TH1D("h_PionE",";Reco Pion E (GeV);Events/GeV",10000,0.02,1.0);
-  h_m["PiZeroE"] = new TH1D("h_PiZeroE",";Reco #pi^{0} E (GeV);Events/GeV",10000,0.02,1.0);
-  h_m["W"] = new TH1D("h_W",";Reco W (GeV);Events/GeV",10000,Mp+0.01,5.0);
-  
-  for(int i_e=0;i_e<ee::kMAX;i_e++)
-    h_m[ee::estimators_str.at(i_e)] = new TH1D(("h_"+ee::estimators_str.at(i_e)).c_str(),";Est Neutrino Energy (GeV);Events",10000,0.0,2.5);
    
-  std::map<std::string,std::map<std::string,TH1D*>> h_true_m;
   for(const auto &item : h_m){
+    h_reco_m[item.first] = std::map<std::string,TH1D*>(); 
     h_true_m[item.first] = std::map<std::string,TH1D*>(); 
-    for(std::string ch :channels) h_true_m.at(item.first)[ch] = (TH1D*)h_m.at(item.first)->Clone((item.first+"_"+ch).c_str());
+    for(std::string ch :channels_r) h_reco_m.at(item.first)[ch] = (TH1D*)h_m.at(item.first)->Clone((item.first+"_Reco_"+ch).c_str());
+    for(std::string ch :channels_t) h_true_m.at(item.first)[ch] = (TH1D*)h_m.at(item.first)->Clone((item.first+"_True_"+ch).c_str());
   }
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
   std::vector<std::string> files_v = {
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root",
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
-    "run5/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
+    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root"
   };
 
   for(int i_f=0;i_f<files_v.size();i_f++){
@@ -68,45 +49,22 @@ void MakeBinning(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 100000) break;
+      //if(ievent > 200000) break;
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
-        
-      std::string ch_t = "Other";
-      if(is_signal_t && nprot_t == 1) ch_t = "1p";
-      else if (is_signal_t && nprot_t == 2) ch_t = "2p";
+      
+      std::string ch_t = "All";        
+      std::string ch_h8 = "All";
 
       std::map<std::string,double> vars_t = {
-        {"MuonMom",muon_mom_t->Mag()},
-        {"MuonCosTheta",muon_mom_t->CosTheta()},
-        {"NProt",nprot_t-0.5},
-        {"NPi",npi_t-0.5},
-        {"NSh",nsh_t-0.5},
-        {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
-        {"PionE",pion_p4_t->E()},
-        {"PiZeroE",gamma_p4_t->E()}, 
-        {"W",W_t}
+        {"MuonMom",muon_mom_t->Mag()}
       };
-
-      for(int i_e=0;i_e<ee::kMAX;i_e++)
-        vars_t[ee::estimators_str.at(i_e)] = est_nu_e_t->at(i_e);
 
       std::map<std::string,double> vars_h8 = {
-        {"MuonMom",muon_mom_h8->Mag()},
-        {"MuonCosTheta",muon_mom_h8->CosTheta()},
-        {"NProt",nprot_h8-0.5},
-        {"NPi",npi_h8-0.5},
-        {"NSh",nsh_h8-0.5},
-        {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
-        {"PionE",pion_p4_h8->E()},
-        {"PiZeroE",gamma_p4_h8->E()},
-        {"W",W_h8}
+        {"MuonMom",muon_mom_h8->Mag()}
       };
 
-      for(int i_e=0;i_e<ee::kMAX;i_e++)
-        vars_h8[ee::estimators_str.at(i_e)] = est_nu_e_h8->at(i_e);
-
-      if(is_signal_t){
+        if(is_signal_t && in_vec(channels_t,ch_t)){
         for(const auto &item : h_true_m){
           std::string var = item.first;
           if(vars_t.find(var) == vars_t.end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
@@ -114,11 +72,11 @@ void MakeBinning(){
         }
       }
 
-      if(is_signal_t && sel_h8){
-        for(const auto &item : h_m){
+      if(is_signal_t && sel_h8 && in_vec(channels_r,ch_h8)){
+        for(const auto &item : h_reco_m){
           std::string var = item.first;
           if(vars_h8.find(var) == vars_h8.end()) throw std::invalid_argument("Variable " + var + " missing from reco var map");
-          h_m.at(var)->Fill(vars_h8.at(var),POT_weight);
+          h_reco_m.at(var).at(ch_h8)->Fill(vars_h8.at(var),POT_weight);
         }
       }
 
@@ -128,8 +86,8 @@ void MakeBinning(){
 
   for(const auto &item : h_m){
     std::string var = item.first;
+    MakeMultiChannelTemplate(var,h_reco_m.at(var),false);
     MakeMultiChannelTemplate(var,h_true_m.at(var),true);
-    MakeBinningTemplate(var,h_m.at(var),false);
   }
 
 

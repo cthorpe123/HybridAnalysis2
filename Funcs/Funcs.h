@@ -265,4 +265,13 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
     return out.str();
 }
 
+///////////////////////////////////////////////////////////////////////
+// Search a vector for element 
+
+template <typename T>
+bool in_vec(const std::vector<T>& vec,const T& val)
+{
+  return std::find(vec.begin(),vec.end(),val) != vec.end();
+}
+
 #endif

@@ -20,19 +20,19 @@ class MultiChannelHistogramManager {
     void DetvarMode(){ _detvar_mode = true; }
     void MakeHM();    
 
-    void FillTruthHistograms(bool sig,double var_t,bool load_syst,std::string ch="",double weight=1.0);
-    void FillRecoHistograms(bool sel,double var_r,bool load_syst,std::string ch="",double weight=1.0);
-    void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t="",std::string ch_r="",double weight=1.0);
-    void KeepAll(){ _keep_all = true; _hm.KeepAll();  _dhm.KeepAll();}
+    void FillTruthHistograms(bool sig,double var_t,bool load_syst,std::string ch="All",double weight=1.0);
+    void FillRecoHistograms(bool sel,double var_r,bool load_syst,std::string ch="All",double weight=1.0);
+    void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t="All",std::string ch_r="All",double weight=1.0);
+    void KeepAll(){ _keep_all = true; _hm.KeepAll(); _dhm.KeepAll(); }
     void Write(){ if(!_detvar_mode) _hm.Write(); else _dhm.Write(); }
 
     void AddSpecialUniv(std::string name){ _hm.AddSpecialUniv(name); }
-    void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch="");
-    void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch="");
-    void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t="",std::string ch_r="");
+    void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch="All");
+    void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight,std::string ch="All");
+    void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight,std::string ch_t="All",std::string ch_r="All");
 
-    void Restore(TH1D*& h,bool truth=false) const;
-    void Restore(TH2D*& h) const;
+    void Restore(TH1D*& h,std::string ch="All",bool truth=false) const;
+    void Restore(TH2D*& h,std::string ch="All",bool truth=false) const;
 
   private:
 
@@ -42,8 +42,8 @@ class MultiChannelHistogramManager {
     bool _hm_loaded = false;  
     bool _detvar_mode = false;
  
-    std::vector<std::string> _ch_list_r;
-    std::vector<std::string> _ch_list_t;
+    std::vector<std::string> _ch_list_r = {"All"};
+    std::vector<std::string> _ch_list_t = {"All"};
     int _n_ch_r;
     int _n_ch_t;
     std::vector<TH1D*> _h_tp_v;
@@ -92,11 +92,7 @@ void MultiChannelHistogramManager::LoadTemplates()
 
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
 
-  if(!_ch_list_r.size()){
-    _h_tp_v.push_back((TH1D*)f_tp->Get("h_template"));
-    _ch_list_r.push_back("All");
-  }
-  else for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get(("h_template_"+_ch_list_r.at(i_ch)).c_str()));
+  for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get(("h_template_"+_ch_list_r.at(i_ch)).c_str()));
 
   for(TH1D* h : _h_tp_v) h->SetDirectory(0);
 
@@ -109,11 +105,7 @@ void MultiChannelHistogramManager::LoadTemplates()
 
     TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
 
-    if(!_ch_list_t.size()){
-      _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get("h_template"));
-      _ch_list_t.push_back("All");
-    }
-    else for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get(("h_template_"+_ch_list_t.at(i_ch)).c_str()));
+    for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get(("h_template_"+_ch_list_t.at(i_ch)).c_str()));
 
     for(TH1D* h : _h_tp_truth_v) h->SetDirectory(0);
 
@@ -164,9 +156,12 @@ void MultiChannelHistogramManager::MakeHM()
 
 void MultiChannelHistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,std::string ch,double weight)
 {
-  int ch_idx = 0;
+
+  int ch_idx = -1;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
+  if(ch_idx == -1) return;
+    
   int bin_r = _offset_r.at(ch_idx)+_h_tp_v.at(ch_idx)->FindBin(var_r);
 
   if(!_detvar_mode) _hm.FillRecoHistograms(sel,bin_r,load_syst,weight);
@@ -178,9 +173,11 @@ void MultiChannelHistogramManager::FillRecoHistograms(bool sel,double var_r,bool
 
 void MultiChannelHistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,std::string ch,double weight)
 {
-  int ch_idx = 0;
+  int ch_idx = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
+  if(ch_idx == -1) return;
+  
   int bin_t = _offset_t.at(ch_idx)+_h_tp_truth_v.at(ch_idx)->FindBin(var_t);
 
   if(!_detvar_mode) _hm.FillTruthHistograms(sig,bin_t,load_syst,weight);
@@ -193,18 +190,26 @@ void MultiChannelHistogramManager::FillTruthHistograms(bool sig,double var_t,boo
 
 void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t,std::string ch_r,double weight)
 {
-  int ch_idx_t = 0;
+  int ch_idx_t = -1;
+  int bin_t = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
-  int bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
 
-  int ch_idx_r = 0;
+  // Event is signal and has valid channel
+  bool sig_ch = sig && ch_idx_t != -1;
+  if(sig_ch) bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
+
+  int ch_idx_r = -1;
+  int bin_r = -1;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
-  int bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
+
+  // Event is selected and has valid channel
+  bool sel_ch = sig && ch_idx_r != -1;
+  if(sel_ch) bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
    
-  if(!_detvar_mode) _hm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
-  else _dhm.FillHistograms2D(sig,sel,bin_t,bin_r,load_syst,weight);
+  if(!_detvar_mode) _hm.FillHistograms2D(sig_ch,sel_ch,bin_t,bin_r,load_syst,weight);
+  else _dhm.FillHistograms2D(sig_ch,sel_ch,bin_t,bin_r,load_syst,weight);
 
 }
 
@@ -215,9 +220,10 @@ void MultiChannelHistogramManager::FillSpecialTruthHistograms(std::string name,b
 {
   if(_detvar_mode) return;
   
-  int ch_idx = 0;
+  int ch_idx = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch == _ch_list_t.at(i_ch)) ch_idx = i_ch;  
+  if(ch_idx == -1) return;
   int bin_t = _offset_t.at(ch_idx)+_h_tp_truth_v.at(ch_idx)->FindBin(var_t);
 
   _hm.FillSpecialTruthHistograms(name,sig,bin_t,weight);
@@ -230,9 +236,10 @@ void MultiChannelHistogramManager::FillSpecialRecoHistograms(std::string name,bo
 {
   if(_detvar_mode) return;
 
-  int ch_idx = 0;
+  int ch_idx = -1;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch == _ch_list_r.at(i_ch)) ch_idx = i_ch;  
+  if(ch_idx == -1) return;
   int bin_r = _offset_r.at(ch_idx)+_h_tp_v.at(ch_idx)->FindBin(var_r);
 
   _hm.FillSpecialRecoHistograms(name,sel,bin_r,weight);
@@ -245,17 +252,25 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
 {
   if(_detvar_mode) return;
 
-  int ch_idx_t = 0;
+  int ch_idx_t = -1;
+  int bin_t = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
     if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
-  int bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
 
-  int ch_idx_r = 0;
+  // Event is signal and has valid channel
+  bool sig_ch = sig && ch_idx_t != -1;
+  if(sig_ch) bin_t = _offset_t.at(ch_idx_t)+_h_tp_truth_v.at(ch_idx_t)->FindBin(var_t);
+
+  int ch_idx_r = -1;
+  int bin_r = -1;
   for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
-  int bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
 
-  _hm.FillSpecialHistograms2D(name,sig,sel,bin_t,bin_r,weight);
+  // Event is selected and has valid channel
+  bool sel_ch = sig && ch_idx_r != -1;
+  if(sel_ch) bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
+
+  _hm.FillSpecialHistograms2D(name,sig_ch,sel_ch,bin_t,bin_r,weight);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -263,19 +278,27 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
 // convert it back to the physics variable binning scheme - currently
 // only implemented for single reco channel
 
-void MultiChannelHistogramManager::Restore(TH1D*& h,bool truth) const
+void MultiChannelHistogramManager::Restore(TH1D*& h,std::string ch,bool truth) const
 {
-  if(_ch_list_r.size() > 1)
-    throw std::invalid_argument("MultiChannelHistogramManager::RestoreRecoBinning only implemented for one reco channel at the moment");
-
   std::string name = string(h->GetName());
 
-  TH1D* h_out = truth ? (TH1D*)_h_tp_truth_v.at(0)->Clone((name+"_tmp").c_str()) : (TH1D*)_h_tp_v.at(0)->Clone((name+"_tmp").c_str());  
+  const std::vector<std::string>& ch_list = truth ? _ch_list_t : _ch_list_r;
+
+  int ch_idx = -1;
+  for(size_t i_ch=0;i_ch<ch_list.size();i_ch++)
+    if(ch == ch_list.at(i_ch)) ch_idx = i_ch;  
+
+  if(ch_idx == -1) 
+    throw std::invalid_argument("MultiChannelHistogramManager::Restore channel " +  ch + " not found");
+
+  int offset = truth ? _offset_t.at(ch_idx) : _offset_r.at(ch_idx);
+
+  TH1D* h_out = truth ? (TH1D*)_h_tp_truth_v.at(ch_idx)->Clone((name+"_tmp").c_str()) : (TH1D*)_h_tp_v.at(ch_idx)->Clone((name+"_tmp").c_str());  
 
   // bin 1 of numeric binning scheme is underflow physical binning scheme 
   for(int i=0;i<h_out->GetNbinsX()+2;i++){
-    h_out->SetBinContent(i,h->GetBinContent(i));
-    h_out->SetBinError(i,h->GetBinError(i));
+    h_out->SetBinContent(i,h->GetBinContent(i+offset));
+    h_out->SetBinError(i,h->GetBinError(i+offset));
   }
   
   delete h;
@@ -286,19 +309,28 @@ void MultiChannelHistogramManager::Restore(TH1D*& h,bool truth) const
 
 ///////////////////////////////////////////////////////////////////////
 
-void MultiChannelHistogramManager::Restore(TH2D*& h) const
+void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) const
 {
-  if(_ch_list_r.size() > 1)
-    throw std::invalid_argument("MultiChannelHistogramManager::RestoreRecoBinning only implemented for one reco channel at the moment");
 
   std::string name = string(h->GetName());
 
-  TH2D* h_out = Make2DHist((name+"_tmp").c_str(),_h_tp_v.at(0));
+  const std::vector<std::string>& ch_list = truth ? _ch_list_t : _ch_list_r;
+
+  int ch_idx = -1;
+  for(size_t i_ch=0;i_ch<ch_list.size();i_ch++)
+    if(ch == ch_list.at(i_ch)) ch_idx = i_ch;  
+
+  if(ch_idx == -1) 
+    throw std::invalid_argument("MultiChannelHistogramManager::Restore channel " +  ch + " not found");
+
+  int offset = truth ? _offset_t.at(ch_idx) : _offset_r.at(ch_idx);
+
+  TH2D* h_out = Make2DHist(name,truth ? _h_tp_truth_v.at(ch_idx) : _h_tp_v.at(ch_idx));
 
   for(int i=0;i<h->GetNbinsX()+2;i++){
     for(int j=0;j<h->GetNbinsY()+2;j++){
-      h_out->SetBinContent(i,j,h->GetBinContent(i,j));
-      h_out->SetBinError(i,j,h->GetBinError(i,j));
+      h_out->SetBinContent(i,j,h->GetBinContent(i+offset,j+offset));
+      h_out->SetBinError(i,j,h->GetBinError(i+offset,j+offset));
     }
   } 
 

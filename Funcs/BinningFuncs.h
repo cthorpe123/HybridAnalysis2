@@ -69,7 +69,7 @@ bool MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double 
   TH1D* h_template = new TH1D(("h_template_"+label).c_str(),"",bin_edges.size()-1,&bin_edges[0]); 
   h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
   h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
-  h_template->Write("h_template");
+  h_template->Write("h_template_All");
   f_out->Close();
 
   return true;
@@ -91,6 +91,7 @@ bool MakeMultiChannelTemplate(std::string label,std::map<std::string,TH1D*> h_da
   for(it = h_data_m.begin();it != h_data_m.end();it++){
        
     std::string ch = it->first;
+    std::cout << "Channel " << ch << std::endl;
     TH1D* h_data = it->second;
         
     // If stats in channel are too low to have more than 1 bin
