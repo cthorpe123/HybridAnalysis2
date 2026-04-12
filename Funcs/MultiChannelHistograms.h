@@ -190,6 +190,7 @@ void MultiChannelHistogramManager::FillTruthHistograms(bool sig,double var_t,boo
 
 void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t,std::string ch_r,double weight)
 {
+
   int ch_idx_t = -1;
   int bin_t = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
@@ -205,9 +206,9 @@ void MultiChannelHistogramManager::FillHistograms2D(bool sig,bool sel,double var
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
 
   // Event is selected and has valid channel
-  bool sel_ch = sig && ch_idx_r != -1;
+  bool sel_ch = sel && ch_idx_r != -1;
   if(sel_ch) bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
-   
+ 
   if(!_detvar_mode) _hm.FillHistograms2D(sig_ch,sel_ch,bin_t,bin_r,load_syst,weight);
   else _dhm.FillHistograms2D(sig_ch,sel_ch,bin_t,bin_r,load_syst,weight);
 
@@ -267,7 +268,7 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
     if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
 
   // Event is selected and has valid channel
-  bool sel_ch = sig && ch_idx_r != -1;
+  bool sel_ch = sel && ch_idx_r != -1;
   if(sel_ch) bin_r = _offset_r.at(ch_idx_r)+_h_tp_v.at(ch_idx_r)->FindBin(var_r);
 
   _hm.FillSpecialHistograms2D(name,sig_ch,sel_ch,bin_t,bin_r,weight);
