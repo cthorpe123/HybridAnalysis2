@@ -18,6 +18,8 @@ class MultiChannelHistogramManager {
     void SetTrueChannelList(std::vector<std::string> ch_v={});
     void LoadTemplates();
     void DetvarMode(){ _detvar_mode = true; }
+    void ReuseTruth(){ _reuse_truth = true; }
+    void ReuseReco(){ _reuse_reco = true; }
     void MakeHM();    
 
     void FillTruthHistograms(bool sig,double var_t,bool load_syst,std::string ch="All",double weight=1.0);
@@ -41,6 +43,10 @@ class MultiChannelHistogramManager {
     bool _keep_all;
     bool _hm_loaded = false;  
     bool _detvar_mode = false;
+
+    // Reuse the template labelled "All" for every channel
+    bool _reuse_truth = false;
+    bool _reuse_reco = false;
  
     std::vector<std::string> _ch_list_r = {"All"};
     std::vector<std::string> _ch_list_t = {"All"};
@@ -92,7 +98,8 @@ void MultiChannelHistogramManager::LoadTemplates()
 
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
 
-  for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get(("h_template_"+_ch_list_r.at(i_ch)).c_str()));
+  if(!_reuse_reco) for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get(("h_template_"+_ch_list_r.at(i_ch)).c_str()));
+  else for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get("h_template_All"));
 
   for(TH1D* h : _h_tp_v) h->SetDirectory(0);
 
@@ -105,7 +112,8 @@ void MultiChannelHistogramManager::LoadTemplates()
 
     TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
 
-    for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get(("h_template_"+_ch_list_t.at(i_ch)).c_str()));
+    if(!_reuse_truth) for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get(("h_template_"+_ch_list_t.at(i_ch)).c_str()));
+    else for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get("h_template_All"));
 
     for(TH1D* h : _h_tp_truth_v) h->SetDirectory(0);
 
