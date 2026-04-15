@@ -20,6 +20,8 @@ void Draw2DHist(TH2D* h,std::string name){
 
 void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,std::string name){
 
+  if(!h_v.size()) return;
+
   THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str());
   THStack* hs_U = new THStack("hs_U",";;FE");
   THStack* hs_O = new THStack("hs_O",";;FE");
@@ -101,6 +103,8 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
 // as lines
 
 void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
+
+  if(!h_v.size()) return;
 
   THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot->GetXaxis()->GetTitle())+";"+string(h_tot->GetYaxis()->GetTitle())).c_str());
   THStack* hs_U = new THStack("hs_U",";;Events");
@@ -226,6 +230,57 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 
    h_U.clear();
    h_O.clear();
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Draw a set of histograms on one canvas with different binning
+// ranges, as lines
+
+void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,std::string name){
+
+  if(!h_v.size()) return;
+
+  // Find the ranges needed and generate a template with the right axis ranges
+  double xmin = h_v.at(0)->GetBinLowEdge(1), xmax = h_v.at(0)->GetBinLowEdge(h_v.at(0)->GetNbinsX()+1);
+  double ymin = h_v.at(0)->GetMinimum(), ymax = h_v.at(0)->GetMaximum();
+
+  for(TH1D* h : h_v){
+    xmin = std::min(xmin,h->GetBinLowEdge(1));
+    xmax = std::max(xmax,h->GetBinLowEdge(h->GetNbinsX()+1));
+    ymin = std::min(ymin,h->GetMinimum());
+    ymax = std::max(ymax,h->GetMaximum());
+  }
+  double xrange = xmax - xmin;
+  double yrange = ymax - ymin;
+ 
+  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str());
+  //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
+  TLegend* l2 = new TLegend(0.0,0.9,1.0,1.0);
+  l2->SetNColumns(legs.size());
+  l2->SetBorderSize(0);
+
+  for(size_t i_s=0;i_s<h_v.size();i_s++){
+    h_v.at(i_s)->SetLineColor(colors.at(i_s));
+    h_v.at(i_s)->SetLineWidth(2);
+    hs_middle->Add(h_v.at(i_s));
+    l2->AddEntry(h_v.at(i_s),legs.at(i_s).c_str(),"L");
+  }
+
+  TCanvas* c2 = new TCanvas("c2","c2");
+
+  TH1D* h = new TH1D("h",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str(),1,xmin-0.05*xrange,xmax+0.05*xrange);
+  h->Draw();
+  h->SetStats(0);
+  hs_middle->Draw("nostack HIST same");
+  h->SetMaximum(ymax+0.05*yrange);
+  h->SetMinimum(ymin-0.05*yrange);
+  l2->Draw();
+
+  c2->cd();
+  c2->Print(name.c_str());
+  delete c2;
+  delete h;
 
 }
 

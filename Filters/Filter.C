@@ -10,7 +10,11 @@
 #include "Systematics.h"
 #include "WeightFuncs.h"
 
+#pragma link C++ class std::vector<TLorentzVector>+;
+
 void Filter(){
+
+  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
 
   bool is_data,is_ext,is_dirt,load_syst;
   double POT_weight;
@@ -22,9 +26,9 @@ void Filter(){
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4b/";
   //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
-  //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";      POT_weight = 1.332E+20/7.88166e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
+  std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";      POT_weight = 1.332E+20/7.88166e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";             POT_weight = 1.332E+20/3.06E+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
-  std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  POT_weight = 31582916.0/88445969.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
+  //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  POT_weight = 31582916.0/88445969.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
 
   // Main run4c files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4c/";
@@ -127,21 +131,16 @@ void Filter(){
   TLorentzVector pion_p4_t; 
   TLorentzVector pi0_p4_t; 
   TLorentzVector gamma_p4_t; 
+  std::vector<TLorentzVector> *protons_t = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pions_t = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pi0s_t = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *gammas_t = new std::vector<TLorentzVector>();
   int nprot_t; 
   int npi_t; 
   int npi0_t; 
   int nsh_t; 
   std::vector<double> est_nu_e_t;
-
-  double asym_all_t;
-  double asym_prot_t;
-  double asym_pi_t;
-  double asym_sh_t;
-  double cone_all_t;
-  double cone_prot_t;
-  double cone_pi_t;
-  double cone_sh_t;
-
+ 
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
     t_out->Branch("in_tpc_t",&in_tpc_t);
@@ -154,19 +153,15 @@ void Filter(){
     t_out->Branch("pion_p4_t",&pion_p4_t);
     t_out->Branch("pi0_p4_t",&pi0_p4_t);
     t_out->Branch("gamma_p4_t",&gamma_p4_t);
+    t_out->Branch("protons_t", &protons_t,32000,0);
+    t_out->Branch("pions_t", &pions_t,32000,0);
+    t_out->Branch("pi0s_t", &pi0s_t,32000,0);
+    t_out->Branch("gammas_t", &gammas_t,32000,0);
     t_out->Branch("nprot_t",&nprot_t);
     t_out->Branch("npi_t",&npi_t);
     t_out->Branch("npi0_t",&npi0_t);
     t_out->Branch("nsh_t",&npi0_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
-    t_out->Branch("asym_all_t",&asym_all_t);
-    t_out->Branch("asym_prot_t",&asym_prot_t);
-    t_out->Branch("asym_pi_t",&asym_pi_t);
-    t_out->Branch("asym_sh_t",&asym_sh_t);
-    t_out->Branch("cone_all_t",&cone_all_t);
-    t_out->Branch("cone_prot_t",&cone_prot_t);
-    t_out->Branch("cone_pi_t",&cone_pi_t);
-    t_out->Branch("cone_sh_t",&cone_sh_t);
   }
 
   // PD Reco branches
@@ -184,6 +179,9 @@ void Filter(){
   TLorentzVector proton_p4_pd; 
   TLorentzVector pion_p4_pd; 
   TLorentzVector gamma_p4_pd; 
+  std::vector<TLorentzVector> *protons_pd = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pions_pd = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *gammas_pd = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_pd;
 
   t_out->Branch("sel_pd",&sel_pd);
@@ -201,6 +199,9 @@ void Filter(){
   t_out->Branch("pion_p4_pd",&pion_p4_pd);
   t_out->Branch("gamma_p4_pd",&gamma_p4_pd);
   t_out->Branch("est_nu_e_pd",&est_nu_e_pd);
+  t_out->Branch("protons_pd", &protons_pd,32000,0);
+  t_out->Branch("pions_pd", &pions_pd,32000,0);
+  t_out->Branch("gammas_pd", &gammas_pd,32000,0);
 
   // WC Reco branches
   bool sel_wc;
@@ -215,6 +216,9 @@ void Filter(){
   int nprot_wc; 
   int npi_wc; 
   int nsh_wc; 
+  std::vector<TLorentzVector> *protons_wc = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pions_wc = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *gammas_wc = new std::vector<TLorentzVector>();
   TLorentzVector proton_p4_wc; 
   TLorentzVector pion_p4_wc; 
   TLorentzVector gamma_p4_wc; 
@@ -233,6 +237,9 @@ void Filter(){
   t_out->Branch("proton_p4_wc",&proton_p4_wc);
   t_out->Branch("pion_p4_wc",&pion_p4_wc);
   t_out->Branch("gamma_p4_wc",&gamma_p4_wc);
+  t_out->Branch("protons_wc", &protons_wc,32000,0);
+  t_out->Branch("pions_wc", &pions_wc,32000,0);
+  t_out->Branch("gammas_wc", &gammas_wc,32000,0);
   t_out->Branch("est_nu_e_wc",&est_nu_e_wc);
   t_out->Branch("muon_mom_len_wc",&muon_mom_len_wc);
   t_out->Branch("muon_mom_mcs_wc",&muon_mom_mcs_wc);
@@ -251,6 +258,9 @@ void Filter(){
   TLorentzVector proton_p4_lt; 
   TLorentzVector pion_p4_lt; 
   TLorentzVector gamma_p4_lt; 
+  std::vector<TLorentzVector> *protons_lt = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pions_lt = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *gammas_lt = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_lt;
 
   t_out->Branch("sel_lt",&sel_lt);
@@ -266,6 +276,9 @@ void Filter(){
   t_out->Branch("proton_p4_lt",&proton_p4_lt);
   t_out->Branch("pion_p4_lt",&pion_p4_lt);
   t_out->Branch("gamma_p4_lt",&gamma_p4_lt);
+  t_out->Branch("protons_lt", &protons_lt,32000,0);
+  t_out->Branch("pions_lt", &pions_lt,32000,0);
+  t_out->Branch("gammas_lt", &gammas_lt,32000,0);
   t_out->Branch("est_nu_e_lt",&est_nu_e_lt);
 
   // Hybrid methods 
@@ -282,6 +295,9 @@ void Filter(){
   TLorentzVector proton_p4_h8; 
   TLorentzVector pion_p4_h8; 
   TLorentzVector gamma_p4_h8; 
+  std::vector<TLorentzVector> *protons_h8 = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *pions_h8 = new std::vector<TLorentzVector>();
+  std::vector<TLorentzVector> *gammas_h8 = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_h8;
 
   t_out->Branch("sel_h8",&sel_h8);
@@ -297,6 +313,9 @@ void Filter(){
   t_out->Branch("proton_p4_h8",&proton_p4_h8);
   t_out->Branch("pion_p4_h8",&pion_p4_h8);
   t_out->Branch("gamma_p4_h8",&gamma_p4_h8);
+  t_out->Branch("protons_h8", &protons_h8,32000,0);
+  t_out->Branch("pions_h8", &pions_h8,32000,0);
+  t_out->Branch("gammas_h8", &gammas_h8,32000,0);
   t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
 
   // Systematics and tune 
@@ -314,7 +333,7 @@ void Filter(){
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-    //if(ievent > 10000) break;
+    if(ievent > 10000) break;
     if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
     t_in->GetEntry(ievent);
 
@@ -333,16 +352,13 @@ void Filter(){
     pion_p4_t = TLorentzVector(0,0,0,0);
     pi0_p4_t = TLorentzVector(0,0,0,0);
     gamma_p4_t = TLorentzVector(0,0,0,0);
-    est_nu_e_t = std::vector<double>(ee::kMAX,-1);
 
-    asym_all_t = -1;
-    asym_prot_t = -1;
-    asym_pi_t = -1;
-    asym_sh_t = -1;
-    cone_all_t = -1;
-    cone_prot_t = -1;
-    cone_pi_t = -1;
-    cone_sh_t = -1;
+    protons_t->clear();
+    pions_t->clear();
+    pi0s_t->clear();
+    gammas_t->clear();
+
+    est_nu_e_t = std::vector<double>(ee::kMAX,-1);
 
     if(!is_data && !is_ext && !is_dirt){
 
@@ -355,31 +371,28 @@ void Filter(){
       muon_contained_t = has_muon_t && isContained(mc_endx->at(0),mc_endy->at(0),mc_endz->at(0));
 
       std::vector<TVector3> p_v;
-      p_v.push_back(muon_mom_t);
-
       std::vector<TVector3> p_v_prot;
       std::vector<TVector3> p_v_pi;
       std::vector<TVector3> p_v_sh;
 
       for(size_t i_p=0;i_p<mc_pdg->size();i_p++){
         TVector3 mom(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p));
+        TLorentzVector p4(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
+
         if(mc_pdg->at(i_p) == 2212 && mom.Mag() > thresholds.at(2212).first){
           nprot_t++;
-          proton_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
-          p_v.push_back(mom);
-          p_v_prot.push_back(mom);
+          proton_p4_t += p4;
+          protons_t->push_back(p4);
         }
         if(abs(mc_pdg->at(i_p)) == 211 && mom.Mag() > thresholds.at(211).first){
           npi_t++;
-          pion_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
-          p_v.push_back(mom);
-          p_v_pi.push_back(mom);
+          pion_p4_t += p4;
+          pions_t->push_back(p4);
         }
         if(mc_pdg->at(i_p) == 111){
           npi0_t++;
-          pi0_p4_t += TLorentzVector(mc_px->at(i_p),mc_py->at(i_p),mc_pz->at(i_p),mc_E->at(i_p));
-          p_v.push_back(mom);
-          p_v_sh.push_back(mom);
+          pi0_p4_t += p4;
+          pi0s_t->push_back(p4);
         }
       } 
 
@@ -392,7 +405,8 @@ void Filter(){
       for(int i=0;i<truth_Ntrack;i++){
         if(truth_pdg[i] == 22 && std::find(pi0_ids.begin(),pi0_ids.end(),truth_mother[i]) != pi0_ids.end()){
           if(TVector3(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2]).Mag() > thresholds.at(22).first){
-            gamma_p4_t += TLorentzVector(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2],truth_startMomentum[i][3]);               
+            gamma_p4_t += TLorentzVector(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2],truth_startMomentum[i][3]);
+            gammas_t->push_back(TLorentzVector(truth_startMomentum[i][0],truth_startMomentum[i][1],truth_startMomentum[i][2],truth_startMomentum[i][3]));
             nsh_t++;
           }
         }
@@ -411,18 +425,6 @@ void Filter(){
       else if(in_tpc_t) category = kBG;
       else category = kOutFV;
 
-      // Variables for reweighting along
-      if(is_signal_t){
-        asym_all_t = weight::Asymmetry(p_v);
-        asym_prot_t = weight::Asymmetry(p_v_prot);
-        asym_pi_t = weight::Asymmetry(p_v_pi);
-        asym_sh_t = weight::Asymmetry(p_v_sh);
-        cone_all_t = weight::Cone(p_v);
-        cone_prot_t = weight::Cone(p_v_prot);
-        cone_pi_t = weight::Cone(p_v_pi);
-        cone_sh_t = weight::Cone(p_v_sh);
-      }
-
     }
 
     // Muon ID with each framework
@@ -438,14 +440,17 @@ void Filter(){
     muon_contained_pd = has_muon_pd && isContained(trk_end_x_v->at(pd_muon),trk_end_y_v->at(pd_muon),trk_end_z_v->at(pd_muon));
 
     std::vector<TLorentzVector> pd_proton_v = pd::RecoProton4MomV(trk_llr_pid_score_v,trk_len_v,trk_dir_x_v,trk_dir_y_v,trk_dir_z_v,pd_muon);
+    protons_pd = &pd_proton_v;
     nprot_pd = pd_proton_v.size();
     proton_p4_pd = SumTLorentzVector(pd_proton_v); 
 
     std::vector<TLorentzVector> pd_pion_v = pd::RecoPion4MomV(trk_llr_pid_score_v,trk_len_v,trk_dir_x_v,trk_dir_y_v,trk_dir_z_v,pd_muon);
+    pions_pd = &pd_pion_v;
     npi_pd = pd_pion_v.size();
     pion_p4_pd = SumTLorentzVector(pd_pion_v); 
 
     std::vector<TLorentzVector> pd_gamma_v = pd::RecoShower4MomV(shr_px_v,shr_py_v,shr_pz_v,shr_energy_y_v);
+    gammas_pd = &pd_gamma_v;
     nsh_pd = pd_gamma_v.size();
     gamma_p4_pd = SumTLorentzVector(pd_gamma_v);
 
@@ -470,14 +475,17 @@ void Filter(){
     
 
     std::vector<TLorentzVector> wc_proton_v = wc::RecoProton4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
+    protons_wc = &wc_proton_v;
     nprot_wc = wc_proton_v.size();
     proton_p4_wc = SumTLorentzVector(wc_proton_v); 
 
     std::vector<TLorentzVector> wc_pion_v = wc::RecoPion4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
+    pions_wc = &wc_pion_v;
     npi_wc = wc_pion_v.size();
     pion_p4_wc = SumTLorentzVector(wc_pion_v); 
 
     std::vector<TLorentzVector> wc_gamma_v = wc::RecoShower4MomV(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT,reco_id,wc_muon);
+    gammas_wc = &wc_gamma_v;
     nsh_wc = wc_gamma_v.size();
     gamma_p4_wc = SumTLorentzVector(wc_gamma_v);
 
@@ -499,14 +507,17 @@ void Filter(){
     muon_contained_lt = has_muon_lt && isContained(trackEndPosX[lt_muon],trackEndPosY[lt_muon],trackEndPosZ[lt_muon]);
 
     std::vector<TLorentzVector> lt_proton_v = lt::RecoProton4MomV(nTracks,trackIsSecondary,trackPID,trackRecoE,trackStartDirX,trackStartDirY,trackStartDirZ);
+    protons_lt = &lt_proton_v;
     nprot_lt = lt_proton_v.size();
     proton_p4_lt = SumTLorentzVector(lt_proton_v); 
 
     std::vector<TLorentzVector> lt_pion_v = lt::RecoPion4MomV(nTracks,trackIsSecondary,trackPID,trackRecoE,trackStartDirX,trackStartDirY,trackStartDirZ);
+    pions_lt = &lt_pion_v;
     npi_lt = lt_pion_v.size();
     pion_p4_lt = SumTLorentzVector(lt_pion_v); 
 
     std::vector<TLorentzVector> lt_gamma_v = lt::RecoShower4MomV(nShowers,showerIsSecondary,showerPID,showerRecoE,showerStartDirX,showerStartDirY,showerStartDirZ);
+    gammas_lt = &lt_gamma_v;
     nsh_lt = lt_gamma_v.size();
     gamma_p4_lt = SumTLorentzVector(lt_gamma_v);
 
@@ -527,11 +538,14 @@ void Filter(){
 
     nprot_h8 = lt_proton_v.size();
     proton_p4_h8 = SumTLorentzVector(lt_proton_v); 
+    protons_h8 = &lt_proton_v;
 
     npi_h8 = lt_pion_v.size();
+    pions_h8 = &lt_pion_v;
     pion_p4_h8 = SumTLorentzVector(lt_pion_v); 
 
     nsh_h8 = lt_gamma_v.size();
+    gammas_h8 = &lt_gamma_v;
     gamma_p4_h8 = SumTLorentzVector(lt_gamma_v);
 
     W_h8 = (proton_p4_h8 + pion_p4_h8 + gamma_p4_h8).M();

@@ -35,6 +35,7 @@ class MultiChannelHistogramManager {
 
     void Restore(TH1D*& h,std::string ch="All",bool truth=false) const;
     void Restore(TH2D*& h,std::string ch="All",bool truth=false) const;
+    void Restore(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const;
 
   private:
 
@@ -346,6 +347,53 @@ void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) c
   delete h;
   h = h_out;
   h->SetName(name.c_str());
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Restore the binning in a 2D joint/response histogram 
+
+void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const
+{
+  const char* name = h->GetName();
+  const char* x_label = h->GetXaxis()->GetTitle();
+  const char* y_label = h->GetYaxis()->GetTitle();
+
+  int ch_idx_t = -1;
+  for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
+    if(ch_t == _ch_list_t.at(i_ch)) ch_idx_t = i_ch;  
+
+  if(ch_idx_t == -1) 
+    throw std::invalid_argument("MultiChannelHistogramManager::Restore channel " +  ch_t + " not found");
+
+  int ch_idx_r = -1;
+  for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++)
+    if(ch_r == _ch_list_r.at(i_ch)) ch_idx_r = i_ch;  
+
+  if(ch_idx_r == -1) 
+    throw std::invalid_argument("MultiChannelHistogramManager::Restore channel " +  ch_r + " not found");
+
+  int offset_t = _offset_t.at(ch_idx_t);
+  int offset_r = _offset_r.at(ch_idx_r);
+
+  std::vector<double> boundaries_t,boundaries_r;
+  for(int i=1;i<_h_tp_truth_v.at(ch_idx_t)->GetNbinsX()+2;i++) boundaries_t.push_back(_h_tp_truth_v.at(ch_idx_t)->GetBinLowEdge(i));
+  for(int i=1;i<_h_tp_v.at(ch_idx_r)->GetNbinsX()+2;i++) boundaries_r.push_back(_h_tp_v.at(ch_idx_r)->GetBinLowEdge(i));
+
+  TH2D* h_out = new TH2D("h_tmp","",boundaries_t.size()-1,&boundaries_t[0],boundaries_r.size()-1,&boundaries_r[0]);
+
+  for(int i=0;i<h_out->GetNbinsX()+2;i++){
+    for(int j=0;j<h_out->GetNbinsY()+2;j++){
+      h_out->SetBinContent(i,j,h->GetBinContent(i+offset_t,j+offset_r));
+      h_out->SetBinError(i,j,h->GetBinError(i+offset_t,j+offset_r));
+    }
+  }
+
+  delete h;
+  h = h_out;
+  h->SetName(name);
+  h->GetXaxis()->SetTitle(x_label);
+  h->GetYaxis()->SetTitle(y_label);
 
 }
 

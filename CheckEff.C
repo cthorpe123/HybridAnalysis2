@@ -21,12 +21,12 @@ void CheckEff(){
   bool draw_hist = true; // Grab the CV from the non-detvar file
   bool draw_o=false,draw_u=false;
 
+  std::vector<std::string> channels_t = {"1p0pi","2p0pi","1p1pi","2p1pi"};
+  std::vector<std::string> channels_r = {"All"};
+
   std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
   for(int i_e=0;i_e<ee::kMAX;i_e++)
     vars.push_back(ee::estimators_str.at(i_e));
-
-  std::vector<std::string> channels_t = {"1p0pi0g","2p0pi0g","1p1pi0g","2p1pi0g","1p0pi1g","2p0pi1g","1p1pi1g","2p1pi1g","1p0pi2g","2p0pi2g","1p1pi2g","2p1pi2g"};
-  std::vector<std::string> channels_r = {"All"};
 
   for(std::string label : vars){
 
@@ -38,40 +38,98 @@ void CheckEff(){
     hist::MultiChannelHistogramManager mchm(label,true);
     mchm.SetTrueChannelList(channels_t);
     mchm.SetRecoChannelList(channels_r);
+    //mchm.ReuseReco();
+    //mchm.ReuseTruth();
     mchm.LoadTemplates();
 
     TH2D* h_CV_Response_Signal = (TH2D*)f_in->Get("Response/CV/h_Signal");
     int bins = h_CV_Response_Signal->GetNbinsY()+1;
-    for(int i=0;i<h_CV_Response_Signal->GetNbinsX()+2;i++){
-      double tot = 0.0;  
-      for(int j=0;j<h_CV_Response_Signal->GetNbinsY()+2;j++){
-        tot += h_CV_Response_Signal->GetBinContent(i,j);
-        //std::cout << i << " " << j << " " << h_CV_Response_Signal->GetBinContent(i,j) << std::endl;
-      }
-        std::cout << i << " "  << tot << std::endl;
-         }
-
 
     TH1D* h_CV_Eff_Signal = h_CV_Response_Signal->ProjectionX("h_CV_Eff",0,bins); 
 
-    //for(int i=0;i<h_CV_Eff_Signal->GetNbinsX()+2;i++) std::cout << i << " " <<  h_CV_Eff_Signal->GetBinContent(i) << std::endl;
-
-    std::vector<TH1D*> h_eff_v;
+    std::vector<TH1D*> h_v;
     std::vector<int> fill_colors;
     std::vector<std::string> legs;
     for(size_t i_ch=0;i_ch<channels_t.size();i_ch++){
       std::string ch = channels_t.at(i_ch);
       //std::cout << ch << std::endl;
-      h_eff_v.push_back((TH1D*)h_CV_Eff_Signal->Clone(("Eff_"+ch).c_str()));
-      mchm.Restore(h_eff_v.back(),ch,true);
-      //for(int i=0;i<h_eff_v.back()->GetNbinsX()+1;i++) std::cout << i <<  " " << h_eff_v.back()->GetBinContent(i) << std::endl;
+      h_v.push_back((TH1D*)h_CV_Eff_Signal->Clone(("Eff_"+ch).c_str()));
+      mchm.Restore(h_v.back(),ch,true);
+      //for(int i=0;i<h_v.back()->GetNbinsX()+1;i++) std::cout << i <<  " " << h_v.back()->GetBinContent(i) << std::endl;
       fill_colors.push_back(i_ch+1); 
       legs.push_back(ch);
     } 
 
-    pfs::DrawUnstacked(h_eff_v,fill_colors,legs,draw_o,draw_u,plot_dir+"Efficiency.png"); 
+    pfs::DrawUnstacked2(h_v,fill_colors,legs,plot_dir+"Efficiency.png"); 
+
+    for(TH1D* h : h_v) delete h;
+    h_v.clear();
+    fill_colors.clear();
+    legs.clear(); 
+
+    // Calculate the fraction of events within X% of the true value (assumes true and reco are the same variable)
+    int ctr = 1;
+    for(size_t i_ch_t=0;i_ch_t<channels_t.size();i_ch_t++){
+      for(size_t i_ch_r=0;i_ch_r<channels_r.size();i_ch_r++){
+        //if(i_ch_t != i_ch_r) continue;
+        std::string ch_t = channels_t.at(i_ch_t);
+        std::string ch_r = channels_r.at(i_ch_r);
+        TH2D* h_res = (TH2D*)h_CV_Response_Signal->Clone("h_res");
+        mchm.Restore(h_res,ch_t,ch_r);
+      
+        TH1D* h = (TH1D*)f_in->Get("Truth/CV/h_Signal");
+        mchm.Restore(h,ch_t,true);
+        h_v.push_back(h);
+        fill_colors.push_back(ctr);
+        legs.push_back(ch_t+" "+ch_r);
+ 
+        pfs::Draw2DHist(h_res,plot_dir+"Response_"+ch_t+"_"+ch_r+".png"); 
+
+        for(int i=1;i<h_res->GetNbinsX()+1;i++){
+          double good = 0.0;
+          double center = h_res->GetXaxis()->GetBinCenter(i);
+          for(int j=1;j<h_res->GetNbinsY()+1;j++){
+            if(abs(h_res->GetYaxis()->GetBinCenter(j) - center)/center < 0.2) good += h_res->GetBinContent(i,j);
+          } 
+          h->SetBinContent(i,good);
+        }
+        delete h_res;
+        ctr++;
+      }
+    }
+
+    pfs::DrawUnstacked2(h_v,fill_colors,legs,plot_dir+"FOM.png"); 
+
+    h_v.clear();
+    fill_colors.clear();
+    legs.clear();
+
+    // Try calculating the bias and variance in the observable for each channel
+    ctr = 1;
+    std::vector<TH1D*> h_bias,h_variance;
+    for(size_t i_ch_t=0;i_ch_t<channels_t.size();i_ch_t++){
+      for(size_t i_ch_r=0;i_ch_r<channels_r.size();i_ch_r++){
+        //if(i_ch_t != i_ch_r) continue;
+        std::string ch_t = channels_t.at(i_ch_t);
+        std::string ch_r = channels_r.at(i_ch_r);
+        TH2D* h_res = (TH2D*)h_CV_Response_Signal->Clone("h_res");
+        mchm.Restore(h_res,ch_t,ch_r);
+
+        h_bias.push_back((TH1D*)f_in->Get("Truth/CV/h_Signal")->Clone(("h_bias_"+ch_t+"_"+ch_r).c_str()));
+        h_variance.push_back((TH1D*)f_in->Get("Truth/CV/h_Signal")->Clone(("h_variance_"+ch_t+"_"+ch_r).c_str()));
+        mchm.Restore(h_bias.back(),ch_t,true);    
+        mchm.Restore(h_variance.back(),ch_t,true);    
+    
+        GetBiasVariance(h_res,h_bias.back(),h_variance.back());
+        fill_colors.push_back(ctr);
+        legs.push_back(ch_t+" "+ch_r);
+        ctr++;
+      }
+    }
+
+    pfs::DrawUnstacked2(h_bias,fill_colors,legs,plot_dir+"Bias.png"); 
+    pfs::DrawUnstacked2(h_variance,fill_colors,legs,plot_dir+"Variance.png"); 
 
   }
-
 
 }

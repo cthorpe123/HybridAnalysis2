@@ -305,6 +305,10 @@ TLorentzVector  *proton_p4_t=0;
 TLorentzVector  *pion_p4_t=0;
 TLorentzVector  *pi0_p4_t=0;
 TLorentzVector  *gamma_p4_t=0;
+std::vector<TLorentzVector>* protons_t;
+std::vector<TLorentzVector>* pions_t;
+std::vector<TLorentzVector>* pi0s_t;
+std::vector<TLorentzVector>* gammas_t;
 std::vector<double>* est_nu_e_t=0;
 
 Bool_t          sel_pd;
@@ -321,6 +325,9 @@ Int_t           nsh_pd;
 TLorentzVector  *proton_p4_pd=0;
 TLorentzVector  *pion_p4_pd=0;
 TLorentzVector  *gamma_p4_pd=0;
+std::vector<TLorentzVector>* protons_pd;
+std::vector<TLorentzVector>* pions_pd;
+std::vector<TLorentzVector>* gammas_pd;
 std::vector<double>* est_nu_e_pd=0;
 
 Bool_t          sel_wc;
@@ -338,6 +345,9 @@ Int_t           nsh_wc;
 TLorentzVector  *proton_p4_wc=0;
 TLorentzVector  *pion_p4_wc=0;
 TLorentzVector  *gamma_p4_wc=0;
+std::vector<TLorentzVector>* protons_wc;
+std::vector<TLorentzVector>* pions_wc;
+std::vector<TLorentzVector>* gammas_wc;
 std::vector<double>* est_nu_e_wc=0;
 
 Bool_t          sel_lt;
@@ -353,7 +363,11 @@ Int_t           nsh_lt;
 TLorentzVector  *proton_p4_lt=0;
 TLorentzVector  *pion_p4_lt=0;
 TLorentzVector  *gamma_p4_lt=0;
+std::vector<TLorentzVector>* protons_lt;
+std::vector<TLorentzVector>* pions_lt;
+std::vector<TLorentzVector>* gammas_lt;
 std::vector<double>* est_nu_e_lt=0;
+
 
 Bool_t          sel_h8;
 Bool_t          in_tpc_h8;
@@ -368,11 +382,16 @@ Int_t           nsh_h8;
 TLorentzVector  *proton_p4_h8=0;
 TLorentzVector  *pion_p4_h8=0;
 TLorentzVector  *gamma_p4_h8=0;
+std::vector<TLorentzVector>* protons_h8;
+std::vector<TLorentzVector>* pions_h8;
+std::vector<TLorentzVector>* gammas_h8;
 std::vector<double>* est_nu_e_h8=0;
 
 std::map<std::string,std::vector<double>>* weightsUnisim=0;
 
 void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
+
+  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
 
   std::cout << "Loading " << filename << std::endl;
 
@@ -433,7 +452,12 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     t_in->SetBranchAddress("pion_p4_t", &pion_p4_t);
     t_in->SetBranchAddress("pi0_p4_t", &pi0_p4_t);
     t_in->SetBranchAddress("gamma_p4_t", &gamma_p4_t);
+    t_in->SetBranchAddress("protons_t",&protons_t);    
+    t_in->SetBranchAddress("pions_t",&pions_t);    
+    t_in->SetBranchAddress("pi0s_t",&pi0s_t);    
+    t_in->SetBranchAddress("gammas_t",&gammas_t);    
     t_in->SetBranchAddress("est_nu_e_t",&est_nu_e_t);
+
     if(load_syst){
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
       t_in->SetBranchAddress("weightsReint",&weightsReint); 
@@ -460,6 +484,9 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("proton_p4_pd", &proton_p4_pd);
   t_in->SetBranchAddress("pion_p4_pd", &pion_p4_pd);
   t_in->SetBranchAddress("gamma_p4_pd", &gamma_p4_pd);
+  t_in->SetBranchAddress("protons_pd",&protons_pd);    
+  t_in->SetBranchAddress("pions_pd",&pions_pd);    
+  t_in->SetBranchAddress("gammas_pd",&gammas_pd);    
   t_in->SetBranchAddress("est_nu_e_pd",&est_nu_e_pd);
 
   t_in->SetBranchAddress("sel_wc", &sel_wc);
@@ -477,6 +504,9 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("proton_p4_wc", &proton_p4_wc);
   t_in->SetBranchAddress("pion_p4_wc", &pion_p4_wc);
   t_in->SetBranchAddress("gamma_p4_wc", &gamma_p4_wc);
+  t_in->SetBranchAddress("protons_wc",&protons_wc);    
+  t_in->SetBranchAddress("pions_wc",&pions_wc);    
+  t_in->SetBranchAddress("gammas_wc",&gammas_wc);    
   t_in->SetBranchAddress("est_nu_e_wc",&est_nu_e_wc);
 
   t_in->SetBranchAddress("sel_lt", &sel_lt);
@@ -492,6 +522,9 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("proton_p4_lt", &proton_p4_lt);
   t_in->SetBranchAddress("pion_p4_lt", &pion_p4_lt);
   t_in->SetBranchAddress("gamma_p4_lt", &gamma_p4_lt);
+  t_in->SetBranchAddress("protons_lt",&protons_lt);    
+  t_in->SetBranchAddress("pions_lt",&pions_lt);    
+  t_in->SetBranchAddress("gammas_lt",&gammas_lt);    
   t_in->SetBranchAddress("est_nu_e_lt",&est_nu_e_lt);
 
   t_in->SetBranchAddress("sel_h8", &sel_h8);
@@ -507,6 +540,9 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("proton_p4_h8", &proton_p4_h8);
   t_in->SetBranchAddress("pion_p4_h8", &pion_p4_h8);
   t_in->SetBranchAddress("gamma_p4_h8", &gamma_p4_h8);
+  t_in->SetBranchAddress("protons_h8",&protons_h8);    
+  t_in->SetBranchAddress("pions_h8",&pions_h8);    
+  t_in->SetBranchAddress("gammas_h8",&gammas_h8);    
   t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
 
 }
