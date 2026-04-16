@@ -99,6 +99,13 @@ void MultiChannelHistogramManager::LoadTemplates()
 
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
 
+  // Check if multiple templates exist or not
+  std::vector<const char*> keys;
+  for(auto key : *f_tp->GetListOfKeys())
+    keys.push_back(key->GetName());
+  if(keys.size() == 1 && string(keys.at(0)) == "h_template_All") _reuse_reco = true; 
+  keys.clear();
+
   if(!_reuse_reco) for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get(("h_template_"+_ch_list_r.at(i_ch)).c_str()));
   else for(size_t i_ch=0;i_ch<_ch_list_r.size();i_ch++) _h_tp_v.push_back((TH1D*)f_tp->Get("h_template_All"));
 
@@ -112,6 +119,12 @@ void MultiChannelHistogramManager::LoadTemplates()
   if(_save_truth){
 
     TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
+
+  // Check if multiple templates exist or not
+    for(auto key : *f_tp_truth->GetListOfKeys())
+      keys.push_back(key->GetName());
+    if(keys.size() == 1 && string(keys.at(0)) == "h_template_All") _reuse_truth = true; 
+    keys.clear();
 
     if(!_reuse_truth) for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get(("h_template_"+_ch_list_t.at(i_ch)).c_str()));
     else for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++) _h_tp_truth_v.push_back((TH1D*)f_tp_truth->Get("h_template_All"));
