@@ -48,7 +48,7 @@ void Filter(){
 
   // Main run5 files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5/";
-  //detvar_univ = -1;
+  detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";    POT_weight = 1.296e+20/1.00693e+21; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  POT_weight = 1.296e+20/3.53071e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
@@ -160,7 +160,7 @@ void Filter(){
     t_out->Branch("nprot_t",&nprot_t);
     t_out->Branch("npi_t",&npi_t);
     t_out->Branch("npi0_t",&npi0_t);
-    t_out->Branch("nsh_t",&npi0_t);
+    t_out->Branch("nsh_t",&nsh_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
   }
 
