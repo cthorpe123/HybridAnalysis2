@@ -274,4 +274,13 @@ bool in_vec(const std::vector<T>& vec,const T& val)
   return std::find(vec.begin(),vec.end(),val) != vec.end();
 }
 
+///////////////////////////////////////////////////////////////////////
+// Make the string giving the channel name
+std::string channel_str(int prot,int pi,int sh)
+{
+  return std::to_string(prot) + "p" + std::to_string(pi) + "pi" + std::to_string(sh) + "g";
+}
+
+///////////////////////////////////////////////////////////////////////
+
 #endif
