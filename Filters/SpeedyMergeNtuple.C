@@ -5,6 +5,8 @@ void SpeedyMergeNtuple(){
 
   bool is_data,save_syst;
 
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+
   // Run 4b Main Samples
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/"; 
   //std::string filename = "MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  is_data = true;  save_syst = false;
@@ -30,15 +32,15 @@ void SpeedyMergeNtuple(){
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4d/";
 
   // Run 5 Main Samples
-  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
   //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";    is_data = false;  save_syst = true;
   //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  is_data = false;  save_syst = false;
   //std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root";        is_data = true;  save_syst = false;
-  //std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         is_data = false;  save_syst = true;
+  std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         is_data = true;  save_syst = false;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5/";
 
   // Run 4 Detvars
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar/BNB/run4d/";
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar/BNB/run4d/";
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_4d.root";       is_data = false;  save_syst = false;
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
@@ -47,7 +49,7 @@ void SpeedyMergeNtuple(){
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root";     is_data = false;  save_syst = false;
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4_detvar/";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4_detvar/";
 
   // Run 5 Detvars
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar/BNB/run5/";

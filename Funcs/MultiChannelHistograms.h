@@ -3,6 +3,9 @@
 
 #include "Histograms2.h"
 #include "DetvarHistograms.h"
+#include <string>
+#include "TH1D.h"
+#include "TH2D.h"
 
 // Wrapper class that acts as an interface between functions trying to 
 // performa analysis with multiple channels and the histogram manager 
@@ -16,6 +19,7 @@ class MultiChannelHistogramManager {
     MultiChannelHistogramManager(std::string label,bool save_truth=false);
     void SetRecoChannelList(std::vector<std::string> ch_v={});
     void SetTrueChannelList(std::vector<std::string> ch_v={});
+    void SetTemplates(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r);
     void LoadTemplates();
     void DetvarMode(){ _detvar_mode = true; }
     void ReuseTruth(){ _reuse_truth = true; }
@@ -152,7 +156,34 @@ void MultiChannelHistogramManager::LoadTemplates()
     }
   }
 
-}    
+}
+
+///////////////////////////////////////////////////////////////////////
+// Create the binning scheme 
+
+void MultiChannelHistogramManager::SetTemplates(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
+{
+
+  // If templates not provided in file, generate the file here, will be needed later on
+  // when using other scripts that call Restore without having access to the original templates
+
+  TH1D* h_tp = new TH1D("h_template_All",axis_title.c_str(),nbins_r,low_r,high_r);
+  TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
+  h_tp->Write();
+  f_tp->Close();
+  delete h_tp;  
+
+    if(_save_truth){
+      TH1D* h_tp_truth = new TH1D("h_template_All",axis_title.c_str(),nbins_t,low_t,high_t);
+      TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
+      h_tp_truth->Write();
+      f_tp_truth->Close();
+      delete h_tp_truth;  
+    }
+
+  this->LoadTemplates();
+
+}
 
 ///////////////////////////////////////////////////////////////////////
 // Create the histogram manager object 

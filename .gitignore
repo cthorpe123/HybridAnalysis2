@@ -1,0 +1,8 @@
+*.pdf
+*.png
+*.tar
+*.root
+Analysis/*
+AutoDict*
+*.log
+Dict*

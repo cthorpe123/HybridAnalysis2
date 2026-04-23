@@ -16,7 +16,7 @@ using namespace syst;
 void MakeCovDetvar(){
 
   // Label and set the branches defining the selection and systematics
-  std::vector<std::string> channels = {"1p","2p","Other"};
+  std::vector<std::string> channels = {"All"};
   std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
   for(int i_e=0;i_e<ee::kMAX;i_e++)
     vars.push_back(ee::estimators_str.at(i_e));
@@ -69,9 +69,9 @@ void MakeCovDetvar(){
 
       //if(run > 25400 && run < 25600) continue;
 
-      std::string ch_t = "Other";
-      if(is_signal_t && nprot_t == 1) ch_t = "1p";
-      else if(is_signal_t && nprot_t == 2) ch_t = "2p";
+      std::string ch_t = "All";
+      //if(is_signal_t && nprot_t == 1) ch_t = "1p";
+      //else if(is_signal_t && nprot_t == 2) ch_t = "2p";
 
       std::map<std::string,double> vars_t = {
         {"MuonMom",muon_mom_t->Mag()},

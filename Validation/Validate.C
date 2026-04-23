@@ -6,10 +6,10 @@
 
 void Validate(){
 
-  const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
+  const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
-  LoadTree(file,f_in,t_in,false);
+  LoadTree(file,f_in,t_in,false,false);
 
   TH1D* h_vtx_x_pd_minus_wc = new TH1D("h_vtx_x_pd_minus_wc",";Vertex X PD - WC (cm);Events",100,-10,10);
   TH1D* h_vtx_y_pd_minus_wc = new TH1D("h_vtx_y_pd_minus_wc",";Vertex Y PD - WC (cm);Events",100,-10,10);

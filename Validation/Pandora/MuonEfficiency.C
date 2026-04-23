@@ -85,7 +85,7 @@ void MuonEfficiency(){
 
   TH2D* h_selected_true_muon_mom_reco_muon_mom = new TH2D("h_selected_true_muon_mom_reco_muon_mom",";True Muon Momentum (Gev);Reco Muon Momentum (Gev);",40,0.0,2.0,40,0.0,2.0);
   TH2D* h_selected_true_muon_costheta_reco_muon_costheta = new TH2D("h_selected_true_muon_costheta_reco_muon_costheta",";True Muon Cos(#theta);Reco Muon Cos(#theta);",40,-1.0,1.0,40,-1.0,1.0);
-  
+
   TH1D* h_muon_mom_error = new TH1D("h_muon_mom_error",";(Reco - True)/True;Events",100,-1,1);
 
   for(Long64_t ievent=0;ievent<t_in->GetEntries();ievent++){
@@ -114,7 +114,7 @@ void MuonEfficiency(){
     double reco_p_range = trk_range_muon_mom_v->at(muon); 
     double reco_p_mcs = trk_mcs_muon_mom_v->at(muon); 
     double reco_costheta = TVector3(trk_dir_x_v->at(muon),trk_dir_y_v->at(muon),trk_dir_z_v->at(muon)).CosTheta();
- 
+
     h_selected_true_muon_mom->Fill(p);
     h_selected_true_muon_costheta->Fill(cos(theta));    
 
@@ -144,7 +144,7 @@ void MuonEfficiency(){
   h_selected_true_muon_mom_reco_muon_mom->SetStats(0);
   c->Print("Plots/MuonEfficiency/MomentumReconstruction.png");
   c->Clear();
- 
+
   Normalise(h_selected_true_muon_mom_reco_muon_mom);
   h_selected_true_muon_mom_reco_muon_mom->Draw("colz");
   h_selected_true_muon_mom_reco_muon_mom->SetStats(0);
@@ -156,12 +156,12 @@ void MuonEfficiency(){
   c->Print("Plots/MuonEfficiency/CosThetaReconstruction.png");
   c->Clear();
 
-   Normalise(h_selected_true_muon_costheta_reco_muon_costheta);
+  Normalise(h_selected_true_muon_costheta_reco_muon_costheta);
   h_selected_true_muon_costheta_reco_muon_costheta->Draw("colz");
   h_selected_true_muon_costheta_reco_muon_costheta->SetStats(0);
   c->Print("Plots/MuonEfficiency/Normalised_CosThetaReconstruction.png");
   c->Clear();
- 
+
   h_muon_mom_error->Draw("HIST");
   h_muon_mom_error->SetStats(0);
   c->Print("Plots/MuonEfficiency/MomentumError.png");

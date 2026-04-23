@@ -9,7 +9,7 @@ using namespace lt;
 
 void MuonPerformance(){
 
-  bool check_containment = true;
+  bool check_containment = false;
 
   const std::string file = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";
   TFile* f_in = nullptr;

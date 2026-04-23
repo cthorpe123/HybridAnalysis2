@@ -21,9 +21,11 @@ void CheckDetvars(){
   bool draw_hist = true; // Grab the CV from the non-detvar file
   bool draw_o=false,draw_u=false;
 
-  std::vector<std::string> labels = {"MuonMom2"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
+  for(int i_e=0;i_e<ee::kMAX;i_e++)
+    vars.push_back(ee::estimators_str.at(i_e));
 
-  for(std::string label : labels){
+  for(std::string label : vars){
 
     std::string plot_dir = "Analysis/"+label+"/Plots/CheckDetvars/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
