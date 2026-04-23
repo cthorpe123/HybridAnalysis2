@@ -39,7 +39,7 @@ class MultiChannelHistogramManager {
 
     void Restore(TH1D*& h,std::string ch="All",bool truth=false) const;
     void Restore(TH2D*& h,std::string ch="All",bool truth=false) const;
-    void Restore(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const;
+    void RestoreRes(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const;
 
   private:
 
@@ -163,9 +163,10 @@ void MultiChannelHistogramManager::LoadTemplates()
 
 void MultiChannelHistogramManager::SetTemplates(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
 {
-
   // If templates not provided in file, generate the file here, will be needed later on
   // when using other scripts that call Restore without having access to the original templates
+
+  system(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
 
   TH1D* h_tp = new TH1D("h_template_All",axis_title.c_str(),nbins_r,low_r,high_r);
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
@@ -397,7 +398,7 @@ void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) c
 ///////////////////////////////////////////////////////////////////////
 // Restore the binning in a 2D joint/response histogram 
 
-void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const
+void MultiChannelHistogramManager::RestoreRes(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const
 {
   const char* name = h->GetName();
   const char* x_label = h->GetXaxis()->GetTitle();
