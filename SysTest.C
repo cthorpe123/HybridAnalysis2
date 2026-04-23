@@ -15,13 +15,11 @@ using namespace syst;
 
 void SysTest(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
-  for(int i_e=0;i_e<ee::kMAX;i_e++)
-    vars.push_back(ee::estimators_str.at(i_e));
+  std::vector<std::string> vars = {"ProtonKE","NProt","Channel"};
 
   bool draw_underflow = false;
   bool draw_overflow = false;
-  bool add_detvars = true;
+  bool add_detvars = false;
   bool blinded = true;
   bool show_truth = false;
 

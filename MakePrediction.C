@@ -20,10 +20,10 @@ void MakePrediction(){
   bool draw_underflow = false;
   bool draw_overflow = false;
   bool divide_by_bin_width = true;
-  bool draw_truth = true;
+  bool draw_truth = false;
 
-  std::vector<std::string> vars = {"MuonMom"};
-  std::vector<std::string> channels_t = {"1p0pi0g","2p0pi0g","1p1pi0g","2p1pi0g","1p0pi1g","2p0pi1g","1p1pi1g","2p1pi1g","1p0pi2g","2p0pi2g","1p1pi2g","2p1pi2g"};
+  std::vector<std::string> vars = {"NProt","ProtonKE","Channel"};
+  std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
