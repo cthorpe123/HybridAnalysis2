@@ -138,6 +138,35 @@ void GetBiasVariance(const TH2D* h_Data,TH1D*& h_Bias,TH1D*& h_Variance){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Calculate bias in reconstructed variable afo true variable, given 
+// their joint dist, weighted by error in each reco bin
+
+void GetWeightedBias(const TH2D* h_Data,TH1D*& h_Bias){
+
+  int nbins_x = h_Data->GetNbinsX();
+  int nbins_y = h_Data->GetNbinsY();
+
+  for(int i=1;i<nbins_x+1;i++){
+    double mean = 0.0;
+    double events = 0.0;
+    double error2 = 0.0;
+    for(int j=1;j<nbins_y+1;j++){
+      mean += h_Data->GetYaxis()->GetBinCenter(j)*h_Data->GetBinContent(i,j);
+      events += h_Data->GetBinContent(i,j);
+      error2 += h_Data->GetBinContent(i,j)*h_Data->GetBinError(i,j)*h_Data->GetBinError(i,j);
+    }
+
+    mean /= events;
+    error2 /= events*events;
+
+    h_Bias->SetBinContent(i,(mean - h_Bias->GetBinCenter(i))/h_Bias->GetBinCenter(i));
+    h_Bias->SetBinError(i,sqrt(error2)/h_Bias->GetBinCenter(i));
+
+  }
+
+}
+
+///////////////////////////////////////////////////////////////////////
 // TLorentzVector manipulation funcs
 
 void SortTLorentzVector(std::vector<TLorentzVector>& p){

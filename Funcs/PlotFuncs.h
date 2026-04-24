@@ -235,9 +235,9 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 
 ///////////////////////////////////////////////////////////////////////
 // Draw a set of histograms on one canvas with different binning
-// ranges, as lines
+// ranges, as lines, optionally with error bars
 
-void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,std::string name){
+void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,std::string name,bool draw_errors){
 
   if(!h_v.size()) return;
 
@@ -272,7 +272,8 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   TH1D* h = new TH1D("h",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str(),1,xmin-0.05*xrange,xmax+0.05*xrange);
   h->Draw();
   h->SetStats(0);
-  hs_middle->Draw("nostack HIST same");
+  if(!draw_errors)hs_middle->Draw("nostack HIST same");
+  else hs_middle->Draw("nostack E same");
   h->SetMaximum(ymax+0.05*yrange);
   h->SetMinimum(ymin-0.05*yrange);
   l2->Draw();
