@@ -28,7 +28,7 @@ void MakeCov(){
     "run5/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
   };
 
-  std::vector<std::string> channels_t = {"1p0pi","2p0pi","1p1pi","2p1pi"};
+  std::vector<std::string> channels_t = channels;
   std::vector<std::string> channels_r = {"All"};
 
   std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
@@ -44,39 +44,6 @@ void MakeCov(){
     h_m.at(var).LoadTemplates();
     h_m.at(var).MakeHM();
   } 
-
-  const int spline_pts = 10;
-
-  // Function pointers for the various reweighters 
-  std::map<std::string,std::vector<double>(*)()> r_m;
-
-  // Declare the function pointers here
-  auto f_ExtraPi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 0 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("ExtraPi",f_ExtraPi); 
-
-  auto f_Extra2Pi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("Extra2Pi",f_Extra2Pi); 
-  
-  auto f_ExtraP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("ExtraP",f_ExtraP); 
-
-  auto f_Extra1P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 1 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("Extra1P",f_Extra1P); 
-
-  auto f_Extra2P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 2 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("Extra2P",f_Extra2P); 
-
-  auto f_Extra3P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 3 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("Extra3P",f_Extra3P); 
-
-  auto f_ExtraNP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 3 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("ExtraNP",f_ExtraNP); 
-
-  auto f_ExtraG = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 0 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("ExtraG",f_ExtraG); 
-
-  auto f_Extra2G = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
-  r_m.emplace("Extra2G",f_Extra2G); 
 
   for(std::string var : vars){
     std::cout << var << std::endl;
@@ -103,11 +70,8 @@ void MakeCov(){
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
       
-      std::string ch_t = "All";        
-      if(nprot_t == 1 && npi_t == 0) ch_t = "1p0pi";
-      if(nprot_t == 2 && npi_t == 0) ch_t = "2p0pi";
-      if(nprot_t == 1 && npi_t == 1) ch_t = "1p1pi";
-      if(nprot_t == 2 && npi_t == 1) ch_t = "2p1pi";
+      std::string channel_t = *ch_str_t;        
+      std::string ch_h8 = "All";
 
       std::string ch_h8 = "All";
 
