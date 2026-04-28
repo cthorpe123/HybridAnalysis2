@@ -105,8 +105,12 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
 void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
 
   if(!h_v.size()) return;
+  
+  // Sometimes the first hist and h_tot are the same pointer that we now need to behave separately, make a clone of the 
+  // tot and work on that
+  TH1D* h_tot_tmp = (TH1D*)h_tot->Clone("h_tot_tmp");
 
-  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot->GetXaxis()->GetTitle())+";"+string(h_tot->GetYaxis()->GetTitle())).c_str());
+  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot_tmp->GetXaxis()->GetTitle())+";"+string(h_tot_tmp->GetYaxis()->GetTitle())).c_str());
   THStack* hs_U = new THStack("hs_U",";;Events");
   THStack* hs_O = new THStack("hs_O",";;Events");
   TLegend* l2 = draw_o && draw_u ? new TLegend(0.13,0.91,0.97,1.0): new TLegend(0.11,0.91,0.97,1.0);
@@ -127,13 +131,13 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   }
 
   TH1D *h_tot_O,*h_tot_U;
-  MakeOU(h_tot->GetName(),h_tot,h_tot_U,h_tot_O,"","");
+  MakeOU(h_tot_tmp->GetName(),h_tot_tmp,h_tot_U,h_tot_O,"","");
   h_tot_U->SetFillStyle(3253);
   h_tot_U->SetFillColor(1);
   h_tot_O->SetFillStyle(3253);
   h_tot_O->SetFillColor(1);
-  h_tot->SetFillStyle(3253);
-  h_tot->SetFillColor(1);
+  h_tot_tmp->SetFillStyle(3253);
+  h_tot_tmp->SetFillColor(1);
 
   TH1D *h_data_U=nullptr,*h_data_O=nullptr;
   if(h_data != nullptr){
@@ -204,9 +208,9 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   l_Chi2->SetHeader(("#chi^{2}/ndof = " + to_string_with_precision(chi2.first,1) + "/" + std::to_string(chi2.second)).c_str());
 
   hs_middle->Draw("HIST");
-  h_tot->Draw("same e2");
+  h_tot_tmp->Draw("same e2");
   if(h_data != nullptr) h_data->Draw("same e1");
-  hs_middle->SetMaximum(GetMax(h_tot)*1.15);
+  hs_middle->SetMaximum(GetMax(h_tot_tmp)*1.15);
   l2->Draw();
   if(chi2.second > 0) l_Chi2->Draw();
   c2->cd();
@@ -230,6 +234,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 
    h_U.clear();
    h_O.clear();
+   delete h_tot_tmp;
 
 }
 

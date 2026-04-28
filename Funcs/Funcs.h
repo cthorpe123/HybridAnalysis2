@@ -311,5 +311,12 @@ std::string channel_str(int prot,int pi,int sh)
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Integral including underflow/overflow
+
+double IntegralWithOU(const TH1D* h){
+  return h->Integral("width") + h->GetBinContent(0) + h->GetBinContent(h->GetNbinsX()+1);
+}
+
+///////////////////////////////////////////////////////////////////////
 
 #endif

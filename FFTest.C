@@ -10,6 +10,7 @@
 #include "Systematics.h"
 #include "PlotFuncs.h"
 #include "MultiChannelHistograms.h"
+#include "WeightFuncs.h"
 
 using namespace syst;
 
@@ -22,7 +23,7 @@ void FFTest(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = true;
+  bool add_detvars = false;
   const bool include_data_stat = true;
   const bool draw_underflow = false;
   const bool draw_overflow = false;
@@ -31,13 +32,14 @@ void FFTest(){
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
-  for(int i_e=0;i_e<ee::kMAX;i_e++)
-    vars.push_back(ee::estimators_str.at(i_e));
+  std::vector<std::string> vars = {"MuonCosTheta"};
+  std::vector<std::string> channels_t = {"1p","Np"};
+  std::vector<std::string> channels_r = {"All"};
 
-  // Special universe setup
-  const int spline_pts = 20;
-  std::vector<std::string> special_univ = {"Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi"};
+  weight::SetWeightFuncs();
+  std::vector<std::string> special_univs;
+  for(const auto &item : weight::r_m)
+    special_univs.push_back(item.first);
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -51,19 +53,14 @@ void FFTest(){
     TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     // Load binning templates
-    hist::MultiChannelHistogramManager mchm(label);
+    hist::MultiChannelHistogramManager mchm(label,true);
+    mchm.SetTrueChannelList(channels_t);
+    mchm.SetRecoChannelList(channels_r);
     mchm.LoadTemplates();
 
     std::vector<TH1D*> h_v;
     std::vector<int> fill_colors;
     std::vector<std::string> legs;
-
-    // Get the CV reco prediction with signal only, numeric binning 
-    //TH1D* h_CV = Multiply((TH1D*)f_in->Get("Truth/CV/h_Signal"),(TH2D*)f_in->Get("Response/CV/h_Signal"),"h_CV");
-    //mchm.Restore(h_CV);
-    //h_v.push_back((TH1D*)h_CV->Clone("Signal"));
-    //fill_colors.push_back(cat_colors[kSignal]);
-    //legs.push_back("Signal");
 
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
     TH1D* h_CV = (TH1D*)f_in->Get("Reco/CV/h_Signal")->Clone("h_CV");
@@ -129,7 +126,6 @@ void FFTest(){
           h->Add((TH1D*)f_in_detvar->Get(("Reco/Vars/"+detvar_str.at(i_s)+"/h_"+categories.at(i_c)).c_str()));
         } 
         
-
         TH2D *c,*fc; 
         CalcCovUnisim(detvar_str.at(i_s),h_CV_Detvar,h,c,fc); 
         for(int i=0;i<h_CV->GetNbinsX()+2;i++){
@@ -148,7 +144,6 @@ void FFTest(){
 
     }
 
-
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
     for(int i=0;i<h_Cov_Flux->GetNbinsX()+2;i++)
       for(int j=0;j<h_Cov_Flux->GetNbinsY()+2;j++)
@@ -164,17 +159,31 @@ void FFTest(){
     // If requested, also add the estimated stat error on the data
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
 
-    for(std::string s : special_univ){
+    for(std::string s : special_univs){
 
       gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       std::cout << s << std::endl;
 
       std::vector<std::pair<double,int>> spec_chi2;
 
-      for(int i=0;i<spline_pts;i++){
+      for(int i=0;i<weight::spline_pts;i++){
 
         std::string spec = s + "_" + std::to_string(i); 
 
+        // Draw the truth distribution in the special universe, useful for showing how the spline reweighting is modifying the distribution
+        for(std::string ch : channels_t){ 
+          TH1D* h_Spec_Truth_Scaled = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
+          TH1D* h_CV_Truth_tmp = (TH1D*)h_CV_Truth->Clone("h_CV_Truth_tmp");
+          h_Spec_Truth_Scaled->Scale(IntegralWithOU(h_CV_Truth)/IntegralWithOU(h_Spec_Truth_Scaled));
+          mchm.Restore(h_Spec_Truth_Scaled,ch,true);
+          mchm.Restore(h_CV_Truth_tmp,ch,true);
+          if(dbbw) DivideByBinWidth(h_Spec_Truth_Scaled);
+          if(dbbw) DivideByBinWidth(h_CV_Truth_tmp);
+          pfs::DrawStacked({h_CV_Truth_tmp},{cat_colors[kSignal]},{"Default Truth Signal"},h_CV_Truth_tmp,h_Spec_Truth_Scaled,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_Truth_"+ch+".png");
+          delete h_CV_Truth_tmp;
+          delete h_Spec_Truth_Scaled;
+        }
+        
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
         TH1D* h_FF_Spec = Multiply(h_CV_Truth,h_Res_Spec,"h_FF_Spec");
         mchm.Restore(h_FF_Spec);
@@ -204,13 +213,16 @@ void FFTest(){
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
         
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+"FF_Signal_"+spec+".png",chi2); 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_CVTruthTimesSpecRes.png",chi2); 
 
         delete h_FF_Spec;
-
+        
         // Instead of multiplying the CV truth by the spec response, multiply the spec truth by 
         // the CV response 
         TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
+        h_Spec_Truth->Scale(IntegralWithOU(h_CV_Truth)/IntegralWithOU(h_Spec_Truth));
+        //mchm.Restore(h_Spec_Truth,"All",true);
+
         TH1D* h_FF_Spec_2 = Multiply(h_Spec_Truth,h_CV_Res,"h_FF_Spec_2");
         mchm.Restore(h_FF_Spec_2);
         if(dbbw) DivideByBinWidth(h_FF_Spec_2);
@@ -219,9 +231,10 @@ void FFTest(){
         for(int i=0;i<h_FF_Spec_2->GetNbinsX()+2;i++)
           h_FF_Spec_2->SetBinError(i,1e-10);
  
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec_2,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+"Modified_Signal_"+spec+".png"); 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV,h_FF_Spec_2,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_SpecTruthTimesCVRes.png",chi2); 
 
         delete h_FF_Spec_2;
+        
       }
 
       if(draw_chi2_curve){
