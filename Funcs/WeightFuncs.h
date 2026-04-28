@@ -120,7 +120,7 @@ double Cone(const std::vector<TVector3>& p_v)
 // Set up all of the pointers to the different weight functions here
 
 const int spline_pts = 5; // Number of points to use in the spline reweighting
-const double max_weight = 3.0; // Max weight to apply in the spline reweighting
+const double max_weight = 5.0; // Max weight to apply in the spline reweighting
 
 // Function pointers for the various reweighters 
 std::map<std::string,std::vector<double>(*)()> r_m;
@@ -155,41 +155,78 @@ void SetWeightFuncs()
   auto f_Extra2G = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra2G",f_Extra2G); 
 
-  auto f_MuonAngleShape = [](){ 
+  auto f_MuonAngleShape_LH_Bias = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
     for(int i=0;i<spline_pts;i++) 
-      x.at(i) *= std::min(max_weight, ROOT::Math::beta_pdf(val,i*2.0/spline_pts,0.5));
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
     return x;
   };
-  r_m.emplace("MuonAngleShape",f_MuonAngleShape);
+  r_m.emplace("MuonAngleShape_LH_Bias",f_MuonAngleShape_LH_Bias);
 
-  auto f_MuonAngleShape2 = [](){ 
+  auto f_MuonAngleShape_RH_Bias = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
     for(int i=0;i<spline_pts;i++) 
-      x.at(i) *= std::min(max_weight, ROOT::Math::beta_pdf(val,i*1.5/spline_pts,0.1));
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
     return x;
   };
-  r_m.emplace("MuonAngleShape2",f_MuonAngleShape2);
+  r_m.emplace("MuonAngleShape_RH_Bias",f_MuonAngleShape_RH_Bias);
 
-  auto f_MuonMomShape = [](){ 
+  auto f_MuonAngleShape_Center_Gather = [](){ 
+    double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
+    std::vector<double> x(spline_pts,1.0); 
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("MuonAngleShape_Center_Gather",f_MuonAngleShape_Center_Gather);
+
+  auto f_MuonAngleShape_Center_Spread = [](){ 
+    double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
+    std::vector<double> x(spline_pts,1.0); 
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("MuonAngleShape_Center_Spread",f_MuonAngleShape_Center_Spread);
+
+  
+  auto f_MuonMomShape_LH_Bias = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
     for(int i=0;i<spline_pts;i++) 
-      x.at(i) *= std::min(max_weight, ROOT::Math::beta_pdf(val,0.5,i*2.0/spline_pts));
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
     return x;
   };
-  r_m.emplace("MuonMomShape",f_MuonMomShape);
+  r_m.emplace("MuonMomShape_LH_Bias",f_MuonMomShape_LH_Bias);
 
-  auto f_MuonMomShape2 = [](){ 
+  auto f_MuonMomShape_RH_Bias = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
     for(int i=0;i<spline_pts;i++) 
-      x.at(i) *= std::min(max_weight, ROOT::Math::beta_pdf(val,1.0,i*1.5/spline_pts));
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
     return x;
   };
-  r_m.emplace("MuonMomShape2",f_MuonMomShape2);
+  r_m.emplace("MuonMomShape_RH_Bias",f_MuonMomShape_RH_Bias);
+
+  auto f_MuonMomShape_Center_Gather = [](){ 
+    double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
+    std::vector<double> x(spline_pts,1.0); 
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("MuonMomShape_Center_Gather",f_MuonMomShape_Center_Gather);  
+
+  auto f_MuonMomShape_Center_Spread = [](){ 
+    double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
+    std::vector<double> x(spline_pts,1.0); 
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("MuonMomShape_Center_Spread",f_MuonMomShape_Center_Spread);
 
 }
 
