@@ -64,9 +64,11 @@ class HistogramManager {
  
     // Truth histograms, only filled for the signal
     TH1D* _h_CV_Truth_Signal;
+    double _CV_Truth_Signal_Integral;
     std::vector<std::vector<TH1D*>> _h_Vars_Truth_Signal;
     std::vector<TH1D*> _h_Unisim_Vars_Truth_Signal;
     std::map<std::string,TH1D*> _h_Special_Truth_Signal;
+    std::map<std::string,double> _Special_Truth_Signal_Integral;
 
     // Joint histograms, only filled for the signal
     TH2D* _h_CV_Joint_Signal;
@@ -85,6 +87,8 @@ class HistogramManager {
     void _SetupRecoHistograms();
     void _SetupTruthHistograms();
     void _SetupJointHistograms();
+    void _GetIntegrals();
+    void _ScaleSpecial();
     void _WriteReco();
     void _WriteTruth();
     void _WriteJoint();
@@ -477,6 +481,10 @@ void HistogramManager::Write()
   std::cout << "Writing histograms for " << _label << std::endl;
   gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
   _f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
+
+  _GetIntegrals();
+  _ScaleSpecial();
+
   _WriteReco();
 
   if(_save_truth){
@@ -484,7 +492,40 @@ void HistogramManager::Write()
     _WriteJoint();
   }
 
+
   _f_out->Close();
+}
+
+///////////////////////////////////////////////////////////////////////
+// Calculate integrals of the truth histograms and store in member 
+// variables
+
+void HistogramManager::_GetIntegrals()
+{
+  _CV_Truth_Signal_Integral = IntegralWithOU(_h_CV_Truth_Signal);
+  for(const auto& it : _h_Special_Truth_Signal) _Special_Truth_Signal_Integral[it.first] = IntegralWithOU(it.second);
+}
+
+///////////////////////////////////////////////////////////////////////
+// Scale the special universe histograms to match the normalisation
+// in the CV universe histograms 
+
+void HistogramManager::_ScaleSpecial()
+{
+
+  for(const auto& it : _h_Special_Truth_Signal){
+    std::string name = it.first;
+    std::cout << name << std::endl;
+    double spec_int = _Special_Truth_Signal_Integral.at(name);
+    _h_Special_Truth_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
+    _h_Special_Joint_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
+    _h_Special_Joint_Signal_W2X.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
+    _h_Special_Reco_Cat.at(name).at(kSignal)->Scale(_CV_Truth_Signal_Integral/spec_int);
+    _h_Special_Reco_Tot.at(name)->Reset();
+    _h_Special_Reco_Tot.at(name)->Add(_h_Special_Reco_Cat.at(name).at(kSignal));
+    for(int i_c=0;i_c<kData;i_c++) _h_Special_Reco_Tot.at(name)->Add(_h_CV_Reco_Cat.at(i_c));
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -711,15 +752,19 @@ void HistogramManager::_WriteReco()
   _f_out->cd();
 
   if(_h_Special_Reco_Tot.size()){
+
     _f_out->mkdir("Reco/Special");
     std::map<std::string,TH1D*>::iterator it;
+
     for(it=_h_Special_Reco_Tot.begin();it!=_h_Special_Reco_Tot.end();it++){
+
       std::string name = it->first;
       _f_out->mkdir(("Reco/Special/"+name).c_str());
 
       // Calculate the CV truth folded through the special universe response
       _f_out->mkdir(("Reco/Special/"+name+"/FoldedCV").c_str());
       _f_out->cd(("Reco/Special/"+name+"/FoldedCV").c_str());
+
       TH2D* h_Res = (TH2D*)_h_Special_Joint_Signal.at(name)->Clone("h_Res"); 
       NormaliseResponse(_h_Special_Truth_Signal.at(name),h_Res);
       TH1D* h_Reco_Special_FF = Multiply(_h_CV_Truth_Signal,h_Res,"h_Reco_Special_FF"); 
