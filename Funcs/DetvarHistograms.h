@@ -306,6 +306,14 @@ void DetvarHistogramManager::_WriteReco()
     _h_Vars_Reco_Cat.at(kDirt).at(i_s)->Add(_h_CV_Reco_Cat.at(kDirt));
   }
 
+  TH1D* h_CV_Reco_AllBG = (TH1D*)_h_CV_Reco_Tot->Clone("h_CV_Reco_AllBG");
+  h_CV_Reco_AllBG->Reset();
+  std::vector<TH1D*> h_Vars_Reco_AllBG;
+  for(int i_s=0;i_s<kDetvarMAX;i_s++){
+    h_Vars_Reco_AllBG.push_back((TH1D*)_h_Vars_Reco_Tot.at(i_s)->Clone(Form("h_Vars_Reco_AllBG_%i",i_s)));
+    h_Vars_Reco_AllBG.back()->Reset();
+  }
+
   // Store the total covariance as well 
   TH2D* h_Cov = Make2DHist("h_Cov",_h_tp); 
   TH2D* h_FCov = Make2DHist("h_FCov",_h_tp); 
@@ -314,14 +322,17 @@ void DetvarHistogramManager::_WriteReco()
     h_Cov_Cat.push_back(Make2DHist("h_Cov_"+categories.at(i_c),_h_tp));
     h_FCov_Cat.push_back(Make2DHist("h_FCov_"+categories.at(i_c),_h_tp));
   }
+  TH2D* h_Cov_AllBG = Make2DHist("h_Cov_AllBG",_h_tp);
+  TH2D* h_FCov_AllBG = Make2DHist("h_FCov_AllBG",_h_tp);
 
   _f_out->mkdir("Reco/CV");
   _f_out->cd("Reco/CV");
-
   _h_CV_Reco_Tot->Write("h_Tot");
-  for(size_t i_c=0;i_c<categories.size();i_c++)
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    if(i_c != kSignal && i_c != kData) h_CV_Reco_AllBG->Add(_h_CV_Reco_Cat.at(i_c));
     _h_CV_Reco_Cat.at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
-   
+  }
+  h_CV_Reco_AllBG->Write("h_AllBG");
   _f_out->cd();
 
   if(_keep_all){
@@ -330,8 +341,12 @@ void DetvarHistogramManager::_WriteReco()
       _f_out->mkdir(("Reco/Vars/"+detvar_str.at(i_s)).c_str());
       _f_out->cd(("Reco/Vars/"+detvar_str.at(i_s)).c_str());
       _h_Vars_Reco_Tot.at(i_s)->Write("h_Tot");
-      for(size_t i_c=0;i_c<categories.size();i_c++)
+      
+      for(size_t i_c=0;i_c<categories.size();i_c++){
         _h_Vars_Reco_Cat.at(i_c).at(i_s)->Write(("h_"+categories.at(i_c)).c_str());
+        if(i_c != kSignal && i_c != kData) h_Vars_Reco_AllBG.at(i_s)->Add(_h_Vars_Reco_Cat.at(i_c).at(i_s));
+      }
+      h_Vars_Reco_AllBG.at(i_s)->Write("h_AllBG");
       _f_out->cd();
     }
   }
@@ -355,6 +370,12 @@ void DetvarHistogramManager::_WriteReco()
       h_Cov_Cat.at(i_c)->Add(C_Cat);
       h_FCov_Cat.at(i_c)->Add(FC_Cat);
     }
+    TH2D* C_AllBG,*FC_AllBG;
+    CalcCovUnisim(detvar_str.at(i_s)+"_AllBG",h_CV_Reco_AllBG,h_Vars_Reco_AllBG.at(i_s),C_AllBG,FC_AllBG);
+    C_AllBG->Write("Cov_AllBG");
+    FC_AllBG->Write("FCov_AllBG");  
+    h_Cov_AllBG->Add(C_AllBG);
+    h_FCov_AllBG->Add(FC_AllBG);
     _f_out->cd();
   }
 
@@ -366,6 +387,8 @@ void DetvarHistogramManager::_WriteReco()
     h_Cov_Cat.at(i_c)->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_Cat.at(i_c)->Write(("FCov_"+categories.at(i_c)).c_str());
   }
+  h_Cov_AllBG->Write("Cov_AllBG");
+  h_FCov_AllBG->Write("FCov_AllBG");
 
   _f_out->cd();
  

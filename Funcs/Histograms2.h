@@ -562,14 +562,21 @@ void HistogramManager::_WriteReco()
     h_Cov_Sys_Cat.push_back(Make2DHist("h_Cov_Sys_"+categories.at(i_c),_h_tp));
     h_FCov_Sys_Cat.push_back(Make2DHist("h_FCov_Sys_"+categories.at(i_c),_h_tp));
   }
+
+  std::vector<std::vector<TH1D*>> h_Vars_Reco_AllBG;
+  std::vector<TH1D*> h_Unisim_Vars_Reco_AllBG;
  
   // Central value reco histograms
   _f_out->mkdir("Reco/CV");
   _f_out->cd("Reco/CV");
-  //_f_out->mkdir("CV/Reco");
-  //_f_out->cd("CV/Reco"); 
+  TH1D* h_CV_Reco_AllBG = (TH1D*)_h_CV_Reco_Tot->Clone("h_CV_Reco_AllBG");
+  h_CV_Reco_AllBG->Reset();
   _h_CV_Reco_Tot->Write("h_Tot");  
-  for(size_t i_c=0;i_c<categories.size();i_c++) _h_CV_Reco_Cat.at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
+  for(size_t i_c=0;i_c<categories.size();i_c++){
+    if(i_c != kSignal && i_c != kData) h_CV_Reco_AllBG->Add(_h_CV_Reco_Cat.at(i_c));
+    _h_CV_Reco_Cat.at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
+  } 
+  h_CV_Reco_AllBG->Write("h_AllBG");
   _f_out->cd();
 
   // Variation reco histograms
@@ -578,10 +585,16 @@ void HistogramManager::_WriteReco()
     for(int i_s=0;i_s<kSystMAX;i_s++){
       _f_out->mkdir(("Reco/Vars/"+sys_str.at(i_s)).c_str());
       _f_out->cd(("Reco/Vars/"+sys_str.at(i_s)).c_str());
+      h_Vars_Reco_AllBG.push_back(std::vector<TH1D*>());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
         _h_Vars_Reco_Tot.at(i_s).at(i_u)->Write(Form("h_Tot_%i",i_u));
-        for(size_t i_c=0;i_c<categories.size();i_c++) 
+        h_Vars_Reco_AllBG.back().push_back((TH1D*)_h_Vars_Reco_Tot.at(i_s).at(i_u)->Clone(Form("h_Vars_Reco_AllBG_%i",i_u)));
+        h_Vars_Reco_AllBG.back().back()->Reset();
+        for(size_t i_c=0;i_c<categories.size();i_c++){ 
+          if(i_c != kSignal && i_c != kData) h_Vars_Reco_AllBG.back().back()->Add(_h_Vars_Reco_Cat.at(i_c).at(i_s).at(i_u));
           _h_Vars_Reco_Cat.at(i_c).at(i_s).at(i_u)->Write(("h_"+categories.at(i_c)+"_"+std::to_string(i_u)).c_str());
+        }
+        h_Vars_Reco_AllBG.back().back()->Write(("h_AllBG_"+std::to_string(i_u)).c_str());
       }
       _f_out->cd();
     }
@@ -589,8 +602,13 @@ void HistogramManager::_WriteReco()
       _f_out->mkdir(("Reco/Vars/"+unisims_str.at(i_s)).c_str());
       _f_out->cd(("Reco/Vars/"+unisims_str.at(i_s)).c_str());
       _h_Unisim_Vars_Reco_Tot.at(i_s)->Write("h_Tot");
-      for(size_t i_c=0;i_c<categories.size();i_c++) 
+      h_Unisim_Vars_Reco_AllBG.push_back((TH1D*)_h_Unisim_Vars_Reco_Tot.at(i_s)->Clone("h_Unisim_Vars_Reco_AllBG"));
+      h_Unisim_Vars_Reco_AllBG.back()->Reset();
+      for(size_t i_c=0;i_c<categories.size();i_c++){ 
+        if(i_c != kSignal && i_c != kData) h_Unisim_Vars_Reco_AllBG.back()->Add(_h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s));
         _h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s)->Write(("h_"+categories.at(i_c)).c_str());
+      }
+      h_Unisim_Vars_Reco_AllBG.back()->Write("h_AllBG");
       _f_out->cd();
     }
   }
@@ -617,7 +635,15 @@ void HistogramManager::_WriteReco()
       h_FCov_Cat.at(i_c)->Add(FC_Cat);
       h_Cov_Sys_Cat.at(i_c)->Add(C_Cat);
       h_FCov_Sys_Cat.at(i_c)->Add(FC_Cat);
-    } 
+    }
+    TH2D* C_AllBG,*FC_AllBG;
+    CalcCovMultisim(sys_str.at(i_s)+"_AllBG",h_Vars_Reco_AllBG.at(i_s),C_AllBG,FC_AllBG);
+    C_AllBG->Write("Cov_AllBG");
+    FC_AllBG->Write("FCov_AllBG");
+    h_Cov_AllBG->Add(C_AllBG);
+    h_FCov_AllBG->Add(FC_AllBG);
+    h_Cov_Sys_AllBG->Add(C_AllBG);
+    h_FCov_Sys_AllBG->Add(FC_AllBG); 
     _f_out->cd();
   } 
 
@@ -643,6 +669,14 @@ void HistogramManager::_WriteReco()
       h_Cov_Sys_Cat.at(i_c)->Add(C_Cat);
       h_FCov_Sys_Cat.at(i_c)->Add(FC_Cat);
     } 
+    TH2D* C_AllBG,*FC_AllBG;
+    CalcCovUnisim(unisims_str.at(i_s)+"_AllBG",h_CV_Reco_AllBG,h_Unisim_Vars_Reco_AllBG.at(i_s),C_AllBG,FC_AllBG);
+    C_AllBG->Write("Cov_AllBG");
+    FC_AllBG->Write("FCov_AllBG");
+    h_Cov_AllBG->Add(C_AllBG);
+    h_FCov_AllBG->Add(FC_AllBG);
+    h_Cov_Sys_AllBG->Add(C_AllBG);
+    h_FCov_Sys_AllBG->Add(FC_AllBG);
     _f_out->cd();
   } 
 
@@ -675,7 +709,21 @@ void HistogramManager::_WriteReco()
     h_FCov_MCStat_Reco_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
     h_Cov_Cat.at(i_c)->Add(h_Cov_MCStat_Reco_Cat);
     h_FCov_Cat.at(i_c)->Add(h_FCov_MCStat_Reco_Cat);
+  
   }  
+  TH2D* h_Cov_MCStat_Reco_AllBG = Make2DHist("Cov_MCStat_AllBG",_h_tp);
+  TH2D* h_FCov_MCStat_Reco_AllBG = Make2DHist("FCov_MCStat_AllBG",_h_tp);
+  for(int i=0;i<h_Cov_MCStat_Reco->GetNbinsX()+2;i++){
+    if(h_CV_Reco_AllBG->GetBinContent(i) > 0){
+      h_Cov_MCStat_Reco_AllBG->SetBinContent(i,i,pow(h_CV_Reco_AllBG->GetBinError(i),2));
+      h_FCov_MCStat_Reco_AllBG->SetBinContent(i,i,pow(h_CV_Reco_AllBG->GetBinError(i)/h_CV_Reco_AllBG->GetBinContent(i),2));
+    }
+  }
+  h_Cov_MCStat_Reco_AllBG->Write("Cov_AllBG");
+  h_FCov_MCStat_Reco_AllBG->Write("FCov_AllBG");
+  h_Cov_AllBG->Add(h_Cov_MCStat_Reco_AllBG);
+  h_FCov_AllBG->Add(h_FCov_MCStat_Reco_AllBG);  
+
   _f_out->cd();
 
   _f_out->mkdir("Reco/Cov/EstDataStat");
@@ -703,6 +751,16 @@ void HistogramManager::_WriteReco()
     h_Cov_EstDataStat_Reco_Cat->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_EstDataStat_Reco_Cat->Write(("FCov_"+categories.at(i_c)).c_str());
   }  
+  TH2D* h_Cov_EstDataStat_Reco_AllBG = Make2DHist("Cov_EstDataStat_AllBG",_h_tp);
+  TH2D* h_FCov_EstDataStat_Reco_AllBG = Make2DHist("FCov_EstDataStat_AllBG",_h_tp);
+  for(int i=0;i<h_Cov_EstDataStat_Reco->GetNbinsX()+2;i++){
+    if(h_CV_Reco_AllBG->GetBinContent(i) > 0){
+      h_Cov_EstDataStat_Reco_AllBG->SetBinContent(i,i,pow(h_CV_Reco_AllBG->GetBinError(i),2));
+      h_FCov_EstDataStat_Reco_AllBG->SetBinContent(i,i,pow(h_CV_Reco_AllBG->GetBinError(i)/h_CV_Reco_AllBG->GetBinContent(i),2));
+    }
+  }
+  h_Cov_EstDataStat_Reco_AllBG->Write("Cov_AllBG");
+  h_FCov_EstDataStat_Reco_AllBG->Write("FCov_AllBG");
   _f_out->cd();
 
   _f_out->mkdir("Reco/Cov/Total");
@@ -713,6 +771,9 @@ void HistogramManager::_WriteReco()
     h_Cov_Cat.at(i_c)->Write(("Cov_"+categories.at(i_c)).c_str());
     h_FCov_Cat.at(i_c)->Write(("FCov_"+categories.at(i_c)).c_str());
   }
+  h_Cov_AllBG->Write("Cov_AllBG");
+  h_FCov_AllBG->Write("FCov_AllBG");
+  _f_out->cd();
   
   _f_out->mkdir("Reco/Cov/Sys");
   _f_out->cd("Reco/Cov/Sys");
@@ -768,12 +829,16 @@ void HistogramManager::_WriteReco()
  
       _f_out->cd(); 
       _f_out->cd(("Reco/Special/"+name).c_str());
-      double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
+      //double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
   
       _h_Special_Reco_Tot.at(name)->Write("h_Tot");
-      for(size_t i_c=0;i_c<categories.size();i_c++)
+      TH1D* h_Special_Reco_AllBG = (TH1D*)_h_Special_Reco_Tot.at(name)->Clone("h_Special_Reco_AllBG");
+      h_Special_Reco_AllBG->Reset();
+      for(size_t i_c=0;i_c<categories.size();i_c++){
         _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
-      
+        if(i_c != kSignal && i_c != kData) h_Special_Reco_AllBG->Add(_h_Special_Reco_Cat.at(name).at(i_c));
+      }
+
     }
     _f_out->cd();
   } 
