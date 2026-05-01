@@ -25,7 +25,6 @@ class DetvarHistogramManager {
     void FillRecoHistograms(bool sel,double var_r,bool load_syst,double weight=1.0);
     void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0);
 
-    void ShapeOnly() { _shape_only = true; }
     void KeepAll(){ _keep_all = true; }
     void Write();
 
@@ -33,7 +32,6 @@ class DetvarHistogramManager {
 
     const std::string _label;
     const bool _save_truth;
-    bool _shape_only = false; 
     bool _keep_all = false;
 
     // histogram templates

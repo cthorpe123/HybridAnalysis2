@@ -27,7 +27,6 @@ class HistogramManager {
     void FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight);
     void FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight);
 
-    void ShapeOnly() { _shape_only = true; }
     void KeepOU(){ _keep_overflow_underflow_ = true; }
     void KeepAll(){ _keep_all = true; }
 
@@ -41,7 +40,6 @@ class HistogramManager {
 
     const std::string _label;
     const bool _save_truth;
-    bool _shape_only = false; 
     bool _keep_overflow_underflow_ = false;
     bool _keep_all = false;
 
@@ -549,10 +547,14 @@ void HistogramManager::_WriteReco()
   TH2D* h_Cov = Make2DHist("h_Cov",_h_tp); 
   TH2D* h_FCov = Make2DHist("h_FCov",_h_tp); 
   std::vector<TH2D*> h_Cov_Cat,h_FCov_Cat;
+  TH2D* h_Cov_AllBG = Make2DHist("h_Cov_AllBG",_h_tp); 
+  TH2D* h_FCov_AllBG = Make2DHist("h_FCov_AllBG",_h_tp); 
  
   TH2D* h_Cov_Sys = Make2DHist("h_Cov_Sys",_h_tp); 
   TH2D* h_FCov_Sys = Make2DHist("h_FCov_Sys",_h_tp); 
   std::vector<TH2D*> h_Cov_Sys_Cat,h_FCov_Sys_Cat;
+  TH2D* h_Cov_Sys_AllBG = Make2DHist("h_Cov_Sys_AllBG",_h_tp); 
+  TH2D* h_FCov_Sys_AllBG = Make2DHist("h_FCov_Sys_AllBG",_h_tp);
 
   for(size_t i_c=0;i_c<categories.size();i_c++){
     h_Cov_Cat.push_back(Make2DHist("h_Cov_"+categories.at(i_c),_h_tp));
@@ -560,34 +562,6 @@ void HistogramManager::_WriteReco()
     h_Cov_Sys_Cat.push_back(Make2DHist("h_Cov_Sys_"+categories.at(i_c),_h_tp));
     h_FCov_Sys_Cat.push_back(Make2DHist("h_FCov_Sys_"+categories.at(i_c),_h_tp));
   }
-
-  // Apply scaling to the reco if shape only
-  if(_shape_only){
-    double integral = _h_CV_Reco_Tot->Integral() + _h_CV_Reco_Tot->GetBinContent(0) + _h_CV_Reco_Tot->GetBinContent(_nbins_r+1);
-    _h_CV_Reco_Tot->Scale(1.0/integral);
-    h_CV_Reco_Tot_E->Scale(1.0/integral);
-    for(size_t i_c=0;i_c<categories.size();i_c++) _h_CV_Reco_Cat.at(i_c)->Scale(1.0/integral);
-    for(size_t i_c=0;i_c<categories.size();i_c++) h_CV_Reco_Cat_E.at(i_c)->Scale(1.0/integral);
-    for(size_t i_s=0;i_s<kSystMAX;i_s++){
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        TH1D* h =_h_Vars_Reco_Tot.at(i_s).at(i_u); 
-        integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_r+1);
-        h->Scale(1.0/integral);
-        for(size_t i_c=0;i_c<categories.size();i_c++){
-          _h_Vars_Reco_Cat.at(i_c).at(i_s).at(i_u)->Scale(1.0/integral);
-        }
-      } 
-    }
-    for(size_t i_s=0;i_s<kUnisimMAX;i_s++){
-      TH1D* h =_h_Unisim_Vars_Reco_Tot.at(i_s); 
-      integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_r+1);
-      h->Scale(1.0/integral);
-      for(size_t i_c=0;i_c<categories.size();i_c++){
-        _h_Unisim_Vars_Reco_Cat.at(i_c).at(i_s)->Scale(1.0/integral);
-      }
-    }
-  } 
-
  
   // Central value reco histograms
   _f_out->mkdir("Reco/CV");
@@ -795,12 +769,11 @@ void HistogramManager::_WriteReco()
       _f_out->cd(); 
       _f_out->cd(("Reco/Special/"+name).c_str());
       double integral = _h_Special_Reco_Tot.at(name)->Integral() + _h_Special_Reco_Tot.at(name)->GetBinContent(0) + _h_Special_Reco_Tot.at(name)->GetBinContent(_nbins_r+1);
-      if(_shape_only) _h_Special_Reco_Tot.at(name)->Scale(1.0/integral);
+  
       _h_Special_Reco_Tot.at(name)->Write("h_Tot");
-      for(size_t i_c=0;i_c<categories.size();i_c++){
-        if(_shape_only) _h_Special_Reco_Cat.at(name).at(i_c)->Scale(1.0/integral);
+      for(size_t i_c=0;i_c<categories.size();i_c++)
         _h_Special_Reco_Cat.at(name).at(i_c)->Write(("h_"+categories.at(i_c)).c_str());
-      }
+      
     }
     _f_out->cd();
   } 
@@ -827,25 +800,6 @@ void HistogramManager::_WriteTruth()
  
   TH2D* h_Cov_Sys = Make2DHist("h_Cov_Truth_Sys",_h_tp_truth); 
   TH2D* h_FCov_Sys = Make2DHist("h_FCov_Truth_Sys",_h_tp_truth); 
-
-  // Apply scaling to the reco if shape only
-  if(_shape_only){
-    double integral = _h_CV_Truth_Signal->Integral() + _h_CV_Truth_Signal->GetBinContent(0) + _h_CV_Truth_Signal->GetBinContent(_nbins_t+1);
-    _h_CV_Truth_Signal->Scale(1.0/integral);
-    h_CV_Truth_Signal_E->Scale(1.0/integral);
-    for(int i_s=0;i_s<kSystMAX;i_s++){
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        TH1D* h =_h_Vars_Truth_Signal.at(i_s).at(i_u); 
-        integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_t+1);
-        h->Scale(1.0/integral);
-      } 
-    }
-    for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      TH1D* h =_h_Unisim_Vars_Truth_Signal.at(i_s); 
-      integral = h->Integral() + h->GetBinContent(0) + h->GetBinContent(_nbins_t+1);
-      h->Scale(1.0/integral);
-    }
-  } 
 
   _f_out->mkdir("Truth/CV"); 
   _f_out->cd("Truth/CV");
@@ -948,8 +902,6 @@ void HistogramManager::_WriteTruth()
       std::string name = it->first;
       _f_out->mkdir(("Truth/Special/"+name).c_str());
       _f_out->cd(("Truth/Special/"+name).c_str());
-      double integral = _h_Special_Truth_Signal.at(name)->Integral() + _h_Special_Truth_Signal.at(name)->GetBinContent(0) + _h_Special_Truth_Signal.at(name)->GetBinContent(_nbins_t+1);
-      if(_shape_only) _h_Special_Truth_Signal.at(name)->Scale(1.0/integral);
       _h_Special_Truth_Signal.at(name)->Write("h_Signal");
     }
   } 
