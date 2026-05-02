@@ -318,5 +318,19 @@ double IntegralWithOU(const TH1D* h){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Add two histograms, sometimes root prints out spurious warinings
+// about bin limits not matching, this is a workaround for that, use with
+// caution
+
+void ForceAddTH1D(TH1D* h1,TH1D* h2){
+  for(int i=0;i<h1->GetNbinsX()+2;i++){
+    double content = h1->GetBinContent(i) + h2->GetBinContent(i);
+    double error = sqrt(pow(h1->GetBinError(i),2) + pow(h2->GetBinError(i),2));
+    h1->SetBinContent(i,content);
+    h1->SetBinError(i,error);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
 
 #endif
