@@ -158,6 +158,7 @@ void SetWeightFuncs()
   auto f_MuonAngleShape_LH_Bias = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
     return x;
@@ -167,6 +168,7 @@ void SetWeightFuncs()
   auto f_MuonAngleShape_RH_Bias = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
     return x;
@@ -176,6 +178,7 @@ void SetWeightFuncs()
   auto f_MuonAngleShape_Center_Gather = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
     return x;
@@ -185,16 +188,17 @@ void SetWeightFuncs()
   auto f_MuonAngleShape_Center_Spread = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
     return x;
   };
   r_m.emplace("MuonAngleShape_Center_Spread",f_MuonAngleShape_Center_Spread);
 
-  
   auto f_MuonMomShape_LH_Bias = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
-    std::vector<double> x(spline_pts,1.0); 
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
     return x;
@@ -204,6 +208,7 @@ void SetWeightFuncs()
   auto f_MuonMomShape_RH_Bias = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
     return x;
@@ -213,6 +218,7 @@ void SetWeightFuncs()
   auto f_MuonMomShape_Center_Gather = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
     return x;
@@ -222,11 +228,136 @@ void SetWeightFuncs()
   auto f_MuonMomShape_Center_Spread = [](){ 
     double val = muon_mom_t->Mag()/2.0; // Map from [0,2] to [0,1]
     std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || val > 1 || val < 0) return x;
     for(int i=0;i<spline_pts;i++) 
       x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
     return x;
   };
   r_m.emplace("MuonMomShape_Center_Spread",f_MuonMomShape_Center_Spread);
+
+ auto f_LeadProtonKEShape_LH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t) return x;
+    double val = (protons_t->at(0).E() - Mp)/0.6; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("LeadProtonKEShape_LH_Bias",f_LeadProtonKEShape_LH_Bias);
+
+  auto f_LeadProtonKEShape_RH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t) return x;
+    double val = (protons_t->at(0).E() - Mp)/0.6; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("LeadProtonKEShape_RH_Bias",f_LeadProtonKEShape_RH_Bias);
+
+  auto f_LeadProtonKEShape_Center_Gather = [](){
+    std::vector<double> x(spline_pts,1.0);  
+    if(!is_signal_t) return x;
+    double val = (protons_t->at(0).E() - Mp)/0.6; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("LeadProtonKEShape_Center_Gather",f_LeadProtonKEShape_Center_Gather);  
+
+  auto f_LeadProtonKEShape_Center_Spread = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t) return x;
+    double val = (protons_t->at(0).E() - Mp)/0.6; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("LeadProtonKEShape_Center_Spread",f_LeadProtonKEShape_Center_Spread);
+
+  auto f_2pOpeningAngle_LH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2pOpeningAngle_LH_Bias",f_2pOpeningAngle_LH_Bias);
+
+  auto f_2pOpeningAngle_RH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2pOpeningAngle_RH_Bias",f_2pOpeningAngle_RH_Bias);
+
+  auto f_2pOpeningAngle_Center_Gather = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("2pOpeningAngle_Center_Gather",f_2pOpeningAngle_Center_Gather);
+
+  auto f_2pOpeningAngle_Center_Spread= [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("2pOpeningAngle_Center_Spread",f_2pOpeningAngle_Center_Spread);
+  
+  auto f_2pAsym_LH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = Asymmetry3({protons_t->at(0)},{protons_t->at(1)})/0.8;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2pAsym_LH_Bias",f_2pAsym_LH_Bias);
+
+  auto f_2pAsym_RH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = Asymmetry3({protons_t->at(0)},{protons_t->at(1)})/0.8;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2pAsym_RH_Bias",f_2pAsym_RH_Bias);
+
+  auto f_2pAsym_Center_Gather = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = Asymmetry3({protons_t->at(0)},{protons_t->at(1)})/0.8;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("2pAsym_Center_Gather",f_2pAsym_Center_Gather);
+
+  auto f_2pAsym_Center_Spread = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || nprot_t != 2) return x;
+    double val = Asymmetry3({protons_t->at(0)},{protons_t->at(1)})/0.8;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("2pAsym_Center_Spread",f_2pAsym_Center_Spread);
 
 }
 
