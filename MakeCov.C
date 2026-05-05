@@ -9,31 +9,19 @@
 #include "Systematics.h"
 #include "EnergyEstimatorFuncs.h"
 #include "MultiChannelHistograms.h"
+#include "WeightFuncs.h"
 
 void MakeCov(){
 
-  std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/";
+  std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   std::vector<std::string> files_v = {
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root",
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
-    "run4b/Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root",
-    "run4c/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
-    "run5/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
+    "Filtered_Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root"
   };
 
-  std::vector<std::string> channels_t = channels;
+  std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
-  for(int i_e=0;i_e<ee::kMAX;i_e++)
-    vars.push_back(ee::estimators_str.at(i_e));
+  std::vector<std::string> vars = {"2pOpeningAngle","2pAsym"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
   for(std::string var : vars){
@@ -45,11 +33,10 @@ void MakeCov(){
     h_m.at(var).MakeHM();
   } 
 
+  weight::SetWeightFuncs();
   for(std::string var : vars){
-    std::cout << var << std::endl;
-    for(const auto &item : r_m){ 
-      std::cout << item.first << std::endl;
-      for(int i=0;i<spline_pts;i++){
+    for(const auto &item : weight::r_m){ 
+      for(int i=0;i<weight::spline_pts;i++){
         h_m.at(var).AddSpecialUniv(item.first+"_"+std::to_string(i));
       }
     }
@@ -70,21 +57,24 @@ void MakeCov(){
       if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
       t_in->GetEntry(ievent);
       
-      std::string channel_t = *ch_str_t;        
-      std::string ch_h8 = "All";
-
-      std::string ch_h8 = "All";
+      std::string channel_t = "All";
+      std::string channel_h8 = "All";
 
       std::map<std::string,double> vars_t = {
         {"MuonMom",muon_mom_t->Mag()},
         {"MuonCosTheta",muon_mom_t->CosTheta()},
+        {"LeadProtonKE",-1},
+        {"2pOpeningAngle",-1},
+        {"2pAsym",-1},
         {"NProt",nprot_t},
         {"NPi",npi_t},
         {"NSh",nsh_t},
+        {"NPi0",npi0_t},
         {"ProtonKE",proton_p4_t->E()-nprot_t*Mp},
         {"PionE",pion_p4_t->E()},
         {"PiZeroE",gamma_p4_t->E()}, 
-        {"W",W_t}
+        {"W",W_t},
+        {"Channel",ch_t}
       };
 
       for(int i_e=0;i_e<ee::kMAX;i_e++)
@@ -93,20 +83,41 @@ void MakeCov(){
       std::map<std::string,double> vars_h8 = {
         {"MuonMom",muon_mom_h8->Mag()},
         {"MuonCosTheta",muon_mom_h8->CosTheta()},
+        {"LeadProtonKE",-1},
+        {"2pOpeningAngle",-1},
+        {"2pAsym",-1},
         {"NProt",nprot_h8},
         {"NPi",npi_h8},
         {"NSh",nsh_h8},
+        {"NPi0",nsh_h8},
         {"ProtonKE",proton_p4_h8->E()-nprot_h8*Mp},
         {"PionE",pion_p4_h8->E()},
         {"PiZeroE",gamma_p4_h8->E()},
-        {"W",W_h8}
+        {"W",W_h8},
+        {"Channel",ch_h8}
       };
 
       for(int i_e=0;i_e<ee::kMAX;i_e++)
         vars_h8[ee::estimators_str.at(i_e)] = est_nu_e_h8->at(i_e);
 
+      if(is_signal_t){
+        vars_t.at("LeadProtonKE") = protons_t->at(0).E() - Mp;
+        if(nprot_t == 2){
+          vars_t.at("2pOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+          vars_t.at("2pAsym") = weight::Asymmetry3({protons_t->at(0)},{protons_t->at(1)});
+          }
+      }
+
+      if(sel_h8){
+        vars_h8.at("LeadProtonKE") = protons_h8->at(0).E() - Mp;
+        if(nprot_h8 == 2){
+          vars_h8.at("2pOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(protons_h8->at(1).Vect());
+          vars_h8.at("2pAsym") = weight::Asymmetry3({protons_h8->at(0)},{protons_h8->at(1)});
+        }
+      }
+
       std::map<std::string,std::vector<double>> w_m; 
-      for(const auto &item : r_m) w_m[item.first] = item.second(); 
+      for(const auto &item : weight::r_m) w_m[item.first] = item.second(); 
 
       for(const auto &item : h_m){
         std::string var = item.first;
@@ -114,10 +125,10 @@ void MakeCov(){
         if(vars_h8.find(var) == vars_h8.end()) throw std::invalid_argument("Variable " + var + " missing from reco var map");
         const double& t = vars_t.at(var);
         const double& r = vars_h8.at(var);
-        h_m.at(var).FillHistograms2D(is_signal_t,sel_h8,t,r,load_syst,ch_t,ch_h8);
+        h_m.at(var).FillHistograms2D(is_signal_t,sel_h8,t,r,load_syst,channel_t,channel_h8);
         for(const auto &w : w_m){ 
-          for(int i=0;i<spline_pts;i++)
-            h_m.at(var).FillSpecialHistograms2D(w.first+"_"+std::to_string(i),is_signal_t,sel_h8,t,r,w.second.at(i),ch_t,ch_h8);
+          for(int i=0;i<weight::spline_pts;i++)
+            h_m.at(var).FillSpecialHistograms2D(w.first+"_"+std::to_string(i),is_signal_t,sel_h8,t,r,w.second.at(i),channel_t,channel_h8);
         }
       }
 

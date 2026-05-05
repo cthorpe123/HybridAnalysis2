@@ -513,7 +513,6 @@ void HistogramManager::_ScaleSpecial()
 
   for(const auto& it : _h_Special_Truth_Signal){
     std::string name = it.first;
-    std::cout << name << std::endl;
     double spec_int = _Special_Truth_Signal_Integral.at(name);
     _h_Special_Truth_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Joint_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);

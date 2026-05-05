@@ -12,28 +12,28 @@ using namespace syst;
 // calulated in the CV and special universes, calculate chi2
 // between the CV and each special prediction
 
-void FFTest_2(){
+void FFTest(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
   bool add_detvars = false;
   const bool include_data_stat = true;
-  const bool draw_underflow = false;
+  const bool draw_underflow = true;
   const bool draw_overflow = false;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  std::vector<std::string> vars = {"MuonCosTheta","MuonMom"};
-  std::vector<std::string> channels_t = {"1p","Np"};
+  std::vector<std::string> vars = {"LeadPionE"};
+  std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
   weight::SetWeightFuncs();
-  std::vector<std::string> special_univs = {"MuonAngleShape_Center_Spread"};
- // for(const auto &item : weight::r_m)
- //   special_univs.push_back(item.first);
+  std::vector<std::string> special_univs;
+  for(const auto &item : weight::r_m)
+    special_univs.push_back(item.first);
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -242,7 +242,7 @@ void FFTest_2(){
         TH1D* h_chi2 = new TH1D("h_chi2",";Universe;#chi^{2}/ndof",spec_chi2.size(),0.5,spec_chi2.size()+0.5);
         std::map<std::string,std::pair<double,int>>::iterator it;
         for(size_t i=0;i<spec_chi2.size();i++)
-          h_chi2->SetBinContent(i,spec_chi2.at(i).first/spec_chi2.at(i).second);
+          h_chi2->SetBinContent(i+1,spec_chi2.at(i).first/spec_chi2.at(i).second);
 
         h_chi2->Draw("HIST");
         h_chi2->SetStats(0);

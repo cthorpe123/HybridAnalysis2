@@ -359,6 +359,50 @@ void SetWeightFuncs()
   };
   r_m.emplace("2pAsym_Center_Spread",f_2pAsym_Center_Spread);
 
+  auto f_LeadPionE_LH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || npi_t == 0) return x;
+    double val = pions_t->at(0).E()/0.5; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("LeadPionE_LH_Bias",f_LeadPionE_LH_Bias);
+
+  auto f_LeadPionE_RH_Bias = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || npi_t == 0) return x;
+    double val = pions_t->at(0).E()/0.5; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("LeadPionE_RH_Bias",f_LeadPionE_RH_Bias);
+
+  auto f_LeadPionE_Center_Gather = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || npi_t == 0) return x;
+    double val = pions_t->at(0).E()/0.5; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("LeadPionE_Center_Gather",f_LeadPionE_Center_Gather);
+
+  auto f_LeadPionE_Center_Spread = [](){ 
+    std::vector<double> x(spline_pts,1.0); 
+    if(!is_signal_t || npi_t == 0) return x;
+    double val = pions_t->at(0).E()/0.5; // Map from [0,0.5] to [0,1]
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++) 
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("LeadPionE_Center_Spread",f_LeadPionE_Center_Spread);
+
 }
 
 ///////////////////////////////////////////////////////////////////////
