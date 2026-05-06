@@ -403,6 +403,86 @@ void SetWeightFuncs()
   };
   r_m.emplace("LeadPionE_Center_Spread",f_LeadPionE_Center_Spread);
 
+  auto f_1p1piOpeningAngle_LH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nprot_t != 1 || npi_t != 1) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("1p1piOpeningAngle_LH_Bias",f_1p1piOpeningAngle_LH_Bias);
+
+  auto f_1p1piOpeningAngle_RH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nprot_t != 1 || npi_t != 1) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("1p1piOpeningAngle_RH_Bias",f_1p1piOpeningAngle_RH_Bias);
+
+  auto f_1p1piOpeningAngle_Center_Gather = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nprot_t != 1 || npi_t != 1) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("1p1piOpeningAngle_Center_Gather",f_1p1piOpeningAngle_Center_Gather);
+
+  auto f_1p1piOpeningAngle_Center_Spread = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nprot_t != 1 || npi_t != 1) return x;
+    double val = 1.0/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("1p1piOpeningAngle_Center_Spread",f_1p1piOpeningAngle_Center_Spread);
+
+  auto f_MuonProtonOpeningAngle_LH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t) return x;
+    double val = 1.0/3.142*muon_mom_t->Angle(protons_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("MuonProtonOpeningAngle_LH_Bias",f_MuonProtonOpeningAngle_LH_Bias);
+
+  auto f_MuonProtonOpeningAngle_RH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t) return x;
+    double val = 1.0/3.142*muon_mom_t->Angle(protons_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("MuonProtonOpeningAngle_RH_Bias",f_MuonProtonOpeningAngle_RH_Bias);
+
+  auto f_MuonProtonOpeningAngle_Center_Gather = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t) return x;
+    double val = 1.0/3.142*muon_mom_t->Angle(protons_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("MuonProtonOpeningAngle_Center_Gather",f_MuonProtonOpeningAngle_Center_Gather);
+
+  auto f_MuonProtonOpeningAngle_Center_Spread = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t) return x;
+    double val = 1.0/3.142*muon_mom_t->Angle(protons_t->at(0).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("MuonProtonOpeningAngle_Center_Spread",f_MuonProtonOpeningAngle_Center_Spread);
+
 }
 
 ///////////////////////////////////////////////////////////////////////
