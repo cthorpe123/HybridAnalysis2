@@ -473,6 +473,7 @@ void Filter(){
        {"LeadProtonKE",-1},
        {"LeadPionE",-1},
        {"1p1piOpeningAngle",-1},
+       {"1p1piAsym",-1},
        {"MuonProtonOpeningAngle",-1},
        {"2pOpeningAngle",-1},
        {"2pAsym",-1},
@@ -495,8 +496,10 @@ void Filter(){
          vars_t_map.at("2pAsym") = weight::Asymmetry3({protons_t->at(0)},{protons_t->at(1)});
        }
        if(npi_t > 0) vars_t_map.at("LeadPionE") = pions_t->at(0).E();
-       if(nprot_t == 1 && npi_t == 1)
+       if(nprot_t == 1 && npi_t == 1){
          vars_t_map.at("1p1piOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+         vars_t_map.at("1p1piAsym") = weight::Asymmetry3({protons_t->at(0)},{pions_t->at(0)});
+       }
      }
 
      // Sync BranchList globals so weight function lambdas see the correct values
@@ -692,6 +695,7 @@ void Filter(){
       {"LeadProtonKE",-1},
       {"LeadPionE",-1},
       {"1p1piOpeningAngle",-1},
+      {"1p1piAsym",-1},
       {"MuonProtonOpeningAngle",-1},
       {"2pOpeningAngle",-1},
       {"2pAsym",-1},
@@ -714,8 +718,10 @@ void Filter(){
         vars_h8_map.at("2pAsym") = weight::Asymmetry3({protons_h8->at(0)},{protons_h8->at(1)});
       }
       if(npi_h8 > 0) vars_h8_map.at("LeadPionE") = pions_h8->at(0).E();
-      if(nprot_h8 == 1 && npi_h8 == 1)
+      if(nprot_h8 == 1 && npi_h8 == 1){
         vars_h8_map.at("1p1piOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(pions_h8->at(0).Vect());
+        vars_h8_map.at("1p1piAsym") = weight::Asymmetry3({protons_h8->at(0)},{pions_h8->at(0)});
+      }
     }
 
     if(category == -1) std::cout << "Bad event" << std::endl;
