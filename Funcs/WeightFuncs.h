@@ -1,6 +1,7 @@
 #ifndef _WeightFuncs_h_
 #define _WeightFuncs_h_
 
+#include "Funcs.h"
 #include "BranchList.h"
 
 namespace weight {
@@ -124,6 +125,7 @@ const double max_weight = 5.0; // Max weight to apply in the spline reweighting
 
 // Function pointers for the various reweighters 
 std::map<std::string,std::vector<double>(*)()> r_m;
+const std::vector<std::string> weight_func_labels = {"1p1piOpeningAngle_Center_Gather","1p1piOpeningAngle_Center_Spread","1p1piOpeningAngle_LH_Bias","1p1piOpeningAngle_RH_Bias","2pAsym_Center_Gather","2pAsym_Center_Spread","2pAsym_LH_Bias","2pAsym_RH_Bias","2pOpeningAngle_Center_Gather","2pOpeningAngle_Center_Spread","2pOpeningAngle_LH_Bias","2pOpeningAngle_RH_Bias","Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi","LeadPionE_Center_Gather","LeadPionE_Center_Spread","LeadPionE_LH_Bias","LeadPionE_RH_Bias","LeadProtonKEShape_Center_Gather","LeadProtonKEShape_Center_Spread","LeadProtonKEShape_LH_Bias","LeadProtonKEShape_RH_Bias","MuonAngleShape_Center_Gather","MuonAngleShape_Center_Spread","MuonAngleShape_LH_Bias","MuonAngleShape_RH_Bias","MuonMomShape_Center_Gather","MuonMomShape_Center_Spread","MuonMomShape_LH_Bias","MuonMomShape_RH_Bias","MuonProtonOpeningAngle_Center_Gather","MuonProtonOpeningAngle_Center_Spread","MuonProtonOpeningAngle_LH_Bias","MuonProtonOpeningAngle_RH_Bias"};
 
 void SetWeightFuncs()
 {   
@@ -580,6 +582,16 @@ void DrawBeta(){
   c1->Print("Center_Spread.png");
   c1->Clear();
 
+}
+
+///////////////////////////////////////////////////////////////////////
+// Print the labels of the various groups of weight functions
+
+void PrintWeightFuncLabels(){
+  SetWeightFuncs();
+  for(const auto &item : r_m)
+    std::cout << "\"" << item.first << "\",";
+  std::cout << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////

@@ -142,7 +142,9 @@ void Filter(){
   std::string ch_str_t;
   int ch_t;
   std::vector<double> est_nu_e_t;
- 
+  std::map<std::string,double> vars_t_map;
+  std::map<std::string,std::vector<double>> weight_funcs_m;
+
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
     t_out->Branch("in_tpc_t",&in_tpc_t);
@@ -166,6 +168,8 @@ void Filter(){
     t_out->Branch("ch_str_t",&ch_str_t);
     t_out->Branch("ch_t",&ch_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
+    t_out->Branch("vars_t",&vars_t_map);
+    t_out->Branch("weight_funcs",&weight_funcs_m);
   }
 
   // PD Reco branches
@@ -317,6 +321,7 @@ void Filter(){
   std::vector<TLorentzVector> *pions_h8 = new std::vector<TLorentzVector>();
   std::vector<TLorentzVector> *gammas_h8 = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_h8;
+  std::map<std::string,double> vars_h8_map;
 
   t_out->Branch("sel_h8",&sel_h8);
   t_out->Branch("in_tpc_h8",&in_tpc_h8);
@@ -337,6 +342,7 @@ void Filter(){
   t_out->Branch("pions_h8", &pions_h8,32000,0);
   t_out->Branch("gammas_h8", &gammas_h8,32000,0);
   t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
+  t_out->Branch("vars_h8",&vars_h8_map);
 
   // Systematics and tune 
   if(!is_data && !is_ext){
@@ -350,6 +356,8 @@ void Filter(){
       t_out->Branch("weightsUnisim",&weightsUnisim);
     }
   }
+
+  weight::SetWeightFuncs();
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
@@ -458,6 +466,48 @@ void Filter(){
      else if(abs(nu_pdg) == 12 && in_tpc_t) category = kNue;
      else if(in_tpc_t) category = kBG;
      else category = kOutFV;
+
+     vars_t_map = {
+       {"MuonMom",muon_mom_t.Mag()},
+       {"MuonCosTheta",muon_mom_t.CosTheta()},
+       {"LeadProtonKE",-1},
+       {"LeadPionE",-1},
+       {"1p1piOpeningAngle",-1},
+       {"MuonProtonOpeningAngle",-1},
+       {"2pOpeningAngle",-1},
+       {"2pAsym",-1},
+       {"NProt",(double)nprot_t},
+       {"NPi",(double)npi_t},
+       {"NSh",(double)nsh_t},
+       {"NPi0",(double)npi0_t},
+       {"ProtonKE",proton_p4_t.E()-nprot_t*Mp},
+       {"PionE",pion_p4_t.E()},
+       {"PiZeroE",gamma_p4_t.E()},
+       {"W",W_t},
+       {"Channel",(double)ch_t}
+     };
+     for(int i_e=0;i_e<ee::kMAX;i_e++) vars_t_map[ee::estimators_str.at(i_e)] = est_nu_e_t.at(i_e);
+     if(is_signal_t){
+       vars_t_map.at("LeadProtonKE") = protons_t->at(0).E() - Mp;
+       vars_t_map.at("MuonProtonOpeningAngle") = 180/3.142*muon_mom_t.Angle(protons_t->at(0).Vect());
+       if(nprot_t == 2){
+         vars_t_map.at("2pOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
+         vars_t_map.at("2pAsym") = weight::Asymmetry3({protons_t->at(0)},{protons_t->at(1)});
+       }
+       if(npi_t > 0) vars_t_map.at("LeadPionE") = pions_t->at(0).E();
+       if(nprot_t == 1 && npi_t == 1)
+         vars_t_map.at("1p1piOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
+     }
+
+     // Sync BranchList globals so weight function lambdas see the correct values
+     ::is_signal_t = is_signal_t;
+     ::nprot_t = nprot_t;
+     ::npi_t = npi_t;
+     ::nsh_t = nsh_t;
+     ::muon_mom_t = &muon_mom_t;
+     ::protons_t = protons_t;
+     ::pions_t = pions_t;
+     for(const auto &item : weight::r_m) weight_funcs_m[item.first] = item.second();
 
     }
 
@@ -634,6 +684,38 @@ void Filter(){
           break;
         }
       }
+    }
+
+    vars_h8_map = {
+      {"MuonMom",muon_mom_h8.Mag()},
+      {"MuonCosTheta",muon_mom_h8.CosTheta()},
+      {"LeadProtonKE",-1},
+      {"LeadPionE",-1},
+      {"1p1piOpeningAngle",-1},
+      {"MuonProtonOpeningAngle",-1},
+      {"2pOpeningAngle",-1},
+      {"2pAsym",-1},
+      {"NProt",(double)nprot_h8},
+      {"NPi",(double)npi_h8},
+      {"NSh",(double)nsh_h8},
+      {"NPi0",(double)nsh_h8},
+      {"ProtonKE",proton_p4_h8.E()-nprot_h8*Mp},
+      {"PionE",pion_p4_h8.E()},
+      {"PiZeroE",gamma_p4_h8.E()},
+      {"W",W_h8},
+      {"Channel",(double)ch_h8}
+    };
+    for(int i_e=0;i_e<ee::kMAX;i_e++) vars_h8_map[ee::estimators_str.at(i_e)] = est_nu_e_h8.at(i_e);
+    if(sel_h8){
+      vars_h8_map.at("LeadProtonKE") = protons_h8->at(0).E() - Mp;
+      vars_h8_map.at("MuonProtonOpeningAngle") = 180/3.142*muon_mom_h8.Angle(protons_h8->at(0).Vect());
+      if(nprot_h8 == 2){
+        vars_h8_map.at("2pOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(protons_h8->at(1).Vect());
+        vars_h8_map.at("2pAsym") = weight::Asymmetry3({protons_h8->at(0)},{protons_h8->at(1)});
+      }
+      if(npi_h8 > 0) vars_h8_map.at("LeadPionE") = pions_h8->at(0).E();
+      if(nprot_h8 == 1 && npi_h8 == 1)
+        vars_h8_map.at("1p1piOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(pions_h8->at(0).Vect());
     }
 
     if(category == -1) std::cout << "Bad event" << std::endl;

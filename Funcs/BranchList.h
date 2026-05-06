@@ -312,6 +312,8 @@ std::vector<TLorentzVector>* pions_t;
 std::vector<TLorentzVector>* pi0s_t;
 std::vector<TLorentzVector>* gammas_t;
 std::vector<double>* est_nu_e_t=0;
+std::map<std::string,double>* vars_t=0;
+std::map<std::string,std::vector<double>>* weight_funcs_m=0;
 
 Bool_t          sel_pd;
 Bool_t          in_tpc_pd;
@@ -396,6 +398,7 @@ std::vector<TLorentzVector>* protons_h8;
 std::vector<TLorentzVector>* pions_h8;
 std::vector<TLorentzVector>* gammas_h8;
 std::vector<double>* est_nu_e_h8=0;
+std::map<std::string,double>* vars_h8=0;
 
 std::map<std::string,std::vector<double>>* weightsUnisim=0;
 
@@ -470,6 +473,8 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     t_in->SetBranchAddress("pi0s_t",&pi0s_t);    
     t_in->SetBranchAddress("gammas_t",&gammas_t);    
     t_in->SetBranchAddress("est_nu_e_t",&est_nu_e_t);
+    t_in->SetBranchAddress("vars_t",&vars_t);
+    t_in->SetBranchAddress("weight_funcs",&weight_funcs_m);
 
     if(load_syst){
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
@@ -565,6 +570,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("pions_h8",&pions_h8);    
   t_in->SetBranchAddress("gammas_h8",&gammas_h8);    
   t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
+  t_in->SetBranchAddress("vars_h8",&vars_h8);
 
 }
 
