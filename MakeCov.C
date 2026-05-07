@@ -21,7 +21,7 @@ void MakeCov(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonProtonOpeningAngle"};
+  std::vector<std::string> vars = {"2pAsym","2shwOpenAngle","2shwAsym"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
   for(std::string var : vars){

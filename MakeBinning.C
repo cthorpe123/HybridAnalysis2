@@ -25,8 +25,9 @@ void MakeBinning(){
   std::map<std::string,TH1D*> h_m;
   std::map<std::string,std::map<std::string,TH1D*>> h_reco_m,h_true_m;
 
-  h_m["1p1piOpeningAngle"] = new TH1D("h_1p1piOpeningAngle",";Proton-Pion Opening Angle (degrees);Events",10000,0.0,180.0);
-  h_m["MuonProtonOpeningAngle"] = new TH1D("h_MuonProtonOpeningAngle",";Muon-Proton Opening Angle (degrees);Events",10000,0.0,180.0);
+  h_m["2pAsym"]        = new TH1D("h_2pAsym",        ";2p Asym;Events",              10000,-1,1);
+  h_m["2shwOpenAngle"] = new TH1D("h_2shwOpenAngle", ";2-Shower Opening Angle [deg];Events", 10000,0,180);
+  h_m["2shwAsym"]      = new TH1D("h_2shwAsym",      ";2-Shower Asym;Events",        10000,-1,1);
 
   for(const auto &item : h_m){
     h_reco_m[item.first] = std::map<std::string,TH1D*>(); 

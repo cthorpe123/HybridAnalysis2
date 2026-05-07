@@ -146,12 +146,12 @@ double Cone(const std::vector<TVector3>& p_v)
 ///////////////////////////////////////////////////////////////////////
 // Set up all of the pointers to the different weight functions here
 
-const int spline_pts = 10; // Number of points to use in the spline reweighting
+const int spline_pts = 5; // Number of points to use in the spline reweighting
 const double max_weight = 5.0; // Max weight to apply in the spline reweighting
 
 // Function pointers for the various reweighters 
 std::map<std::string,std::vector<double>(*)()> r_m;
-const std::vector<std::string> weight_func_labels = {"1p1piOpeningAngle_Center_Gather","1p1piOpeningAngle_Center_Spread","1p1piOpeningAngle_LH_Bias","1p1piOpeningAngle_RH_Bias","2pAsym_Center_Gather","2pAsym_Center_Spread","2pAsym_LH_Bias","2pAsym_RH_Bias","2pOpeningAngle_Center_Gather","2pOpeningAngle_Center_Spread","2pOpeningAngle_LH_Bias","2pOpeningAngle_RH_Bias","Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi","LeadPionE_Center_Gather","LeadPionE_Center_Spread","LeadPionE_LH_Bias","LeadPionE_RH_Bias","LeadProtonKEShape_Center_Gather","LeadProtonKEShape_Center_Spread","LeadProtonKEShape_LH_Bias","LeadProtonKEShape_RH_Bias","MuonAngleShape_Center_Gather","MuonAngleShape_Center_Spread","MuonAngleShape_LH_Bias","MuonAngleShape_RH_Bias","MuonMomShape_Center_Gather","MuonMomShape_Center_Spread","MuonMomShape_LH_Bias","MuonMomShape_RH_Bias","MuonProtonOpeningAngle_Center_Gather","MuonProtonOpeningAngle_Center_Spread","MuonProtonOpeningAngle_LH_Bias","MuonProtonOpeningAngle_RH_Bias"};
+const std::vector<std::string> weight_func_labels = {"1p1piOpeningAngle_Center_Gather","1p1piOpeningAngle_Center_Spread","1p1piOpeningAngle_LH_Bias","1p1piOpeningAngle_RH_Bias","2pAsym_Center_Gather","2pAsym_Center_Spread","2pAsym_LH_Bias","2pAsym_RH_Bias","2pOpeningAngle_Center_Gather","2pOpeningAngle_Center_Spread","2pOpeningAngle_LH_Bias","2pOpeningAngle_RH_Bias","2shwAsym_Center_Gather","2shwAsym_Center_Spread","2shwAsym_LH_Bias","2shwAsym_RH_Bias","2shwOpenAngle_Center_Gather","2shwOpenAngle_Center_Spread","2shwOpenAngle_LH_Bias","2shwOpenAngle_RH_Bias","Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi","LeadPionE_Center_Gather","LeadPionE_Center_Spread","LeadPionE_LH_Bias","LeadPionE_RH_Bias","LeadProtonKEShape_Center_Gather","LeadProtonKEShape_Center_Spread","LeadProtonKEShape_LH_Bias","LeadProtonKEShape_RH_Bias","MuonAngleShape_Center_Gather","MuonAngleShape_Center_Spread","MuonAngleShape_LH_Bias","MuonAngleShape_RH_Bias","MuonMomShape_Center_Gather","MuonMomShape_Center_Spread","MuonMomShape_LH_Bias","MuonMomShape_RH_Bias","MuonProtonOpeningAngle_Center_Gather","MuonProtonOpeningAngle_Center_Spread","MuonProtonOpeningAngle_LH_Bias","MuonProtonOpeningAngle_RH_Bias"};
 
 void SetWeightFuncs()
 {
@@ -396,7 +396,91 @@ void SetWeightFuncs()
   };
   r_m.emplace("2pAsym_Center_Spread",f_2pAsym_Center_Spread);
 
-  auto f_LeadPionE_LH_Bias = [](){ 
+  auto f_2shwOpenAngle_LH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = 1.0/3.142*gammas_t->at(0).Vect().Angle(gammas_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2shwOpenAngle_LH_Bias",f_2shwOpenAngle_LH_Bias);
+
+  auto f_2shwOpenAngle_RH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = 1.0/3.142*gammas_t->at(0).Vect().Angle(gammas_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2shwOpenAngle_RH_Bias",f_2shwOpenAngle_RH_Bias);
+
+  auto f_2shwOpenAngle_Center_Gather = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = 1.0/3.142*gammas_t->at(0).Vect().Angle(gammas_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("2shwOpenAngle_Center_Gather",f_2shwOpenAngle_Center_Gather);
+
+  auto f_2shwOpenAngle_Center_Spread = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = 1.0/3.142*gammas_t->at(0).Vect().Angle(gammas_t->at(1).Vect());
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("2shwOpenAngle_Center_Spread",f_2shwOpenAngle_Center_Spread);
+
+  auto f_2shwAsym_LH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_LH_Bias.at(i),betas_LH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2shwAsym_LH_Bias",f_2shwAsym_LH_Bias);
+
+  auto f_2shwAsym_RH_Bias = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_RH_Bias.at(i),betas_RH_Bias.at(i));
+    return x;
+  };
+  r_m.emplace("2shwAsym_RH_Bias",f_2shwAsym_RH_Bias);
+
+  auto f_2shwAsym_Center_Gather = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Gather.at(i),betas_Center_Gather.at(i));
+    return x;
+  };
+  r_m.emplace("2shwAsym_Center_Gather",f_2shwAsym_Center_Gather);
+
+  auto f_2shwAsym_Center_Spread = [](){
+    std::vector<double> x(spline_pts,1.0);
+    if(!is_signal_t || nsh_t != 2) return x;
+    double val = Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
+    if(val < 0 || val > 1) return x;
+    for(int i=0;i<spline_pts;i++)
+      x.at(i) *= ROOT::Math::beta_pdf(val,alphas_Center_Spread.at(i),betas_Center_Spread.at(i));
+    return x;
+  };
+  r_m.emplace("2shwAsym_Center_Spread",f_2shwAsym_Center_Spread);
+
+  auto f_LeadPionE_LH_Bias = [](){
     std::vector<double> x(spline_pts,1.0); 
     if(!is_signal_t || npi_t == 0) return x;
     double val = pions_t->at(0).E()/0.5; // Map from [0,0.5] to [0,1]

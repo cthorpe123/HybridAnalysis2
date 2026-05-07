@@ -470,13 +470,15 @@ void Filter(){
      vars_t_map = {
        {"MuonMom",muon_mom_t.Mag()},
        {"MuonCosTheta",muon_mom_t.CosTheta()},
-       {"LeadProtonKE",-1},
-       {"LeadPionE",-1},
-       {"1p1piOpeningAngle",-1},
-       {"1p1piAsym",-1},
-       {"MuonProtonOpeningAngle",-1},
-       {"2pOpeningAngle",-1},
-       {"2pAsym",-1},
+       {"LeadProtonKE",-1000},
+       {"LeadPionE",-1000},
+       {"1p1piOpeningAngle",-1000},
+       {"1p1piAsym",-1000},
+       {"MuonProtonOpeningAngle",-1000},
+       {"2pOpeningAngle",-1000},
+       {"2pAsym",-1000},
+       {"2shwOpenAngle",-1000},
+       {"2shwAsym",-1000},
        {"NProt",(double)nprot_t},
        {"NPi",(double)npi_t},
        {"NSh",(double)nsh_t},
@@ -495,6 +497,10 @@ void Filter(){
          vars_t_map.at("2pOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(protons_t->at(1).Vect());
          vars_t_map.at("2pAsym") = weight::Asymmetry3({protons_t->at(0)},{protons_t->at(1)});
        }
+       if(nsh_t == 2){
+         vars_t_map.at("2shwOpenAngle") = 180/3.142*gammas_t->at(0).Vect().Angle(gammas_t->at(1).Vect());
+         vars_t_map.at("2shwAsym") = weight::Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
+       }
        if(npi_t > 0) vars_t_map.at("LeadPionE") = pions_t->at(0).E();
        if(nprot_t == 1 && npi_t == 1){
          vars_t_map.at("1p1piOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
@@ -510,6 +516,7 @@ void Filter(){
      ::muon_mom_t = &muon_mom_t;
      ::protons_t = protons_t;
      ::pions_t = pions_t;
+     ::gammas_t = gammas_t;
      for(const auto &item : weight::r_m) weight_funcs_m[item.first] = item.second();
 
     }
@@ -692,13 +699,15 @@ void Filter(){
     vars_h8_map = {
       {"MuonMom",muon_mom_h8.Mag()},
       {"MuonCosTheta",muon_mom_h8.CosTheta()},
-      {"LeadProtonKE",-1},
-      {"LeadPionE",-1},
-      {"1p1piOpeningAngle",-1},
-      {"1p1piAsym",-1},
-      {"MuonProtonOpeningAngle",-1},
-      {"2pOpeningAngle",-1},
-      {"2pAsym",-1},
+      {"LeadProtonKE",-1000},
+      {"LeadPionE",-1000},
+      {"1p1piOpeningAngle",-1000},
+      {"1p1piAsym",-1000},
+      {"MuonProtonOpeningAngle",-1000},
+      {"2pOpeningAngle",-1000},
+      {"2pAsym",-1000},
+      {"2shwOpenAngle",-1000},
+      {"2shwAsym",-1000},
       {"NProt",(double)nprot_h8},
       {"NPi",(double)npi_h8},
       {"NSh",(double)nsh_h8},
@@ -716,6 +725,10 @@ void Filter(){
       if(nprot_h8 == 2){
         vars_h8_map.at("2pOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(protons_h8->at(1).Vect());
         vars_h8_map.at("2pAsym") = weight::Asymmetry3({protons_h8->at(0)},{protons_h8->at(1)});
+      }
+      if(nsh_h8 == 2){
+        vars_h8_map.at("2shwOpenAngle") = 180/3.142*gammas_h8->at(0).Vect().Angle(gammas_h8->at(1).Vect());
+        vars_h8_map.at("2shwAsym") = weight::Asymmetry3({gammas_h8->at(0)},{gammas_h8->at(1)});
       }
       if(npi_h8 > 0) vars_h8_map.at("LeadPionE") = pions_h8->at(0).E();
       if(nprot_h8 == 1 && npi_h8 == 1){
