@@ -574,6 +574,15 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
 }
 
+const std::vector<std::string> var_names = {
+  "MuonMom","MuonCosTheta","LeadProtonKE","LeadPionE",
+  "1p1piOpeningAngle","1p1piAsym","MuonProtonOpeningAngle",
+  "2pOpeningAngle","2pAsym","2shwOpenAngle","2shwAsym",
+  "NProt","NPi","NSh","NPi0",
+  "ProtonKE","PionE","PiZeroE","W","Channel",
+  "MuonKin","MuonKinWNP","PeLEELike0Pi","TotalEDep","SFMethod"
+};
+
 const std::vector<std::string> categories = {"Signal","BG","Nue","OutFV","Dirt","EXT","Data"};
 enum e_cat {kSignal,kBG,kNue,kOutFV,kDirt,kEXT,kData};
 const int cat_colors[kData] = {kBlue-7,kMagenta-7,kRed-7,kBlue+2,kMagenta+3,kGray};
