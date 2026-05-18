@@ -22,7 +22,9 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
 
   if(!h_v.size()) return;
 
-  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str());
+  const std::string title = ";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";"+string(h_v.at(0)->GetYaxis()->GetTitle());
+
+  THStack* hs_middle = new THStack("hs_middle",title.c_str());
   THStack* hs_U = new THStack("hs_U",";;FE");
   THStack* hs_O = new THStack("hs_O",";;FE");
   //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
@@ -246,6 +248,8 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
 
   if(!h_v.size()) return;
 
+  const std::string title = ";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";"+string(h_v.at(0)->GetYaxis()->GetTitle());
+
   // Find the ranges needed and generate a template with the right axis ranges
   double xmin = h_v.at(0)->GetBinLowEdge(1), xmax = h_v.at(0)->GetBinLowEdge(h_v.at(0)->GetNbinsX()+1);
   double ymin = h_v.at(0)->GetMinimum(), ymax = h_v.at(0)->GetMaximum();
@@ -259,7 +263,7 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   double xrange = xmax - xmin;
   double yrange = ymax - ymin;
  
-  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str());
+  THStack* hs_middle = new THStack("hs_middle",title.c_str());
   //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
   TLegend* l2 = new TLegend(0.0,0.9,1.0,1.0);
   l2->SetNColumns(legs.size());
@@ -274,7 +278,7 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
 
   TCanvas* c2 = new TCanvas("c2","c2");
 
-  TH1D* h = new TH1D("h",(";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";FE").c_str(),1,xmin-0.05*xrange,xmax+0.05*xrange);
+  TH1D* h = new TH1D("h",title.c_str(),1,xmin-0.05*xrange,xmax+0.05*xrange);
   h->Draw();
   h->SetStats(0);
   if(!draw_errors)hs_middle->Draw("nostack HIST same");

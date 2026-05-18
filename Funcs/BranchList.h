@@ -313,7 +313,7 @@ std::vector<TLorentzVector>* pi0s_t;
 std::vector<TLorentzVector>* gammas_t;
 std::vector<double>* est_nu_e_t=0;
 std::map<std::string,double>* vars_t=0;
-std::map<std::string,std::vector<double>>* weight_funcs_m=0;
+//std::map<std::string,std::vector<double>>* weight_funcs_m=0;
 
 Bool_t          sel_pd;
 Bool_t          in_tpc_pd;
@@ -474,7 +474,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
     t_in->SetBranchAddress("gammas_t",&gammas_t);    
     t_in->SetBranchAddress("est_nu_e_t",&est_nu_e_t);
     t_in->SetBranchAddress("vars_t",&vars_t);
-    t_in->SetBranchAddress("weight_funcs",&weight_funcs_m);
+    //t_in->SetBranchAddress("weight_funcs",&weight_funcs_m);
 
     if(load_syst){
       t_in->SetBranchAddress("weightsGenie",&weightsGenie); 
