@@ -12,22 +12,22 @@ using namespace syst;
 // calulated in the CV and special universes, calculate chi2
 // between the CV and each special prediction
 
-void FFTest(){
+void FFTest_SpecCVRes(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   const bool include_data_stat = true;
-  const bool draw_underflow = true;
-  const bool draw_overflow = true;
+  const bool draw_underflow = false;
+  const bool draw_overflow = false;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  //std::vector<std::string> vars = {"MuonMom"};
-  std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = {"MuonMom"};
+  //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
@@ -69,6 +69,8 @@ void FFTest(){
       h_v.push_back((TH1D*)f_in->Get(("Reco/CV/h_"+categories.at(i_c)).c_str()));
       fill_colors.push_back(cat_colors[i_c]);
       legs.push_back(categories.at(i_c));
+      mchm.Restore(h_v.back());
+      if(dbbw) DivideByBinWidth(h_v.back());
     }
 
     // Calculate the covariance encoding systemaics in the CV prediction
@@ -156,114 +158,40 @@ void FFTest(){
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
 
-        TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
-
-        // Draw the truth distribution in the special universe, useful for showing how the spline reweighting is modifying the distribution
-        std::vector<TH1D*> h_Truth_v;
-        std::vector<int> colors_ch;
-        std::vector<std::string> legs_ch;
-        for(size_t i_ch=0;i_ch<channels_t.size();i_ch++){ 
-          std::string ch = channels_t.at(i_ch);
-          
-          h_Truth_v.push_back((TH1D*)h_Spec_Truth->Clone(("h_Spec_Truth_"+ch).c_str()));
-          mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
-          h_Truth_v.back()->SetLineStyle(2);
-          colors_ch.push_back(i_ch+1);
-          legs_ch.push_back(channels_t.at(i_ch)+" "+spec);
-
-          h_Truth_v.push_back((TH1D*)h_CV_Truth->Clone(("h_CV_Truth_"+ch).c_str()));
-          mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
-          colors_ch.push_back(i_ch+1);
-          legs_ch.push_back(channels_t.at(i_ch)+" CV");
-
-        }
-        pfs::DrawUnstacked2(h_Truth_v,colors_ch,legs_ch,plot_dir+"/"+s+"/"+spec+"_Truth.png",false);
-        for(TH1D* hh : h_Truth_v) delete hh;
-        legs_ch.clear();
-        colors_ch.clear();
-
-        // Show the spec truth folded through the CV response, to show how the special universe prediction differs from the CV in reco space
         TH1D* h_CV_Reco_tmp = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp");
-        TH1D* h_SpecT_CVRes = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes");
+
+        TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
+        TH1D* h_SpecT_CVRes = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes_2");
         ForceAddTH1D(h_SpecT_CVRes,h_CV_Reco_AllBG);
-        mchm.Restore(h_SpecT_CVRes);
-        mchm.Restore(h_CV_Reco_tmp);
-        h_SpecT_CVRes->SetLineStyle(2);
-        if(dbbw) DivideByBinWidth(h_SpecT_CVRes);
-        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp);
-        pfs::DrawUnstacked2({h_CV_Reco_tmp,h_SpecT_CVRes},{1,1},{"CV","Spec Folded Through CV Response"},plot_dir+"/"+s+"/"+spec+"_SpecTimesCVRes.png",false);
-        delete h_SpecT_CVRes;
- 
-        // Try folding the CV truth through the spec response, test if the change in model in truth 
-        // space impacts the response in a dangerous way
-
-        // Make clones of histograms needed
-        TH1D* h_CV_Reco_tmp2 = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp2");
-        std::vector<TH1D*> h_v_tmp;
-        for(TH1D* h : h_v){
-           h_v_tmp.push_back((TH1D*)h->Clone((string(h->GetName())+"_tmp").c_str()));
-           mchm.Restore(h_v_tmp.back());
-           if(dbbw) DivideByBinWidth(h_v_tmp.back());
-        }
-
-        TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
-
-        TH1D* h_CVT_SpecRes = Multiply(h_CV_Truth,h_Res_Spec,"h_CVT_SpecRes");
-        h_CVT_SpecRes->Add(h_CV_Reco_AllBG);
-
-        TH1D* h_SpecT_CVRes_2 = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes_2");
-        ForceAddTH1D(h_SpecT_CVRes_2,h_CV_Reco_AllBG);
-
-        // Stat error in the difference between the FF signal in the CV universe and 
-        // the FF signal in the alternative universe
-        TH2D* h_Stat_Cov = (TH2D*)f_in->Get(("Reco/Special/"+spec+"/SpecialStatCov/Cov_SpecialStat").c_str());
-        h_Stat_Cov->Add(h_Cov);
 
         // When folding the spec through the CV response, assume the usual stat error and assume the data stat error is 
         // equal to sqrt of pred in spec universe 
-        TH2D* h_EstData_Cov = (TH2D*)h_Stat_Cov->Clone("h_EstData_Cov");
+        TH2D* h_EstData_Cov = (TH2D*)h_Cov->Clone("h_EstData_Cov");
         h_EstData_Cov->Reset();
-        for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++) h_EstData_Cov->SetBinContent(i,i,h_SpecT_CVRes_2->GetBinContent(i));
+        for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++) h_EstData_Cov->SetBinContent(i,i,h_SpecT_CVRes->GetBinContent(i));
         h_EstData_Cov->Add(h_Cov); 
-        h_EstData_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov"));
- 
-        for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++){
-          h_CVT_SpecRes->SetBinError(i,1e-10);
-          h_CV_Reco_tmp2->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
-          //h_SpecT_CVRes_2->SetBinError(i,sqrt(h_SpecT_CVRes_2->GetBinContent(i)));
-          h_SpecT_CVRes_2->SetBinError(i,1e-10);
-        }
+        h_EstData_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_Tot"));
 
-        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp2,h_CVT_SpecRes,h_Stat_Cov,draw_overflow,draw_underflow);
+        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp,h_SpecT_CVRes,h_EstData_Cov,draw_overflow,draw_underflow);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
-        
-        std::pair<double,int> chi2_SpecT_CVRes = Chi2(h_CV_Reco_tmp2,h_SpecT_CVRes_2,h_EstData_Cov,draw_overflow,draw_underflow);
-        
-        mchm.Restore(h_CV_Reco_tmp2);
-        mchm.Restore(h_CVT_SpecRes);
-        mchm.Restore(h_SpecT_CVRes_2);
-        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp2);
-        if(dbbw) DivideByBinWidth(h_CVT_SpecRes);
-        if(dbbw) DivideByBinWidth(h_SpecT_CVRes_2);
-
-        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_CVT_SpecRes,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
 
         for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++){
-          double w = h_CV_Reco_tmp2->GetBinWidth(i);
-          if(!dbbw || i == 0 || i == h_CV_Reco->GetNbinsX()+1) w = 1;
-          h_CV_Reco_tmp2->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i))/w);
+          h_CV_Reco_tmp->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i)));
+          h_SpecT_CVRes->SetBinError(i,1e-10);
         }
 
-        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_SpecT_CVRes_2,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2_SpecT_CVRes); 
+        mchm.Restore(h_CV_Reco_tmp);
+        mchm.Restore(h_SpecT_CVRes);
+        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp);
+        if(dbbw) DivideByBinWidth(h_SpecT_CVRes);
 
-        delete h_CVT_SpecRes;
-        delete h_CV_Reco_tmp2;
-        delete h_SpecT_CVRes_2;
-        for(TH1D* hh : h_v_tmp) delete hh;
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_SpecT_CVRes,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
 
+        delete h_CV_Reco_tmp;
+        delete h_SpecT_CVRes;
+        delete h_EstData_Cov;
+        
       }
 
       if(draw_chi2_curve){
@@ -275,7 +203,7 @@ void FFTest(){
 
         h_chi2->Draw("HIST");
         h_chi2->SetStats(0);
-        c->Print((plot_dir+s+"_chi2.png").c_str());   
+        c->Print((plot_dir+s+"_chi2_2.png").c_str());   
         c->Clear();
         
         delete h_chi2;
