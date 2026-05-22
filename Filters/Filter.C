@@ -20,13 +20,13 @@ void Filter(){
   double POT_weight;
   int detvar_univ = -1;
 
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
 
   // Main run4b files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4b/";
-  detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_11_BNB_beam_on_surprise_reco2_hist.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
-  std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";      POT_weight = 1.332E+20/7.88166e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
+  //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_nu_overlay_surprise_reco2_hist.root";      POT_weight = 1.332E+20/7.88166e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";             POT_weight = 1.332E+20/3.06E+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4b_v10_04_07_09_Run4b_BNB_beam_off_surprise_reco2_hist.root";  POT_weight = 31582916.0/88445969.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
 
@@ -77,6 +77,16 @@ void Filter(){
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/6.1577773e+20; detvar_univ = syst::kSCE;
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/6.7067415e+20; detvar_univ = syst::kWMX;
   //std::string file = "Merged_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/1.1481916e+21; detvar_univ = syst::kWMYZ;
+
+  // NuWro FD - run 4c - weight to run 4c data POT
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  //is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  //std::string file = "Merged_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_4c.root"; POT_weight = 9.116e+19/3.29601e+20; detvar_univ = -1;
+
+  // NuWro FD - run 5 - weight to run 5 data POT
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  std::string file = "Merged_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_5.root"; POT_weight = 1.296e+20/3.64005e+20; detvar_univ = -1;
 
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
@@ -143,7 +153,7 @@ void Filter(){
   int ch_t;
   std::vector<double> est_nu_e_t;
   std::map<std::string,double> vars_t_map;
-  std::map<std::string,std::vector<double>> weight_funcs_m;
+  //std::map<std::string,std::vector<double>> weight_funcs_m;
 
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
@@ -169,7 +179,7 @@ void Filter(){
     t_out->Branch("ch_t",&ch_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
     t_out->Branch("vars_t",&vars_t_map);
-    t_out->Branch("weight_funcs",&weight_funcs_m);
+    //t_out->Branch("weight_funcs",&weight_funcs_m);
   }
 
   // PD Reco branches
@@ -357,7 +367,7 @@ void Filter(){
     }
   }
 
-  weight::SetWeightFuncs();
+  //weight::SetWeightFuncs();
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
@@ -508,6 +518,7 @@ void Filter(){
        }
      }
 
+    /*
      // Sync BranchList globals so weight function lambdas see the correct values
      ::is_signal_t = is_signal_t;
      ::nprot_t = nprot_t;
@@ -517,8 +528,11 @@ void Filter(){
      ::protons_t = protons_t;
      ::pions_t = pions_t;
      ::gammas_t = gammas_t;
-     for(const auto &item : weight::r_m) weight_funcs_m[item.first] = item.second();
-
+     for(const auto &item : weight::r_m){
+       //std::cout << item.first << std::endl;
+       weight_funcs_m[item.first] = item.second();
+     }
+    */
     }
 
     // Muon ID with each framework

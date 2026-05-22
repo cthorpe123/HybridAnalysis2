@@ -146,7 +146,7 @@ double Cone(const std::vector<TVector3>& p_v)
 ///////////////////////////////////////////////////////////////////////
 // Set up all of the pointers to the different weight functions here
 
-const int spline_pts = 5; // Number of points to use in the spline reweighting
+const int spline_pts = 10; // Number of points to use in the spline reweighting
 const double max_weight = 5.0; // Max weight to apply in the spline reweighting
 
 // Function pointers for the various reweighters 
@@ -165,31 +165,31 @@ void SetWeightFuncs()
   alphas_Center_Spread = params.at("alphas_Center_Spread");
   betas_Center_Spread  = params.at("betas_Center_Spread");
 
-  auto f_ExtraPi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 0 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_ExtraPi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 0 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("ExtraPi",f_ExtraPi); 
 
-  auto f_Extra2Pi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_Extra2Pi = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi_t > 1 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra2Pi",f_Extra2Pi); 
 
-  auto f_ExtraP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_ExtraP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 1 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("ExtraP",f_ExtraP); 
 
-  auto f_Extra1P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 1 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_Extra1P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 1 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra1P",f_Extra1P); 
 
-  auto f_Extra2P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 2 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_Extra2P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 2 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra2P",f_Extra2P); 
 
-  auto f_Extra3P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 3 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_Extra3P = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t == 3 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra3P",f_Extra3P); 
 
-  auto f_ExtraNP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 3 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_ExtraNP = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nprot_t > 3 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("ExtraNP",f_ExtraNP); 
 
-  auto f_ExtraG = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 0 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_ExtraG = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 0 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("ExtraG",f_ExtraG); 
 
-  auto f_Extra2G = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 1 ? i*5.0/spline_pts : 1.0); return x; };
+  auto f_Extra2G = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 1 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra2G",f_Extra2G); 
 
   auto f_MuonAngleShape_LH_Bias = [](){ 

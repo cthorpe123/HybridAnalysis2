@@ -5,7 +5,7 @@ void SpeedyMergeNtuple(){
 
   bool is_data,save_syst;
 
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
 
   // Run 4b Main Samples
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4b_full_samples/BNB/"; 
@@ -32,11 +32,11 @@ void SpeedyMergeNtuple(){
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4d/";
 
   // Run 5 Main Samples
-  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
   //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";    is_data = false;  save_syst = true;
   //std::string filename = "MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  is_data = false;  save_syst = false;
   //std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root";        is_data = true;  save_syst = false;
-  std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         is_data = true;  save_syst = false;
+  //std::string filename = "MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         is_data = true;  save_syst = false;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5/";
 
   // Run 4 Detvars
@@ -62,7 +62,17 @@ void SpeedyMergeNtuple(){
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root";      is_data = false;  save_syst = false;
   //std::string filename = "DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root";     is_data = false;  save_syst = false;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5_detvar/";
-  
+ 
+  // NuWro FD - run 4c
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run4c_full_samples/BNB/";
+  //std::string filename = "MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_4c.root";
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/"; is_data = false;  save_syst = false;
+ 
+  // NuWro FD - run 5
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/BNB/";
+  std::string filename = "MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_5.root";
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/"; is_data = false;  save_syst = false;
+ 
   // Open the two files and setup branches to read the RSE numbers
   TFile* f_in = new TFile((dir_in + filename).c_str());
   TTree* pd_t_in = static_cast<TTree*>(f_in->Get("nuselection/NeutrinoSelectionFilter"));
