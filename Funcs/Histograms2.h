@@ -313,13 +313,6 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
   _h_CV_Reco_Cat.at(category)->Fill(var_r,POT_weight*weightSplineTimesTune);
 
   if(!is_data){
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)*weightSplineTimesTune/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
-    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Tot.at(i_s)->Fill(var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim)*weightSplineTimesTune);
-  }
-
-  if(!is_data){
     if(load_syst){
       for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)/1000);
       for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
@@ -334,19 +327,7 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
     } 
   }
 
-  if(load_syst){
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Cat.at(category).at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
-    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Cat.at(category).at(i_s)->Fill(var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim));
-  }
-  else {
-    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Cat.at(category).at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
-    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Cat.at(category).at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
-    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Cat.at(category).at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
-    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Cat.at(category).at(i_s)->Fill(var_r,(double)POT_weight*weightSplineTimesTune);
-  } 
-
+ 
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -631,6 +612,8 @@ void HistogramManager::_WriteReco()
       _f_out->cd(("Reco/Vars/"+sys_str.at(i_s)).c_str());
       h_Vars_Reco_AllBG.push_back(std::vector<TH1D*>());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+        std::cout << _h_CV_Reco_Tot->GetName() << " integral: " << IntegralWithOU(_h_CV_Reco_Tot) << std::endl;
+        std::cout << _h_Vars_Reco_Tot.at(i_s).at(i_u)->GetName() << " integral: " << IntegralWithOU(_h_Vars_Reco_Tot.at(i_s).at(i_u)) << std::endl;
         _h_Vars_Reco_Tot.at(i_s).at(i_u)->Write(Form("h_Tot_%i",i_u));
         h_Vars_Reco_AllBG.back().push_back((TH1D*)_h_Vars_Reco_Tot.at(i_s).at(i_u)->Clone(Form("h_Vars_Reco_AllBG_%i",i_u)));
         h_Vars_Reco_AllBG.back().back()->Reset();

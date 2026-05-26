@@ -32,11 +32,11 @@ void Filter(){
 
   // Main run4c files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4c/";
-  detvar_univ = -1;
+  //detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_4c.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_4c.root";    POT_weight = 9.116e+19/4.71538e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root";  POT_weight = 9.116e+19/1.79969e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
-  std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root";        POT_weight = 20658711.0/53532601.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false; 
+  //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root";        POT_weight = 20658711.0/53532601.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false; 
 
   // Main run4d files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4d/";
@@ -48,11 +48,11 @@ void Filter(){
 
   // Main run5 files
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run5/";
-  //detvar_univ = -1;
+  detvar_univ = -1;
   //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_nu_overlay_surprise_reco2_hist_5.root";    POT_weight = 1.296e+20/1.00693e+21; is_data = false; is_ext = false; is_dirt = false; load_syst = true; 
   //std::string file = "Merged_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  POT_weight = 1.296e+20/3.53071e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false; 
-  //std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root";        POT_weight = 30949964.0/111196272.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false; 
+  std::string file = "Merged_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root";        POT_weight = 30949964.0/111196272.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false; 
 
   // Run 4 Detvars
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/run4_detvar/";
