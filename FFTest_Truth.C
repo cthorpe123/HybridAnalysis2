@@ -17,7 +17,7 @@ void FFTest_Truth(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = true;
+  bool add_detvars = false;
   const bool include_data_stat = true;
   const bool draw_underflow = false;
   const bool draw_overflow = false;
@@ -25,15 +25,20 @@ void FFTest_Truth(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
+  const bool add_nuwro_fd = true;
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
+  const int pts = weight::spline_pts;
+  //const int pts = 1;
+
   weight::SetWeightFuncs();
   std::vector<std::string> special_univs;
-  //special_univs.push_back("MuonMomShape_RH_Bias");
+  if(add_nuwro_fd) special_univs.push_back("NuWro");
+  
   for(const auto &item : weight::r_m)
     special_univs.push_back(item.first);
 
@@ -61,7 +66,7 @@ void FFTest_Truth(){
       gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       std::vector<std::pair<double,int>> spec_chi2;
 
-      for(int i=0;i<weight::spline_pts;i++){
+      for(int i=0;i<pts;i++){
 
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
@@ -92,6 +97,8 @@ void FFTest_Truth(){
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();
         colors_ch.clear();
+
+      if(s == "NuWro") break;
 
       }
 
