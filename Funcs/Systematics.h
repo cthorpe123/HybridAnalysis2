@@ -24,7 +24,7 @@ const std::vector<std::string> unisims_str = {"AxFFCCQEshape","DecayAngMEC","Nor
 const int unisim_color = 3; 
 
 // Detvars
-enum e_detvars {kLYAtt,kLYDown,kLYRayleigh,kSCE,kRecomb2,kWMX,kWMYZ,kDetvarMAX};
+enum e_detvars {kLYAtt,kLYDown,kLYRayleigh,kSCE,kRecomb2,kWMX,kWMYZ,kDetvarMAX,kNuWro=-2};
 const std::vector<std::string> detvar_str = {"LYAtt","LYDown","LYRayleigh","SCE","Recomb2","WMX","WMYZ"};
 const int detvar_color = kGreen+2; 
 

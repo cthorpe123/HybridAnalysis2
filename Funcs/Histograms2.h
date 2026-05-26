@@ -298,6 +298,8 @@ void HistogramManager::AddSpecialUniv(std::string name)
 void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,double weight)
 {
 
+  if(detvar_univ == syst::kNuWro) return;
+
   if(!sel) return;
 
   if(_h_tp == nullptr) 
@@ -309,6 +311,13 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
 
   if(!is_data) _h_CV_Reco_Tot->Fill(var_r,POT_weight*weightSplineTimesTune);
   _h_CV_Reco_Cat.at(category)->Fill(var_r,POT_weight*weightSplineTimesTune);
+
+  if(!is_data){
+    for(int i_u=0;i_u<sys_nuniv.at(kGenie);i_u++) _h_Vars_Reco_Tot.at(kGenie).at(i_u)->Fill(var_r,(double)POT_weight*weightsGenie->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kReint);i_u++) _h_Vars_Reco_Tot.at(kReint).at(i_u)->Fill(var_r,(double)POT_weight*weightsReint->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++) _h_Vars_Reco_Tot.at(kFlux).at(i_u)->Fill(var_r,(double)POT_weight*weightsFlux->at(i_u)*weightSplineTimesTune/1000);
+    for(int i_s=0;i_s<kUnisimMAX;i_s++) _h_Unisim_Vars_Reco_Tot.at(i_s)->Fill(var_r,(double)POT_weight*ChooseUnisimWeight(i_s,weightsUnisim)*weightSplineTimesTune);
+  }
 
   if(!is_data){
     if(load_syst){
@@ -346,6 +355,8 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
 void HistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,double weight=1.0)
 {
 
+  if(detvar_univ == syst::kNuWro) return;
+
   if(!sig) return;
 
   if(_h_tp_truth == nullptr) 
@@ -377,6 +388,8 @@ void HistogramManager::FillTruthHistograms(bool sig,double var_t,bool load_syst,
 
 void HistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight)
 {
+
+ if(detvar_univ == syst::kNuWro) return;
 
  FillTruthHistograms(sig,var_t,load_syst,weight);
  FillRecoHistograms(sel,var_r,load_syst,weight);
@@ -413,6 +426,14 @@ void HistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,double va
 void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight)
 {
 
+  // If using NuWro FD file and NuWro univ not set up, throw error
+  if(detvar_univ == syst::kNuWro && _h_Special_Truth_Signal.find("NuWro_0") == _h_Special_Truth_Signal.end())
+    throw std::invalid_argument("Trying to fill NuWro special universe histograms but they have not been set up, call AddSpecialUniv with name NuWro_0 first!");  
+    
+  // Only fill the NuWro special univ with NuWro
+  if((detvar_univ == syst::kNuWro && name != "NuWro_0") || (detvar_univ != syst::kNuWro && name == "NuWro_0"))
+    return;
+
   if(!sig) return;
 
   if(_h_tp_truth == nullptr) 
@@ -431,6 +452,14 @@ void HistogramManager::FillSpecialTruthHistograms(std::string name,bool sig,doub
 void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,double var_r,double weight)
 {
 
+  // If using NuWro FD file and NuWro univ not set up, throw error
+  if(detvar_univ == syst::kNuWro && _h_Special_Reco_Tot.find("NuWro_0") == _h_Special_Reco_Tot.end())
+    throw std::invalid_argument("Trying to fill NuWro special universe histograms but they have not been set up, call AddSpecialUniv with name NuWro_0 first!");  
+    
+  // Only fill the NuWro special univ with NuWro
+  if((detvar_univ == syst::kNuWro && name != "NuWro_0") || (name == "NuWro_0" && detvar_univ != syst::kNuWro && !is_ext && !is_data && !is_dirt))
+    return;
+
   if(!sel) return;
 
   if(_h_tp == nullptr) 
@@ -438,12 +467,12 @@ void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,doubl
 
   if(category == -1) std::cout << "Bad event" << std::endl;
 
-  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;
+  if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) return;  
 
   if(!is_data){
     _h_Special_Reco_Tot.at(name)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
   }
-  
+
   _h_Special_Reco_Cat.at(name).at(category)->Fill(var_r,POT_weight*weightSplineTimesTune*weight);
 
 }
@@ -454,8 +483,18 @@ void HistogramManager::FillSpecialRecoHistograms(std::string name,bool sel,doubl
 void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool sel,double var_t,double var_r,double weight)
 {
 
+ if(detvar_univ == syst::kNuWro && _h_Special_Truth_Signal.find("NuWro_0") == _h_Special_Truth_Signal.end())
+    throw std::invalid_argument("Trying to fill NuWro special universe histograms but they have not been set up, call AddSpecialUniv with name NuWro_0 first!");  
+    
+  // Only fill the NuWro special univ with NuWro
+  if(detvar_univ == syst::kNuWro && name != "NuWro_0")
+    return;
+
   FillSpecialTruthHistograms(name,sig,var_t,weight);
   FillSpecialRecoHistograms(name,sel,var_r,weight);
+
+  if((detvar_univ == syst::kNuWro && name != "NuWro_0") || (detvar_univ != syst::kNuWro && name == "NuWro_0"))
+    return;
 
   if(!sig || !sel) return;
 
@@ -484,7 +523,6 @@ void HistogramManager::Write()
   _ScaleSpecial();
 
   _WriteReco();
-
   if(_save_truth){
     _WriteTruth();
     _WriteJoint();
@@ -511,7 +549,13 @@ void HistogramManager::_GetIntegrals()
 void HistogramManager::_ScaleSpecial()
 {
 
+  //std::cout << _h_CV_Reco_Tot->GetName() << " integral before scaling: " << IntegralWithOU(_h_CV_Reco_Tot) << std::endl;
+  //std::cout << _h_CV_Truth_Signal->GetName() << " integral before scaling: " << IntegralWithOU(_h_CV_Truth_Signal) << std::endl;
+
   for(const auto& it : _h_Special_Truth_Signal){
+    //std::cout << std::endl;
+    //std::cout << _h_Special_Reco_Tot.at(it.first)->GetName() << " integral before scaling: " << IntegralWithOU(_h_Special_Reco_Tot.at(it.first)) << std::endl;
+    //std::cout << _h_Special_Truth_Signal.at(it.first)->GetName() << " integral before scaling: " << IntegralWithOU(_h_Special_Truth_Signal.at(it.first)) << std::endl;
     std::string name = it.first;
     double spec_int = _Special_Truth_Signal_Integral.at(name);
     _h_Special_Truth_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
@@ -519,8 +563,9 @@ void HistogramManager::_ScaleSpecial()
     _h_Special_Joint_Signal_W2X.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Reco_Cat.at(name).at(kSignal)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Reco_Tot.at(name)->Reset();
-    _h_Special_Reco_Tot.at(name)->Add(_h_Special_Reco_Cat.at(name).at(kSignal));
-    for(int i_c=0;i_c<kData;i_c++) _h_Special_Reco_Tot.at(name)->Add(_h_CV_Reco_Cat.at(i_c));
+    for(int i_c=0;i_c<kData;i_c++) _h_Special_Reco_Tot.at(name)->Add(_h_Special_Reco_Cat.at(name).at(i_c));
+    //std::cout << _h_Special_Reco_Tot.at(it.first)->GetName() << " integral after scaling: " << IntegralWithOU(_h_Special_Reco_Tot.at(it.first)) << std::endl;
+    //std::cout << _h_Special_Truth_Signal.at(it.first)->GetName() << " integral after scaling: " << IntegralWithOU(_h_Special_Truth_Signal.at(it.first)) << std::endl;
   }
 
 }
