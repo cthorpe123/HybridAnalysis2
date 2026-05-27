@@ -26,7 +26,7 @@ void FFTest_SpecCVRes(){
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","ProtonKE","NPi"};
+  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","ProtonKE","NPi"*/};
 
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
@@ -101,15 +101,12 @@ void FFTest_SpecCVRes(){
       std::string name = "h_Signal_FF_"+unisims_str.at(i_s);
       TH1D* h = Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+unisims_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
       ForceAddTH1D(h,(TH1D*)f_in->Get(("Reco/Vars/"+unisims_str.at(i_s)+"/h_AllBG").c_str()));
-      TH1D* h_CV = Multiply(h_CV_Truth,h_CV_Res,"h_CV");
-      h_CV->Add(h_CV_Reco_AllBG);
       TH2D *c,*fc; 
       CalcCovUnisim(unisims_str.at(i_s),h_CV_Reco,h,c,fc); 
       h_Cov->Add(c);
       delete h;
       delete c;
       delete fc;
-      delete h_CV;
    }
 
     // Need to be a bit careful with detvars - calculate fractional covariance 
