@@ -17,7 +17,7 @@ void FFTest_CVSpecRes(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   const bool include_data_stat = true;
   const bool draw_underflow = false;
   const bool draw_overflow = false;
@@ -25,17 +25,15 @@ void FFTest_CVSpecRes(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
-  const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","ProtonKE","NPi"*/};
+
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> special_univs;
-
   weight::SetWeightFuncs();
-  if(add_nuwro_fd) special_univs.push_back("NuWro");
+  std::vector<std::string> special_univs;
   for(const auto &item : weight::r_m)
     special_univs.push_back(item.first);
 
@@ -100,15 +98,19 @@ void FFTest_CVSpecRes(){
 
    // Do the same with the unisims
    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      std::cout << "Unisim: " << unisims_str.at(i_s) << std::endl;
       std::string name = "h_Signal_FF_"+unisims_str.at(i_s);
       TH1D* h = Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+unisims_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
       ForceAddTH1D(h,(TH1D*)f_in->Get(("Reco/Vars/"+unisims_str.at(i_s)+"/h_AllBG").c_str()));
+      TH1D* h_CV = Multiply(h_CV_Truth,h_CV_Res,"h_CV");
+      h_CV->Add(h_CV_Reco_AllBG);
       TH2D *c,*fc; 
-      CalcCovUnisim(unisims_str.at(i_s),h_CV_Reco,h,c,fc); 
+      CalcCovUnisim(unisims_str.at(i_s),h_CV_Reco,h_CV,c,fc); 
       h_Cov->Add(c);
       delete h;
       delete c;
       delete fc;
+      delete h_CV;
    }
 
     // Need to be a bit careful with detvars - calculate fractional covariance 
@@ -137,13 +139,15 @@ void FFTest_CVSpecRes(){
       }
 
     }
-
+   
+    
     // Add the covariance from the flux
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
     for(int i=0;i<h_Cov_Flux->GetNbinsX()+2;i++)
       for(int j=0;j<h_Cov_Flux->GetNbinsY()+2;j++)
         if(i != j) h_Cov_Flux->SetBinContent(i,j,0.0);
     h_Cov->Add(h_Cov_Flux);
+    
 
     // Add the MC stat error on the BG to the covariance matrix 
     h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_AllBG"));
@@ -188,8 +192,6 @@ void FFTest_CVSpecRes(){
         if(dbbw) DivideByBinWidth(h_CVT_SpecRes);
 
         pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_CVT_SpecRes,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
-
-        if(s == "NuWro") break;
 
       }
 

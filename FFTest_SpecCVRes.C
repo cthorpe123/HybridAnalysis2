@@ -17,7 +17,7 @@ void FFTest_SpecCVRes(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   const bool include_data_stat = true;
   const bool draw_underflow = false;
   const bool draw_overflow = false;
@@ -25,16 +25,15 @@ void FFTest_SpecCVRes(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
-  const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","ProtonKE","NPi"};
+
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> special_univs;
   weight::SetWeightFuncs();
-  if(add_nuwro_fd) special_univs.push_back("NuWro");
+  std::vector<std::string> special_univs;
   for(const auto &item : weight::r_m)
     special_univs.push_back(item.first);
 
@@ -102,12 +101,15 @@ void FFTest_SpecCVRes(){
       std::string name = "h_Signal_FF_"+unisims_str.at(i_s);
       TH1D* h = Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+unisims_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
       ForceAddTH1D(h,(TH1D*)f_in->Get(("Reco/Vars/"+unisims_str.at(i_s)+"/h_AllBG").c_str()));
+      TH1D* h_CV = Multiply(h_CV_Truth,h_CV_Res,"h_CV");
+      h_CV->Add(h_CV_Reco_AllBG);
       TH2D *c,*fc; 
       CalcCovUnisim(unisims_str.at(i_s),h_CV_Reco,h,c,fc); 
       h_Cov->Add(c);
       delete h;
       delete c;
       delete fc;
+      delete h_CV;
    }
 
     // Need to be a bit careful with detvars - calculate fractional covariance 
@@ -195,8 +197,6 @@ void FFTest_SpecCVRes(){
         delete h_SpecT_CVRes;
         delete h_EstData_Cov;
         
-        if(s == "NuWro") break;
-
       }
 
       if(draw_chi2_curve){
