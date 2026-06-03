@@ -522,7 +522,6 @@ void HistogramManager::Write()
     _WriteJoint();
   }
 
-
   _f_out->Close();
 }
 
@@ -543,13 +542,7 @@ void HistogramManager::_GetIntegrals()
 void HistogramManager::_ScaleSpecial()
 {
 
-  //std::cout << _h_CV_Reco_Tot->GetName() << " integral before scaling: " << IntegralWithOU(_h_CV_Reco_Tot) << std::endl;
-  //std::cout << _h_CV_Truth_Signal->GetName() << " integral before scaling: " << IntegralWithOU(_h_CV_Truth_Signal) << std::endl;
-
   for(const auto& it : _h_Special_Truth_Signal){
-    //std::cout << std::endl;
-    //std::cout << _h_Special_Reco_Tot.at(it.first)->GetName() << " integral before scaling: " << IntegralWithOU(_h_Special_Reco_Tot.at(it.first)) << std::endl;
-    //std::cout << _h_Special_Truth_Signal.at(it.first)->GetName() << " integral before scaling: " << IntegralWithOU(_h_Special_Truth_Signal.at(it.first)) << std::endl;
     std::string name = it.first;
     double spec_int = _Special_Truth_Signal_Integral.at(name);
     _h_Special_Truth_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
@@ -558,8 +551,6 @@ void HistogramManager::_ScaleSpecial()
     _h_Special_Reco_Cat.at(name).at(kSignal)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Reco_Tot.at(name)->Reset();
     for(int i_c=0;i_c<kData;i_c++) _h_Special_Reco_Tot.at(name)->Add(_h_Special_Reco_Cat.at(name).at(i_c));
-    //std::cout << _h_Special_Reco_Tot.at(it.first)->GetName() << " integral after scaling: " << IntegralWithOU(_h_Special_Reco_Tot.at(it.first)) << std::endl;
-    //std::cout << _h_Special_Truth_Signal.at(it.first)->GetName() << " integral after scaling: " << IntegralWithOU(_h_Special_Truth_Signal.at(it.first)) << std::endl;
   }
 
 }
@@ -625,8 +616,6 @@ void HistogramManager::_WriteReco()
       _f_out->cd(("Reco/Vars/"+sys_str.at(i_s)).c_str());
       h_Vars_Reco_AllBG.push_back(std::vector<TH1D*>());
       for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        std::cout << _h_CV_Reco_Tot->GetName() << " integral: " << IntegralWithOU(_h_CV_Reco_Tot) << std::endl;
-        std::cout << _h_Vars_Reco_Tot.at(i_s).at(i_u)->GetName() << " integral: " << IntegralWithOU(_h_Vars_Reco_Tot.at(i_s).at(i_u)) << std::endl;
         _h_Vars_Reco_Tot.at(i_s).at(i_u)->Write(Form("h_Tot_%i",i_u));
         h_Vars_Reco_AllBG.back().push_back((TH1D*)_h_Vars_Reco_Tot.at(i_s).at(i_u)->Clone(Form("h_Vars_Reco_AllBG_%i",i_u)));
         h_Vars_Reco_AllBG.back().back()->Reset();

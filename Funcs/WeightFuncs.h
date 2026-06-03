@@ -147,7 +147,6 @@ double Cone(const std::vector<TVector3>& p_v)
 // Set up all of the pointers to the different weight functions here
 
 const int spline_pts = 10; // Number of points to use in the spline reweighting
-const double max_weight = 5.0; // Max weight to apply in the spline reweighting
 
 // Function pointers for the various reweighters 
 std::map<std::string,std::vector<double>(*)()> r_m;
@@ -643,6 +642,7 @@ void SetWeightFuncs()
     return x;
   };
   r_m.emplace("MuonProtonOpeningAngle_Center_Spread",f_MuonProtonOpeningAngle_Center_Spread);
+  
 
 }
 

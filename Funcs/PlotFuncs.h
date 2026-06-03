@@ -257,8 +257,12 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   for(TH1D* h : h_v){
     xmin = std::min(xmin,h->GetBinLowEdge(1));
     xmax = std::max(xmax,h->GetBinLowEdge(h->GetNbinsX()+1));
-    ymin = std::min(ymin,h->GetMinimum());
-    ymax = std::max(ymax,h->GetMaximum());
+    for(int i=1;i<=h->GetNbinsX();i++){
+      double val = h->GetBinContent(i);
+      double err = draw_errors ? h->GetBinError(i) : 0.0;
+      ymin = std::min(ymin, val - err);
+      ymax = std::max(ymax, val + err);
+    }
   }
   double xrange = xmax - xmin;
   double yrange = ymax - ymin;
@@ -285,6 +289,7 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   else hs_middle->Draw("nostack E same");
   h->SetMaximum(ymax+0.05*yrange);
   h->SetMinimum(ymin-0.05*yrange);
+
   l2->Draw();
 
   c2->cd();
