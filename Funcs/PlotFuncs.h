@@ -244,8 +244,8 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 
 ///////////////////////////////////////////////////////////////////////
 // Like DrawStacked but adds a row of ratio panels below showing
-// (h_data - h_tot) / sigma_tot in units of standard deviations.
-// Reference lines are drawn at 0 (solid) and ±1, ±2 sigma (dashed/dotted).
+// data/MC, with a hatched band for the MC uncertainty (same style as
+// the upper plot) and a reference line at 1.
 
 void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
 
@@ -286,8 +286,8 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     h_data_O->SetMarkerStyle(20); h_data_O->SetMarkerSize(0.8); h_data_O->SetLineColor(1);
   }
 
-  // Build pull histogram: (data - tot) / tot_err per bin
-  auto MakePull = [](const char* hname, TH1D* data_h, TH1D* tot_h) -> TH1D* {
+  // Build data/MC ratio histogram; error = data_err / tot
+  auto MakeRatio = [](const char* hname, TH1D* data_h, TH1D* tot_h) -> TH1D* {
     TH1D* h = (TH1D*)tot_h->Clone(hname);
     h->Reset();
     h->SetFillStyle(0);
@@ -296,18 +296,39 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     h->SetLineColor(1);
     h->SetStats(0);
     for(int i=0; i<=h->GetNbinsX()+1; ++i){
-      double err = tot_h->GetBinError(i);
-      if(err > 0){
-        h->SetBinContent(i, (data_h->GetBinContent(i) - tot_h->GetBinContent(i)) / err);
-        h->SetBinError(i, data_h->GetBinError(i) / err);
+      double tot = tot_h->GetBinContent(i);
+      if(tot > 0){
+        h->SetBinContent(i, data_h->GetBinContent(i) / tot);
+        h->SetBinError(i,   data_h->GetBinError(i)   / tot);
       }
     }
     return h;
   };
 
-  TH1D* h_pull   = h_data ? MakePull("h_pull_mid_r", h_data,   h_tot_tmp) : nullptr;
-  TH1D* h_pull_U = h_data ? MakePull("h_pull_U_r",   h_data_U, h_tot_U)   : nullptr;
-  TH1D* h_pull_O = h_data ? MakePull("h_pull_O_r",   h_data_O, h_tot_O)   : nullptr;
+  // Build MC uncertainty band for the ratio panel: centred at 1, err = tot_err / tot
+  auto MakeBand = [](const char* hname, TH1D* tot_h) -> TH1D* {
+    TH1D* h = (TH1D*)tot_h->Clone(hname);
+    h->Reset();
+    h->SetStats(0);
+    h->SetFillStyle(3253);
+    h->SetFillColor(1);
+    h->SetLineColor(0);
+    for(int i=0; i<=h->GetNbinsX()+1; ++i){
+      double tot = tot_h->GetBinContent(i);
+      if(tot > 0){
+        h->SetBinContent(i, 1.0);
+        h->SetBinError(i,   tot_h->GetBinError(i) / tot);
+      }
+    }
+    return h;
+  };
+
+  TH1D* h_ratio   = h_data ? MakeRatio("h_ratio_mid_r", h_data,   h_tot_tmp) : nullptr;
+  TH1D* h_ratio_U = h_data ? MakeRatio("h_ratio_U_r",   h_data_U, h_tot_U)   : nullptr;
+  TH1D* h_ratio_O = h_data ? MakeRatio("h_ratio_O_r",   h_data_O, h_tot_O)   : nullptr;
+  TH1D* h_band    = MakeBand("h_band_mid_r", h_tot_tmp);
+  TH1D* h_band_U  = MakeBand("h_band_U_r",  h_tot_U);
+  TH1D* h_band_O  = MakeBand("h_band_O_r",  h_tot_O);
 
   // Canvas: split 70 % top (main) / 30 % bottom (ratio)
   const double rs         = 0.3;
@@ -342,18 +363,10 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   }
 
   
-  // Helper: draw reference lines on the current pad
-  auto DrawPullLines = [](TH1D* h, double rmax){
+  // Helper: draw reference line at 1 on the current pad
+  auto DrawRatioLine = [](TH1D* h){
     double xlo = h->GetXaxis()->GetXmin(), xhi = h->GetXaxis()->GetXmax();
-    TLine* l0  = new TLine(xlo, 0, xhi, 0); l0->SetLineWidth(2); l0->Draw();
-    if(rmax > 1.0){
-      TLine* lp1 = new TLine(xlo, 1, xhi, 1); lp1->SetLineStyle(2); lp1->SetLineColor(kGray+1); lp1->Draw();
-      TLine* lm1 = new TLine(xlo,-1, xhi,-1); lm1->SetLineStyle(2); lm1->SetLineColor(kGray+1); lm1->Draw();
-    }
-    if(rmax > 2.0){
-      TLine* lp2 = new TLine(xlo, 2, xhi, 2); lp2->SetLineStyle(3); lp2->SetLineColor(kGray+1); lp2->Draw();
-      TLine* lm2 = new TLine(xlo,-2, xhi,-2); lm2->SetLineStyle(3); lm2->SetLineColor(kGray+1); lm2->Draw();
-    }
+    TLine* l1 = new TLine(xlo, 1, xhi, 1); l1->SetLineWidth(2); l1->Draw();
   };
 
   // Underflow column
@@ -368,17 +381,22 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     hs_U->GetYaxis()->SetLabelSize(0.11);
     hs_U->GetYaxis()->SetLabelOffset(0.04);
 
-    if(h_pull_U){
+    if(h_ratio_U){
       p_U_bot->cd();
-      double rmax_U = (std::abs(h_pull_U->GetBinContent(1)) + h_pull_U->GetBinError(1)) * 1.3;
-      if(rmax_U == 0) rmax_U = 1.0;
-      h_pull_U->SetMaximum(rmax_U); h_pull_U->SetMinimum(-rmax_U);
-      h_pull_U->Draw("e1");
-      h_pull_U->GetXaxis()->SetLabelSize(0.16);
-      h_pull_U->GetYaxis()->SetLabelSize(0.11);
-      h_pull_U->GetYaxis()->SetLabelOffset(0.04);
+      double dev_U = std::abs(h_ratio_U->GetBinContent(1) - 1.0) + h_ratio_U->GetBinError(1);
+      dev_U = std::max(dev_U, h_band_U->GetBinError(1));
+      double rmax_U = 1.0 + dev_U * 1.3;
+      double rmin_U = 1.0 - dev_U * 1.3;
+      if(rmax_U == rmin_U){ rmax_U = 1.5; rmin_U = 0.5; }
+      h_ratio_U->SetMaximum(rmax_U); h_ratio_U->SetMinimum(rmin_U);
+      h_ratio_U->Draw("e1");
+      h_band_U->Draw("e2 same");
+      h_ratio_U->Draw("e1 same");
+      h_ratio_U->GetXaxis()->SetLabelSize(0.16);
+      h_ratio_U->GetYaxis()->SetLabelSize(0.11);
+      h_ratio_U->GetYaxis()->SetLabelOffset(0.04);
       gPad->RedrawAxis();
-      DrawPullLines(h_pull_U, rmax_U);
+      DrawRatioLine(h_ratio_U);
     }
     c2->cd();
   }
@@ -396,17 +414,22 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     hs_O->GetYaxis()->SetLabelSize(0.11);
     hs_O->GetYaxis()->SetLabelOffset(0.04);
 
-    if(h_pull_O){
+    if(h_ratio_O){
       p_O_bot->cd();
-      double rmax_O = (std::abs(h_pull_O->GetBinContent(1)) + h_pull_O->GetBinError(1)) * 1.3;
-      if(rmax_O == 0) rmax_O = 1.0;
-      h_pull_O->SetMaximum(rmax_O); h_pull_O->SetMinimum(-rmax_O);
-      h_pull_O->Draw("e1 Y+");
-      h_pull_O->GetXaxis()->SetLabelSize(0.16);
-      h_pull_O->GetYaxis()->SetLabelSize(0.11);
-      h_pull_O->GetYaxis()->SetLabelOffset(0.04);
+      double dev_O = std::abs(h_ratio_O->GetBinContent(1) - 1.0) + h_ratio_O->GetBinError(1);
+      dev_O = std::max(dev_O, h_band_O->GetBinError(1));
+      double rmax_O = 1.0 + dev_O * 1.3;
+      double rmin_O = 1.0 - dev_O * 1.3;
+      if(rmax_O == rmin_O){ rmax_O = 1.5; rmin_O = 0.5; }
+      h_ratio_O->SetMaximum(rmax_O); h_ratio_O->SetMinimum(rmin_O);
+      h_ratio_O->Draw("e1 Y+");
+      h_band_O->Draw("e2 same");
+      h_ratio_O->Draw("e1 Y+ same");
+      h_ratio_O->GetXaxis()->SetLabelSize(0.16);
+      h_ratio_O->GetYaxis()->SetLabelSize(0.11);
+      h_ratio_O->GetYaxis()->SetLabelOffset(0.04);
       gPad->RedrawAxis();
-      DrawPullLines(h_pull_O, rmax_O);
+      DrawRatioLine(h_ratio_O);
     }
     c2->cd();
   }
@@ -430,30 +453,34 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   l2->Draw();
   if(chi2.second > 0) l_Chi2->Draw();
 
-  // Main column — bottom (pull)
-  if(h_pull){
+  // Main column — bottom (ratio)
+  if(h_ratio){
     p_mid_bot->cd();
 
-    double rmax = 0;
-    for(int i=1; i<=h_pull->GetNbinsX(); ++i){
-      double v = std::abs(h_pull->GetBinContent(i)) + h_pull->GetBinError(i);
-      if(v > rmax) rmax = v;
+    double dev = 0;
+    for(int i=1; i<=h_ratio->GetNbinsX(); ++i){
+      double v = std::abs(h_ratio->GetBinContent(i) - 1.0) + h_ratio->GetBinError(i);
+      double b = h_band->GetBinError(i);
+      if(v > dev) dev = v;
+      if(b > dev) dev = b;
     }
-    rmax = rmax * 1.1;
-    if(rmax == 0) rmax = 1.0;
-    h_pull->SetMaximum(rmax); h_pull->SetMinimum(-rmax);
-    h_pull->GetYaxis()->SetTitle("Pull (#sigma)");
-    h_pull->GetYaxis()->SetTitleSize(0.075);
-    h_pull->GetYaxis()->SetLabelSize(0.08);
-    h_pull->GetYaxis()->SetLabelOffset(0.01);
-    h_pull->GetYaxis()->SetTitleOffset(0.8);
-    h_pull->GetXaxis()->SetTitle(h_tot_tmp->GetXaxis()->GetTitle());
-    h_pull->GetXaxis()->SetTitleSize(0.075);
-    h_pull->GetXaxis()->SetTitleOffset(0.95);
-    h_pull->GetXaxis()->SetLabelSize(0.08);
-    h_pull->Draw("e1");
+    dev = dev * 1.1;
+    if(dev == 0) dev = 0.5;
+    h_ratio->SetMaximum(1.0 + dev); h_ratio->SetMinimum(1.0 - dev);
+    h_ratio->Draw("e1");
+    h_band->Draw("e2 same");
+    h_ratio->Draw("e1 same");
+    h_ratio->GetYaxis()->SetTitle("Data/MC");
+    h_ratio->GetYaxis()->SetTitleSize(0.075);
+    h_ratio->GetYaxis()->SetLabelSize(0.08);
+    h_ratio->GetYaxis()->SetLabelOffset(0.01);
+    h_ratio->GetYaxis()->SetTitleOffset(0.8);
+    h_ratio->GetXaxis()->SetTitle(h_tot_tmp->GetXaxis()->GetTitle());
+    h_ratio->GetXaxis()->SetTitleSize(0.075);
+    h_ratio->GetXaxis()->SetTitleOffset(0.95);
+    h_ratio->GetXaxis()->SetLabelSize(0.08);
     gPad->RedrawAxis();
-    DrawPullLines(h_pull, rmax);
+    DrawRatioLine(h_ratio);
   }
 
   c2->cd();
@@ -463,9 +490,10 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   delete hs_U; delete hs_O;
   delete h_tot_U; delete h_tot_O;
   if(h_data){ delete h_data_U; delete h_data_O; }
-  if(h_pull)   delete h_pull;
-  if(h_pull_U) delete h_pull_U;
-  if(h_pull_O) delete h_pull_O;
+  if(h_ratio)   delete h_ratio;
+  if(h_ratio_U) delete h_ratio_U;
+  if(h_ratio_O) delete h_ratio_O;
+  delete h_band; delete h_band_U; delete h_band_O;
   for(size_t i_s=0;i_s<h_v.size();i_s++){ delete h_U.at(i_s); delete h_O.at(i_s); }
   h_U.clear(); h_O.clear();
   delete h_tot_tmp;
