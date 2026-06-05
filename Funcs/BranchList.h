@@ -290,7 +290,9 @@ Bool_t          is_dirt;
 Int_t           category;
 Double_t        POT_weight;
 Double_t        POT;
+Double_t        POT_per_event;
 Int_t           detvar_univ;
+
 Bool_t          is_signal_t;
 Bool_t          in_tpc_t;
 TVector3        *nu_vtx_t=0;
@@ -427,6 +429,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   t_in->SetBranchAddress("category",&category);
   t_in->SetBranchAddress("POT_weight",&POT_weight);
   t_in->SetBranchAddress("POT",&POT);
+  t_in->SetBranchAddress("POT_per_event",&POT_per_event);
   t_in->SetBranchAddress("detvar_univ",&detvar_univ);
 
   // Check if tree has truth variables

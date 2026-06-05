@@ -49,7 +49,12 @@ const double flux_numubar = 3.29597e-11; // numubar flux in nu/POT/cm2
 // Convert events into cross section in 10^-40 cm^2
 
 double CrossSection(double events,double pot){
-  return events/(flux_numu + flux_numubar)/pot/FVtargs;
+  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-40;
+}
+
+void CrossSectionH(TH1D* h,double pot){
+  for(int i_b=0;i_b<h->GetNbinsX()+2;i_b++)
+    h->SetBinContent(i_b,CrossSection(h->GetBinContent(i_b),pot));
 }
 
 ///////////////////////////////////////////////////////////////////////

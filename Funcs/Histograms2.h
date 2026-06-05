@@ -75,6 +75,9 @@ class HistogramManager {
     std::map<std::string,TH2D*> _h_Special_Joint_Signal;
     std::map<std::string,TH2D*> _h_Special_Joint_Signal_W2X;
 
+    // Metadata
+    TH1D* _h_POT;
+
     int _nbins_t;    
     std::vector<double> _bin_edges_t;
 
@@ -166,6 +169,7 @@ void HistogramManager::_SetupHistograms()
    _SetupTruthHistograms();
    _SetupJointHistograms();
   }
+  _h_POT = new TH1D(("h_POT_"+_label).c_str(),";;POT",1,-0.5,0.5);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -299,6 +303,8 @@ void HistogramManager::FillRecoHistograms(bool sel,double var_r,bool load_syst,d
 {
 
   if(detvar_univ == syst::kNuWro) return;
+
+  if(category == kData) _h_POT->Fill(0.0,POT_per_event);
 
   if(!sel) return;
 
@@ -521,6 +527,9 @@ void HistogramManager::Write()
     _WriteTruth();
     _WriteJoint();
   }
+  _f_out->mkdir("Meta");
+  _f_out->cd("Meta");
+  _h_POT->Write("POT");
 
   _f_out->Close();
 }
