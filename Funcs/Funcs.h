@@ -32,6 +32,27 @@ bool isContained(double x, double y, double z){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Cross Section Bits
+
+const double NAvo = 6.022e23; 
+const double deadz = deadzmax - deadzmin;
+const double totz = FVzmax - FVzmin - deadz;
+const double FVvol = (FVxmax - FVxmin)*(FVymax - FVymin)*totz;  // FV volume in cm3
+const double rho = 1.4; // Density of LAr in g/cm3
+const double FVmass = rho*FVvol; // Mass of FV in g 
+const double FVtargs = (FVmass/40)*NAvo; // Number of Ar nuclei in FV
+
+// total fluxes calculated from /pnfs/uboone/persistent/uboonebeam/bnb_gsimple/bnb_gsimple_fluxes_01.09.2019_463_hist/MCC9_FluxHist_volTPCActive.root
+const double flux_numu = 5.3328e-10; // numu flux in nu/POT/cm2
+const double flux_numubar = 3.29597e-11; // numubar flux in nu/POT/cm2
+
+// Convert events into cross section in 10^-40 cm^2
+
+double CrossSection(double events,double pot){
+  return events/(flux_numu + flux_numubar)/pot/FVtargs;
+}
+
+///////////////////////////////////////////////////////////////////////
 // Particle thresholds/kinematics 
 
 const double Mp = 0.935;
@@ -52,6 +73,7 @@ std::map<int,std::pair<double,double>> thresholds = {
 };
 
 double ke(const TLorentzVector& p4){ return p4.E() - p4.M(); }
+
 
 ///////////////////////////////////////////////////////////////////////
 // Take 2D hist and normalise each vertical strip to 1 
