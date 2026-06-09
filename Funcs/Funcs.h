@@ -97,32 +97,31 @@ void Normalise(TH2D* h){
 ///////////////////////////////////////////////////////////////////////
 // Take 1D hist divide by bin width 
 
-void DivideByBinWidth(TH1D* h,const int scale = 3) {
+void DivideByBinWidth(TH1D* h) {
   int NBins = h->GetXaxis()->GetNbins();
   for (int i=1;i<NBins+1;i++){
-    double CurrentEntry = h->GetBinContent(i) / pow(10,scale);
-    double NewEntry = CurrentEntry / h->GetBinWidth(i)/ pow(10,scale);
-    double CurrentError = h->GetBinError(i) / pow(10,scale);
-    double NewError = CurrentError / h->GetBinWidth(i) / pow(10,scale);
+    double CurrentEntry = h->GetBinContent(i);
+    double NewEntry = CurrentEntry / h->GetBinWidth(i);
+    double CurrentError = h->GetBinError(i);
+    double NewError = CurrentError / h->GetBinWidth(i);
     h->SetBinContent(i,NewEntry); 
     h->SetBinError(i,NewError); 
   }
-  h->GetYaxis()->SetTitle(("10^{"+std::to_string(scale)+"} " + h->GetYaxis()->GetTitle()).c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////
 // Take 1D hist divide by bin width 
 
-void DivideByBinWidth2D(TH2D* h,const int scale = 3) {
+void DivideByBinWidth2D(TH2D* h) {
   int NBins_X = h->GetXaxis()->GetNbins();
   int NBins_Y = h->GetYaxis()->GetNbins();
   for (int i=1;i<NBins_X+1;i++){
     for (int j=1;j<NBins_Y+1;j++){
       double Area = h->GetXaxis()->GetBinWidth(i)*h->GetYaxis()->GetBinWidth(j);
       double CurrentEntry = h->GetBinContent(i,j);
-      double NewEntry = CurrentEntry / Area / pow(10,scale);
+      double NewEntry = CurrentEntry / Area;
       double CurrentError = h->GetBinError(i,j);
-      double NewError = CurrentError / Area / pow(10,scale);
+      double NewError = CurrentError / Area;
       h->SetBinContent(i,j,NewEntry); 
       h->SetBinError(i,j,NewError); 
     }
