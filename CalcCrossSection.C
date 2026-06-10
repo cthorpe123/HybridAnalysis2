@@ -48,7 +48,7 @@ void CalcCrossSection(){
     TH1D* h_Data_BGS = (TH1D*)h_Data->Clone("h_Data_BGS");
     h_Data_BGS->Add(h_CV_AllBG,-1);
     CrossSectionH(h_Data_BGS,POT);
-    h_Data_BGS->GetYaxis()->SetTitle("d#sigma (10^{-40} cm^{2}/nucleon)");
+    h_Data_BGS->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2}/nucleon)");
 
     // Build covariance in event-count space before converting to cross section units
     TH2D* h_Cov = (TH2D*)f_in_hist->Get("Reco/Cov/Total/Cov_Tot");
@@ -120,10 +120,10 @@ void CalcCrossSection(){
 
     if(divide_by_bin_width){
       DivideByBinWidth(h_Data_BGS);
-      h_Data_BGS->GetYaxis()->SetTitle("d#sigma/dvar (10^{-40} cm^{2}/unit)");
+      h_Data_BGS->GetYaxis()->SetTitle("d#sigma/dvar (10^{-38} cm^{2}/unit)");
     }
 
-    std::cout << "Total Cross Section = " << IntegralWithOU(h_Data_BGS) << " 1e-40 cm2" << std::endl;  
+    std::cout << "Total Cross Section = " << IntegralWithOU(h_Data_BGS) << " e-38 cm2" << std::endl;  
 
     std::string plot_dir = "Analysis/"+label+"/Plots/CalcCrossSection/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());

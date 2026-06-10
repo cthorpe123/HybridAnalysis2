@@ -46,10 +46,10 @@ const double FVtargs = (FVmass/40)*NAvo; // Number of Ar nuclei in FV
 const double flux_numu = 5.3328e-10; // numu flux in nu/POT/cm2
 const double flux_numubar = 3.29597e-11; // numubar flux in nu/POT/cm2
 
-// Convert events into cross section in 10^-40 cm^2
+// Convert events into cross section in 10^-38 cm^2
 
 double CrossSection(double events,double pot){
-  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-40;
+  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
 }
 
 void CrossSectionH(TH1D* h,double pot){
