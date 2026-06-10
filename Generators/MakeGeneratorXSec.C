@@ -16,6 +16,7 @@ void MakeGeneratorXSec(){
 
   bool load_asimov = true;
   std::vector<std::string> vars = {"MuonMom","MuonCosTheta"};
+  //std::vector<std::string> vars = var_names;
   std::vector<std::string> generators = {"GENIE","NuWro"};
 
   std::map<std::string, std::map<std::string, TH1D*>> h_m;
@@ -46,14 +47,13 @@ void MakeGeneratorXSec(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      //if(ievent > 10000) break;
       if (ievent % 1000 == 0) std::cout << "  " << ievent << " / " << t_in->GetEntries() << "\r" << std::flush;
       t_in->GetEntry(ievent);
 
       if(is_signal_t){
         for(const std::string& var : vars){
           if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
-          h_m.at(var).at(gen)->Fill(vars_t->at(var), scale*1e38*40);
+          h_m.at(var).at(gen)->Fill(vars_t->at(var), gen_weight*scale*1e38*40);
         }
       }
 
@@ -97,6 +97,19 @@ void MakeGeneratorXSec(){
       cols.push_back(kBlack);
     }
     pfs::DrawUnstacked(h_v, cols, legs, false, false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
+
+    // Shape comparison: normalise each histogram to unit area
+    std::vector<TH1D*> h_shape_v;
+    for(TH1D* h : h_v){
+      TH1D* h_norm = (TH1D*)h->Clone((std::string(h->GetName())+"_shape").c_str());
+      h_norm->SetDirectory(0);
+      const double integral = h_norm->Integral();
+      if(integral > 0) h_norm->Scale(1.0/integral);
+      h_norm->GetYaxis()->SetTitle("Normalised");
+      h_shape_v.push_back(h_norm);
+    }
+    pfs::DrawUnstacked(h_shape_v, cols, legs, false, false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec_Shape.png");
+    for(TH1D* h : h_shape_v) delete h;
   }
 
 }
