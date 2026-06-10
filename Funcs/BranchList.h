@@ -579,6 +579,53 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 
 }
 
+// Generator tree variables
+Double_t        scale;
+Double_t        gen_weight;
+Int_t           lepton_pdg;
+TLorentzVector  *lepton_p4=0;
+std::vector<int> *pdg=0;
+std::vector<TLorentzVector> *p4=0;
+
+void LoadGeneratorTree(std::string filename, TFile*& f_in, TTree*& t_in) {
+
+  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+
+  std::cout << "Loading " << filename << std::endl;
+
+  f_in = TFile::Open(filename.c_str());
+  t_in = static_cast<TTree*>(f_in->Get("eventtree"));
+
+  t_in->SetBranchAddress("scale", &scale);
+  t_in->SetBranchAddress("gen_weight", &gen_weight);
+  t_in->SetBranchAddress("nu_e", &nu_e);
+  t_in->SetBranchAddress("nu_pdg", &nu_pdg);
+  t_in->SetBranchAddress("ccnc", &ccnc);
+  t_in->SetBranchAddress("lepton_pdg", &lepton_pdg);
+  t_in->SetBranchAddress("lepton_p4", &lepton_p4);
+  t_in->SetBranchAddress("pdg", &pdg);
+  t_in->SetBranchAddress("p4", &p4);
+  t_in->SetBranchAddress("is_signal_t", &is_signal_t);
+  t_in->SetBranchAddress("has_muon_t", &has_muon_t);
+  t_in->SetBranchAddress("vars_t", &vars_t);
+  t_in->SetBranchAddress("muon_mom_t", &muon_mom_t);
+  t_in->SetBranchAddress("nprot_t", &nprot_t);
+  t_in->SetBranchAddress("npi_t", &npi_t);
+  t_in->SetBranchAddress("npi0_t", &npi0_t);
+  t_in->SetBranchAddress("nsh_t", &nsh_t);
+  t_in->SetBranchAddress("proton_p4_t", &proton_p4_t);
+  t_in->SetBranchAddress("pion_p4_t", &pion_p4_t);
+  t_in->SetBranchAddress("pi0_p4_t", &pi0_p4_t);
+  t_in->SetBranchAddress("gamma_p4_t", &gamma_p4_t);
+  t_in->SetBranchAddress("protons_t", &protons_t);
+  t_in->SetBranchAddress("pions_t", &pions_t);
+  t_in->SetBranchAddress("pi0s_t", &pi0s_t);
+  t_in->SetBranchAddress("gammas_t", &gammas_t);
+  t_in->SetBranchAddress("W_t", &W_t);
+  t_in->SetBranchAddress("ch_t", &ch_t);
+
+}
+
 const std::vector<std::string> var_names = {
   "MuonMom","MuonCosTheta","LeadProtonKE","LeadPionE",
   "1p1piOpeningAngle","1p1piAsym","MuonProtonOpeningAngle",

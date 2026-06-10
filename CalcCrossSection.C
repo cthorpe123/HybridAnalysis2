@@ -120,7 +120,7 @@ void CalcCrossSection(){
 
     if(divide_by_bin_width){
       DivideByBinWidth(h_Data_BGS);
-      h_Data_BGS->GetYaxis()->SetTitle("d#sigma/dvar (10^{-40} cm^{2}/nucleon/unit)");
+      h_Data_BGS->GetYaxis()->SetTitle("d#sigma/dvar (10^{-40} cm^{2}/unit)");
     }
 
     std::cout << "Total Cross Section = " << IntegralWithOU(h_Data_BGS) << " 1e-40 cm2" << std::endl;  
