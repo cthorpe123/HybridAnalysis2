@@ -43,18 +43,21 @@ const double FVmass = rho*FVvol; // Mass of FV in g
 const double FVtargs = (FVmass/40)*NAvo; // Number of Ar nuclei in FV
 
 // total fluxes calculated from /pnfs/uboone/persistent/uboonebeam/bnb_gsimple/bnb_gsimple_fluxes_01.09.2019_463_hist/MCC9_FluxHist_volTPCActive.root
-const double flux_numu = 5.3328e-10; // numu flux in nu/POT/cm2
-const double flux_numubar = 3.29597e-11; // numubar flux in nu/POT/cm2
+const double flux_numu = 7.37623e-10; // numu flux in nu/POT/cm2
+const double flux_numubar = 4.55892e-11; // numubar flux in nu/POT/cm2
 
 // Convert events into cross section in 10^-38 cm^2
 
 double CrossSection(double events,double pot){
-  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
+  //return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
+  return events/flux_numu/pot/FVtargs/1e-38;
 }
 
 void CrossSectionH(TH1D* h,double pot){
-  for(int i_b=0;i_b<h->GetNbinsX()+2;i_b++)
+  for(int i_b=0;i_b<h->GetNbinsX()+2;i_b++){
     h->SetBinContent(i_b,CrossSection(h->GetBinContent(i_b),pot));
+    h->SetBinError(i_b,CrossSection(h->GetBinError(i_b),pot));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////
