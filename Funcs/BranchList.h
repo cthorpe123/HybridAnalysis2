@@ -601,6 +601,7 @@ void LoadGeneratorTree(std::string filename, TFile*& f_in, TTree*& t_in) {
   t_in->SetBranchAddress("nu_e", &nu_e);
   t_in->SetBranchAddress("nu_pdg", &nu_pdg);
   t_in->SetBranchAddress("ccnc", &ccnc);
+  t_in->SetBranchAddress("interaction", &interaction);
   t_in->SetBranchAddress("lepton_pdg", &lepton_pdg);
   t_in->SetBranchAddress("lepton_p4", &lepton_p4);
   t_in->SetBranchAddress("pdg", &pdg);

@@ -48,6 +48,7 @@ class MultiChannelHistogramManager {
     bool _keep_all;
     bool _hm_loaded = false;  
     bool _detvar_mode = false;
+    bool _template_set = false;
 
     // Reuse the template labelled "All" for every channel
     bool _reuse_truth = false;
@@ -100,6 +101,8 @@ void MultiChannelHistogramManager::SetTrueChannelList(std::vector<std::string> c
 
 void MultiChannelHistogramManager::LoadTemplates()
 {
+  if(_template_set) 
+    throw std::invalid_argument("MultiChannelHistogramManager::LoadTemplates: Error, template is already set");
 
   TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
 
@@ -155,6 +158,8 @@ void MultiChannelHistogramManager::LoadTemplates()
       _tot_bins_t += _h_tp_truth_v.at(i_ch)->GetNbinsX()+2; 
     }
   }
+
+  _template_set = true;
 
 }
 

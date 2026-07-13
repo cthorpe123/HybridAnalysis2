@@ -42,6 +42,7 @@ class HistogramManager {
     const bool _save_truth;
     bool _keep_overflow_underflow_ = false;
     bool _keep_all = false;
+    bool _template_set = false;
 
     // histogram templates
     TH1D* _h_tp = nullptr;
@@ -111,6 +112,9 @@ HistogramManager::HistogramManager(std::string label,bool save_truth) : _label(l
 
 void HistogramManager::LoadTemplate(std::string t)
 {
+  if(_template_set) 
+    throw std::invalid_argument("HistogramManager::LoadTemplate: Error, binning template is already set");
+
   if(t == "") t = _label;
 
   TFile* f_tp = TFile::Open(("Analysis/"+t+"/rootfiles/BinningTemplate.root").c_str());
@@ -128,6 +132,9 @@ void HistogramManager::LoadTemplate(std::string t)
   }
 
   _SetupHistograms();
+
+  _template_set = true;
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -135,11 +142,16 @@ void HistogramManager::LoadTemplate(std::string t)
 
 void HistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low_r,double high_r)
 {
+  if(_template_set) 
+    throw std::invalid_argument("HistogramManager::SetTemplate: Error, binning template is already set");
+
   if(_save_truth) 
     throw std::invalid_argument("HistogramManager::SetTemplate: Calling wrong function when response matrices are being set, need to specify truth binning as well");   
   _h_tp = new TH1D(("h_template_"+_label).c_str(),axis_title.c_str(),nbins_r,low_r,high_r);
 
   _SetupHistograms();
+
+  _template_set = true;
 
 }
 
@@ -149,6 +161,9 @@ void HistogramManager::SetTemplate(std::string axis_title,int nbins_r,double low
 
 void HistogramManager::SetTemplate(std::string axis_title,int nbins_t,double low_t,double high_t,int nbins_r,double low_r,double high_r)
 {
+  if(_template_set) 
+    throw std::invalid_argument("HistogramManager::SetTemplate: Error, binning template is already set");
+
   if(!_save_truth) 
     throw std::invalid_argument("HistogramManager::SetTemplate: Calling wrong function when response matrices are being set, truth binning not enabled");  
 
@@ -156,6 +171,8 @@ void HistogramManager::SetTemplate(std::string axis_title,int nbins_t,double low
   _h_tp_truth = new TH1D(("h_template_truth_"+_label).c_str(),axis_title.c_str(),nbins_t,low_t,high_t);
 
   _SetupHistograms();
+
+  _template_set = true;
 
 }
 
