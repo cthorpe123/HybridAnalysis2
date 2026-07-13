@@ -20,7 +20,7 @@ void Draw2DHist(TH2D* h,std::string name){
 // Draw a set of histograms on one canvas, not stacked together,
 // as lines
 
-void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,std::string name){
+void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,bool draw_errors,std::string name){
 
   if(!h_v.size()) return;
 
@@ -67,7 +67,7 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
     p_U->SetLeftMargin(0.44);
     p_U->SetRightMargin(0.1);
     p_U->cd();
-    hs_U->Draw("nostack HIST");       
+    if(!draw_errors) hs_U->Draw("nostack HIST"); else hs_U->Draw("nostack e1");       
     //hs_U->SetMaximum(GetMax(h_v_Tot_U)*1.1);
     hs_U->GetXaxis()->SetLabelSize(0.16);
     hs_U->GetYaxis()->SetTitleSize(0.1);
@@ -81,7 +81,7 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
     p_O->SetRightMargin(0.44);
     p_O->SetLeftMargin(0.1);
     p_O->cd();
-    hs_O->Draw("nostack HIST Y+");       
+    if(!draw_errors) hs_O->Draw("nostack HIST Y+"); else hs_O->Draw("nostack e1 Y+");       
     //hs_O->SetMaximum(GetMax(h_v_Tot_O)*1.1);
     hs_O->GetYaxis()->SetTitleSize(0.1);
     hs_O->GetXaxis()->SetLabelSize(0.16);
@@ -92,7 +92,7 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   }    
 
   p_middle->cd(); 
-  hs_middle->Draw("nostack HIST");
+  if(!draw_errors) hs_middle->Draw("nostack HIST"); else hs_middle->Draw("nostack e1");
   //hs_middle->SetMaximum(GetMax(h_v_Tot)*1.1);
   l2->Draw();
 

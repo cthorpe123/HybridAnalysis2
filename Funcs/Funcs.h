@@ -288,7 +288,7 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
 // Given the true dist and joint truth/reco dist for selected events
 // renormalise the 2D hist to give the response 
 
-TH1D* Multiply(TH1D* h_true,TH2D* h_res,std::string name,bool over=true,bool under=true){
+TH1D* Multiply(const TH1D* h_true,const TH2D* h_res,std::string name,bool over=true,bool under=true){
 
   std::vector<double> bins;
   for(int i=1;i<h_res->GetNbinsY()+2;i++) bins.push_back(h_res->GetYaxis()->GetBinLowEdge(i));
