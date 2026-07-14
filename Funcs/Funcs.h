@@ -290,6 +290,9 @@ void NormaliseResponse(TH1D* h_true,TH2D* h_true_reco){
 
 TH1D* Multiply(const TH1D* h_true,const TH2D* h_res,std::string name,bool over=true,bool under=true){
 
+  if(h_true->GetNbinsX() != h_res->GetNbinsX())
+    throw std::invalid_argument("Trying to multiply to histograms of incompatible shapes");
+
   std::vector<double> bins;
   for(int i=1;i<h_res->GetNbinsY()+2;i++) bins.push_back(h_res->GetYaxis()->GetBinLowEdge(i));
   int n_bins = bins.size()-1;
