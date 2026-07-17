@@ -49,15 +49,24 @@ const double flux_numubar = 4.55892e-11; // numubar flux in nu/POT/cm2
 // Convert events into cross section in 10^-38 cm^2
 
 double CrossSection(double events,double pot){
-  //return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
-  return events/flux_numu/pot/FVtargs/1e-38;
+  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
 }
+
+// Convert a histogram holding event counts to a cross section
 
 void CrossSectionH(TH1D* h,double pot){
   for(int i_b=0;i_b<h->GetNbinsX()+2;i_b++){
     h->SetBinContent(i_b,CrossSection(h->GetBinContent(i_b),pot));
     h->SetBinError(i_b,CrossSection(h->GetBinError(i_b),pot));
   }
+}
+
+// Convert a covariance matrix in event counts into cross sections
+
+void CrossSectionCov(TH2D* h_cov,double pot){
+  for(int i=0;i<h_cov->GetNbinsX()+2;i++)
+    for(int j=0;j<h_cov->GetNbinsY()+2;j++)
+      h_cov->SetBinContent(i,j,CrossSection(CrossSection(h_cov->GetBinContent(i,j),pot),pot));
 }
 
 ///////////////////////////////////////////////////////////////////////

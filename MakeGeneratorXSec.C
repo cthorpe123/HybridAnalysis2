@@ -16,9 +16,10 @@ void MakeGeneratorXSec(){
 
   bool load_asimov = true;
   std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","Norm"};
+  //std::vector<std::string> vars = var_names;
   bool dbbw = true;
   
-  std::vector<std::string> generators = {"v3.0.6","NuWro"};
+  std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro"};
 
   std::map<std::string, std::map<std::string, TH1D*>> h_m;
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
@@ -28,7 +29,7 @@ void MakeGeneratorXSec(){
       TFile* f_tp_truth = TFile::Open(("Analysis/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
       h_m[var][gen] = (TH1D*)f_tp_truth->Get("h_template_All")->Clone(("h_xsec_"+var+"_"+gen).c_str());
       auto* xbins = h_m[var][gen]->GetXaxis()->GetXbins()->GetArray();
-      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",h_m[var][gen]->GetNbinsX(),xbins,100,0.0,3.0);
+      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,h_m[var][gen]->GetNbinsX(),xbins);
       h_m[var][gen]->SetDirectory(0);
       h_m_2d[var][gen]->SetDirectory(0);
       f_tp_truth->Close();
@@ -37,6 +38,7 @@ void MakeGeneratorXSec(){
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Generators/";
   std::vector<std::string> files_v = {
+    "14_1000180400_CC_v3_0_6_G18_10a_02_11aEvents.root",
     "14_1000180400_CC_v3_0_6_G18_10a_02_11aEvents.root",
     "NuWroEvents.root"
   };
@@ -58,11 +60,13 @@ void MakeGeneratorXSec(){
       vars_t->emplace("Norm",0.5);
       vars_t->emplace("Enu",nu_e);
 
+      if(generators.at(i_f) == "Untunedv3.0.6") gen_weight = 1.0;
+
       if(is_signal_t){
         for(const std::string& var : vars){
           if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
           h_m.at(var).at(gen)->Fill(vars_t->at(var), gen_weight*scale*1e38*40);
-          h_m_2d.at(var).at(gen)->Fill(vars_t->at(var),nu_e,gen_weight*scale*1e38*40);
+          h_m_2d.at(var).at(gen)->Fill(nu_e,vars_t->at(var),gen_weight*scale*1e38*40);
         }
       }
 
@@ -114,6 +118,18 @@ void MakeGeneratorXSec(){
       cols.push_back(kBlack);
     }
     pfs::DrawUnstacked(h_v, cols, legs,true,true,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
+
+    // Draw the ratio of each generator to the asimov if loaded
+    if(load_asimov){
+      TH1D* h_asimov = h_v.back();
+      std::vector<TH1D*> h_ratios;
+      for(TH1D* h : h_v){ 
+        std::string name = h->GetName();
+        h_ratios.push_back((TH1D*)h->Clone((name+"_Ratio").c_str()));
+        h_ratios.back()->Divide(h_asimov);
+      }
+      pfs::DrawUnstacked(h_ratios, cols, legs,true,true,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSecRatios.png");
+    }
 
     // Shape comparison: normalise each histogram to unit area
     std::vector<TH1D*> h_shape_v;
