@@ -361,9 +361,10 @@ void MultiChannelHistogramManager::Restore(TH1D*& h,std::string ch,bool truth) c
     h_out->SetBinError(i,h->GetBinError(i+offset));
   }
   
-  delete h;
+  //delete h;
   h = h_out;
-  h->SetName(name.c_str());
+  h->SetName((name+"_Restored").c_str());
+  h->SetDirectory(0);
 
 }
 
@@ -394,9 +395,10 @@ void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) c
     }
   } 
 
-  delete h;
+  //delete h;
   h = h_out;
-  h->SetName(name.c_str());
+  h->SetName((name+"_Restored").c_str());
+  h->SetDirectory(0);
 
 }
 
@@ -405,7 +407,7 @@ void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) c
 
 void MultiChannelHistogramManager::RestoreRes(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const
 {
-  const char* name = h->GetName();
+  std::string name = string(h->GetName());
   const char* x_label = h->GetXaxis()->GetTitle();
   const char* y_label = h->GetYaxis()->GetTitle();
 
@@ -439,11 +441,12 @@ void MultiChannelHistogramManager::RestoreRes(TH2D*& h,std::string ch_t="All",st
     }
   }
 
-  delete h;
+  //delete h;
   h = h_out;
-  h->SetName(name);
+  h->SetName((name+"_Restored").c_str());
   h->GetXaxis()->SetTitle(x_label);
   h->GetYaxis()->SetTitle(y_label);
+  h->SetDirectory(0);
 
 }
 

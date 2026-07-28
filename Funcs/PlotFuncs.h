@@ -20,11 +20,16 @@ void Draw2DHist(TH2D* h,std::string name){
 // Draw a set of histograms on one canvas, not stacked together,
 // as lines
 
-void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,bool draw_errors,std::string name){
+void DrawUnstacked(const std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,bool draw_errors,bool dbbw,std::string name){
 
   if(!h_v.size()) return;
 
-  const std::string title = ";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";"+string(h_v.at(0)->GetYaxis()->GetTitle());
+  std::vector<TH1D*> h_v_clone;
+  for(TH1D* h : h_v) h_v_clone.push_back((TH1D*)h->Clone((string(h->GetName())+"_c").c_str()));
+
+  if(dbbw) for(TH1D* h : h_v_clone) DivideByBinWidth(h);
+
+  const std::string title = ";"+string(h_v_clone.at(0)->GetXaxis()->GetTitle())+";"+string(h_v_clone.at(0)->GetYaxis()->GetTitle());
 
   THStack* hs_middle = new THStack("hs_middle",title.c_str());
   THStack* hs_U = new THStack("hs_U",";;FE");
@@ -34,23 +39,23 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   l2->SetNColumns(legs.size());
   l2->SetBorderSize(0);
 
-  std::vector<TH1D*> h_O(h_v.size());
-  std::vector<TH1D*> h_U(h_v.size());
-  for(size_t i_s=0;i_s<h_v.size();i_s++){
-    MakeOU(h_v.at(i_s)->GetName(),h_v.at(i_s),h_U.at(i_s),h_O.at(i_s));
-    h_v.at(i_s)->SetLineColor(colors.at(i_s));
+  std::vector<TH1D*> h_O(h_v_clone.size());
+  std::vector<TH1D*> h_U(h_v_clone.size());
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
+    MakeOU(h_v_clone.at(i_s)->GetName(),h_v_clone.at(i_s),h_U.at(i_s),h_O.at(i_s));
+    h_v_clone.at(i_s)->SetLineColor(colors.at(i_s));
     h_U.at(i_s)->SetLineColor(colors.at(i_s));
     h_O.at(i_s)->SetLineColor(colors.at(i_s));
-    h_v.at(i_s)->SetLineWidth(2);
+    h_v_clone.at(i_s)->SetLineWidth(2);
     h_U.at(i_s)->SetLineWidth(2);
     h_O.at(i_s)->SetLineWidth(2);
-    hs_middle->Add(h_v.at(i_s));
+    hs_middle->Add(h_v_clone.at(i_s));
     hs_U->Add(h_U.at(i_s));
     hs_O->Add(h_O.at(i_s));
-    l2->AddEntry(h_v.at(i_s),legs.at(i_s).c_str(),"L");
+    l2->AddEntry(h_v_clone.at(i_s),legs.at(i_s).c_str(),"L");
   }
 
-  TCanvas* c2 = (draw_u || draw_o) ? new TCanvas("c2","c2",1000,600) : new TCanvas("c2","c2");
+  TCanvas* c2 = (draw_u || draw_o) ? new TCanvas("c2","c2",1000,600) : new TCanvas("c2","c2",800,600);
   double  split_low = draw_u ? 0.18 : 0.0;
   double  split_high = draw_o ? 0.82 : 1.0;
   TPad* p_U = draw_u ? new TPad("p_U","p_U",0.0,0.0,split_low,1.0) : nullptr;
@@ -100,55 +105,65 @@ void DrawUnstacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<st
   c2->Print(name.c_str());
   delete c2;
 
+  for(TH1D* hh : h_v_clone) delete hh;
+
 }
 
 ///////////////////////////////////////////////////////////////////////
 // Draw a set of histograms on one canvas, not stacked together,
 // as lines
 
-void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
+void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,bool dbbw,std::string name,std::pair<double,int> chi2={0,-1}){
 
   if(!h_v.size()) return;
-  
+
+  std::vector<TH1D*> h_v_clone;
+  for(TH1D* h : h_v) h_v_clone.push_back((TH1D*)h->Clone((string(h->GetName())+"_c").c_str()));
+  if(dbbw) for(TH1D* h : h_v_clone) DivideByBinWidth(h);
+
+
   // Sometimes the first hist and h_tot are the same pointer that we now need to behave separately, make a clone of the 
   // tot and work on that
-  TH1D* h_tot_tmp = (TH1D*)h_tot->Clone("h_tot_tmp");
-
-  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot_tmp->GetXaxis()->GetTitle())+";"+string(h_tot_tmp->GetYaxis()->GetTitle())).c_str());
+  TH1D* h_tot_clone = (TH1D*)h_tot->Clone("h_tot_clone");
+  if(dbbw) DivideByBinWidth(h_tot_clone);
+  
+  THStack* hs_middle = new THStack("hs_middle",(";"+string(h_tot_clone->GetXaxis()->GetTitle())+";"+string(h_tot_clone->GetYaxis()->GetTitle())).c_str());
   THStack* hs_U = new THStack("hs_U",";;Events");
   THStack* hs_O = new THStack("hs_O",";;Events");
   TLegend* l2 = draw_o && draw_u ? new TLegend(0.13,0.91,0.97,1.0): new TLegend(0.11,0.91,0.97,1.0);
   l2->SetNColumns(legs.size());
   l2->SetBorderSize(0);
 
-  std::vector<TH1D*> h_O(h_v.size());
-  std::vector<TH1D*> h_U(h_v.size());
-  for(size_t i_s=0;i_s<h_v.size();i_s++){
-    MakeOU(h_v.at(i_s)->GetName(),h_v.at(i_s),h_U.at(i_s),h_O.at(i_s));
-    h_v.at(i_s)->SetFillColor(colors.at(i_s));
+  std::vector<TH1D*> h_O(h_v_clone.size());
+  std::vector<TH1D*> h_U(h_v_clone.size());
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
+    MakeOU(h_v_clone.at(i_s)->GetName(),h_v_clone.at(i_s),h_U.at(i_s),h_O.at(i_s));
+    h_v_clone.at(i_s)->SetFillColor(colors.at(i_s));
     h_U.at(i_s)->SetFillColor(colors.at(i_s));
     h_O.at(i_s)->SetFillColor(colors.at(i_s));
-    hs_middle->Add(h_v.at(i_s));
+    hs_middle->Add(h_v_clone.at(i_s));
     hs_U->Add(h_U.at(i_s));
     hs_O->Add(h_O.at(i_s));
-    l2->AddEntry(h_v.at(i_s),legs.at(i_s).c_str(),"F");
+    l2->AddEntry(h_v_clone.at(i_s),legs.at(i_s).c_str(),"F");
   }
 
   TH1D *h_tot_O,*h_tot_U;
-  MakeOU(h_tot_tmp->GetName(),h_tot_tmp,h_tot_U,h_tot_O,"","");
+  MakeOU(h_tot_clone->GetName(),h_tot_clone,h_tot_U,h_tot_O,"","");
   h_tot_U->SetFillStyle(3253);
   h_tot_U->SetFillColor(1);
   h_tot_O->SetFillStyle(3253);
   h_tot_O->SetFillColor(1);
-  h_tot_tmp->SetFillStyle(3253);
-  h_tot_tmp->SetFillColor(1);
+  h_tot_clone->SetFillStyle(3253);
+  h_tot_clone->SetFillColor(1);
 
-  TH1D *h_data_U=nullptr,*h_data_O=nullptr;
+  TH1D *h_data_clone=nullptr,*h_data_U=nullptr,*h_data_O=nullptr;
   if(h_data != nullptr){
-    MakeOU(h_data->GetName(),h_data,h_data_U,h_data_O);
-    h_data->SetMarkerStyle(20);
-    h_data->SetMarkerSize(0.8);
-    h_data->SetLineColor(1);
+    h_data_clone = (TH1D*)h_data->Clone("h_data_clone");
+    if(dbbw) DivideByBinWidth(h_data_clone);
+    MakeOU(h_data_clone->GetName(),h_data,h_data_U,h_data_O);
+    h_data_clone->SetMarkerStyle(20);
+    h_data_clone->SetMarkerSize(0.8);
+    h_data_clone->SetLineColor(1);
     h_data_U->SetMarkerStyle(20);
     h_data_U->SetMarkerSize(0.8);
     h_data_U->SetLineColor(1);
@@ -176,7 +191,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
     p_U->cd();
     hs_U->Draw("HIST");       
     h_tot_U->Draw("same e2");
-    if(h_data != nullptr) h_data_U->Draw("same e1");
+    if(h_data_clone != nullptr) h_data_U->Draw("same e1");
     hs_U->SetMaximum(GetMax(h_tot_U)*1.1);
     hs_U->GetXaxis()->SetLabelSize(0.16);
     hs_U->GetYaxis()->SetTitleSize(0.11);
@@ -192,7 +207,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
     p_O->cd();
     hs_O->Draw("HIST Y+");       
     h_tot_O->Draw("same e2");
-    if(h_data != nullptr) h_data_O->Draw("same e1");
+    if(h_data_clone != nullptr) h_data_O->Draw("same e1");
     hs_O->SetMaximum(GetMax(h_tot_O)*1.1);
     hs_O->GetYaxis()->SetTitleSize(0.11);
     hs_O->GetXaxis()->SetLabelSize(0.16);
@@ -212,9 +227,9 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   l_Chi2->SetHeader(("#chi^{2}/ndof = " + to_string_with_precision(chi2.first,1) + "/" + std::to_string(chi2.second)).c_str());
 
   hs_middle->Draw("HIST");
-  h_tot_tmp->Draw("same e2");
-  if(h_data != nullptr) h_data->Draw("same e1");
-  hs_middle->SetMaximum(GetMax(h_tot_tmp)*1.15);
+  h_tot_clone->Draw("same e2");
+  if(h_data_clone != nullptr) h_data->Draw("same e1");
+  hs_middle->SetMaximum(GetMax(h_tot_clone)*1.15);
   l2->Draw();
   if(chi2.second > 0) l_Chi2->Draw();
   c2->cd();
@@ -226,19 +241,21 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   delete h_tot_U;
   delete h_tot_O;
 
-  if(h_data != nullptr){
+  if(h_data_clone != nullptr){
     delete h_data_U;
     delete h_data_O;
+    delete h_data_clone;
   }
 
-  for(size_t i_s=0;i_s<h_v.size();i_s++){
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
     delete h_U.at(i_s);
     delete h_O.at(i_s);
   }
 
    h_U.clear();
    h_O.clear();
-   delete h_tot_tmp;
+   delete h_tot_clone;
+   for(TH1D* hh : h_v_clone) delete hh;
 
 }
 
@@ -247,41 +264,48 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 // data/MC, with a hatched band for the MC uncertainty (same style as
 // the upper plot) and a reference line at 1.
 
-void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,std::string name,std::pair<double,int> chi2={0,-1}){
+void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,TH1D* h_tot,TH1D* h_data,bool draw_o,bool draw_u,bool dbbw,std::string name,std::pair<double,int> chi2={0,-1}){
 
   if(!h_v.size()) return;
 
-  TH1D* h_tot_tmp = (TH1D*)h_tot->Clone("h_tot_tmp_r");
+  std::vector<TH1D*> h_v_clone;
+  for(TH1D* h : h_v) h_v_clone.push_back((TH1D*)h->Clone((string(h->GetName())+"_c").c_str()));
+  if(dbbw) for(TH1D* h : h_v_clone) DivideByBinWidth(h);
 
-  THStack* hs_middle = new THStack("hs_middle_r",(";"+string(h_tot_tmp->GetXaxis()->GetTitle())+";"+string(h_tot_tmp->GetYaxis()->GetTitle())).c_str());
+  TH1D* h_tot_clone = (TH1D*)h_tot->Clone("h_tot_clone");
+  if(dbbw) DivideByBinWidth(h_tot_clone);
+
+  THStack* hs_middle = new THStack("hs_middle_r",(";"+string(h_tot_clone->GetXaxis()->GetTitle())+";"+string(h_tot_clone->GetYaxis()->GetTitle())).c_str());
   THStack* hs_U      = new THStack("hs_U_r",";;Events");
   THStack* hs_O      = new THStack("hs_O_r",";;Events");
   TLegend* l2 = draw_o && draw_u ? new TLegend(0.13,0.91,0.97,1.0) : new TLegend(0.11,0.91,0.97,1.0);
   l2->SetNColumns(legs.size());
   l2->SetBorderSize(0);
 
-  std::vector<TH1D*> h_O(h_v.size()), h_U(h_v.size());
-  for(size_t i_s=0;i_s<h_v.size();i_s++){
-    MakeOU(h_v.at(i_s)->GetName(),h_v.at(i_s),h_U.at(i_s),h_O.at(i_s));
-    h_v.at(i_s)->SetFillColor(colors.at(i_s));
+  std::vector<TH1D*> h_O(h_v_clone.size()), h_U(h_v_clone.size());
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
+    MakeOU(h_v_clone.at(i_s)->GetName(),h_v_clone.at(i_s),h_U.at(i_s),h_O.at(i_s));
+    h_v_clone.at(i_s)->SetFillColor(colors.at(i_s));
     h_U.at(i_s)->SetFillColor(colors.at(i_s));
     h_O.at(i_s)->SetFillColor(colors.at(i_s));
-    hs_middle->Add(h_v.at(i_s));
+    hs_middle->Add(h_v_clone.at(i_s));
     hs_U->Add(h_U.at(i_s));
     hs_O->Add(h_O.at(i_s));
-    l2->AddEntry(h_v.at(i_s),legs.at(i_s).c_str(),"F");
+    l2->AddEntry(h_v_clone.at(i_s),legs.at(i_s).c_str(),"F");
   }
 
   TH1D *h_tot_O,*h_tot_U;
-  MakeOU(h_tot_tmp->GetName(),h_tot_tmp,h_tot_U,h_tot_O,"","");
+  MakeOU(h_tot_clone->GetName(),h_tot_clone,h_tot_U,h_tot_O,"","");
   h_tot_U->SetFillStyle(3253); h_tot_U->SetFillColor(1);
   h_tot_O->SetFillStyle(3253); h_tot_O->SetFillColor(1);
-  h_tot_tmp->SetFillStyle(3253); h_tot_tmp->SetFillColor(1);
+  h_tot_clone->SetFillStyle(3253); h_tot_clone->SetFillColor(1);
 
-  TH1D *h_data_U=nullptr, *h_data_O=nullptr;
+  TH1D *h_data_clone=nullptr, *h_data_U=nullptr, *h_data_O=nullptr;
   if(h_data != nullptr){
-    MakeOU(h_data->GetName(),h_data,h_data_U,h_data_O);
-    h_data->SetMarkerStyle(20);   h_data->SetMarkerSize(0.8);   h_data->SetLineColor(1);
+    h_data_clone = (TH1D*)h_data->Clone("h_data_clone");
+    if(dbbw) DivideByBinWidth(h_data_clone);
+    MakeOU(h_data_clone->GetName(),h_data_clone,h_data_U,h_data_O);
+    h_data_clone->SetMarkerStyle(20);   h_data_clone->SetMarkerSize(0.8);   h_data_clone->SetLineColor(1);
     h_data_U->SetMarkerStyle(20); h_data_U->SetMarkerSize(0.8); h_data_U->SetLineColor(1);
     h_data_O->SetMarkerStyle(20); h_data_O->SetMarkerSize(0.8); h_data_O->SetLineColor(1);
   }
@@ -323,10 +347,10 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     return h;
   };
 
-  TH1D* h_ratio   = h_data ? MakeRatio("h_ratio_mid_r", h_data,   h_tot_tmp) : nullptr;
+  TH1D* h_ratio   = h_data_clone ? MakeRatio("h_ratio_mid_r", h_data_clone,   h_tot_clone) : nullptr;
   TH1D* h_ratio_U = h_data ? MakeRatio("h_ratio_U_r",   h_data_U, h_tot_U)   : nullptr;
   TH1D* h_ratio_O = h_data ? MakeRatio("h_ratio_O_r",   h_data_O, h_tot_O)   : nullptr;
-  TH1D* h_band    = MakeBand("h_band_mid_r", h_tot_tmp);
+  TH1D* h_band    = MakeBand("h_band_mid_r", h_tot_clone);
   TH1D* h_band_U  = MakeBand("h_band_U_r",  h_tot_U);
   TH1D* h_band_O  = MakeBand("h_band_O_r",  h_tot_O);
 
@@ -374,7 +398,7 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     p_U_top->cd();
     hs_U->Draw("HIST");
     h_tot_U->Draw("same e2");
-    if(h_data) h_data_U->Draw("same e1");
+    if(h_data_clone) h_data_U->Draw("same e1");
     hs_U->SetMaximum(GetMax(h_tot_U)*1.1);
     hs_U->GetXaxis()->SetLabelSize(0);
     hs_U->GetYaxis()->SetTitleSize(0.11);
@@ -406,7 +430,7 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     p_O_top->cd();
     hs_O->Draw("HIST Y+");
     h_tot_O->Draw("same e2");
-    if(h_data) h_data_O->Draw("same e1");
+    if(h_data_clone) h_data_O->Draw("same e1");
     hs_O->SetMaximum(GetMax(h_tot_O)*1.1);
     hs_O->GetXaxis()->SetLabelSize(0);
     hs_O->GetYaxis()->SetTitleSize(0.11);
@@ -445,9 +469,9 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   l_Chi2->SetHeader(("#chi^{2}/ndof = "+to_string_with_precision(chi2.first,1)+"/"+std::to_string(chi2.second)).c_str());
 
   hs_middle->Draw("HIST");
-  h_tot_tmp->Draw("same e2");
-  if(h_data) h_data->Draw("same e1");
-  hs_middle->SetMaximum(GetMax(h_tot_tmp)*1.15);
+  h_tot_clone->Draw("same e2");
+  if(h_data_clone) h_data->Draw("same e1");
+  hs_middle->SetMaximum(GetMax(h_tot_clone)*1.15);
   hs_middle->GetXaxis()->SetLabelSize(0);
   hs_middle->GetXaxis()->SetTitleSize(0);
   l2->Draw();
@@ -475,7 +499,7 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
     h_ratio->GetYaxis()->SetLabelSize(0.08);
     h_ratio->GetYaxis()->SetLabelOffset(0.01);
     h_ratio->GetYaxis()->SetTitleOffset(0.8);
-    h_ratio->GetXaxis()->SetTitle(h_tot_tmp->GetXaxis()->GetTitle());
+    h_ratio->GetXaxis()->SetTitle(h_tot_clone->GetXaxis()->GetTitle());
     h_ratio->GetXaxis()->SetTitleSize(0.075);
     h_ratio->GetXaxis()->SetTitleOffset(0.95);
     h_ratio->GetXaxis()->SetLabelSize(0.08);
@@ -489,14 +513,14 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
 
   delete hs_U; delete hs_O;
   delete h_tot_U; delete h_tot_O;
-  if(h_data){ delete h_data_U; delete h_data_O; }
+  if(h_data_clone){ delete h_data_U; delete h_data_O; delete h_data_clone; }
   if(h_ratio)   delete h_ratio;
   if(h_ratio_U) delete h_ratio_U;
   if(h_ratio_O) delete h_ratio_O;
   delete h_band; delete h_band_U; delete h_band_O;
-  for(size_t i_s=0;i_s<h_v.size();i_s++){ delete h_U.at(i_s); delete h_O.at(i_s); }
-  h_U.clear(); h_O.clear();
-  delete h_tot_tmp;
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){ delete h_U.at(i_s); delete h_O.at(i_s); delete h_v_clone.at(i_s); }
+  h_U.clear(); h_O.clear(); h_v_clone.clear();
+  delete h_tot_clone;
 
 }
 
@@ -508,13 +532,17 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
 
   if(!h_v.size()) return;
 
+  std::vector<TH1D*> h_v_clone;
+  for(TH1D* h : h_v) h_v_clone.push_back((TH1D*)h->Clone((string(h->GetName())+"_c").c_str()));
+  //if(dbbw) for(TH1D* h : h_v_clone) DivideByBinWidth(h);
+
   const std::string title = ";"+string(h_v.at(0)->GetXaxis()->GetTitle())+";"+string(h_v.at(0)->GetYaxis()->GetTitle());
 
   // Find the ranges needed and generate a template with the right axis ranges
-  double xmin = h_v.at(0)->GetBinLowEdge(1), xmax = h_v.at(0)->GetBinLowEdge(h_v.at(0)->GetNbinsX()+1);
-  double ymin = h_v.at(0)->GetMinimum(), ymax = h_v.at(0)->GetMaximum();
+  double xmin = h_v_clone.at(0)->GetBinLowEdge(1), xmax = h_v_clone.at(0)->GetBinLowEdge(h_v_clone.at(0)->GetNbinsX()+1);
+  double ymin = h_v_clone.at(0)->GetMinimum(), ymax = h_v_clone.at(0)->GetMaximum();
 
-  for(TH1D* h : h_v){
+  for(TH1D* h : h_v_clone){
     xmin = std::min(xmin,h->GetBinLowEdge(1));
     xmax = std::max(xmax,h->GetBinLowEdge(h->GetNbinsX()+1));
     for(int i=1;i<=h->GetNbinsX();i++){
@@ -533,11 +561,11 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   l2->SetNColumns(legs.size());
   l2->SetBorderSize(0);
 
-  for(size_t i_s=0;i_s<h_v.size();i_s++){
-    h_v.at(i_s)->SetLineColor(colors.at(i_s));
-    h_v.at(i_s)->SetLineWidth(2);
-    hs_middle->Add(h_v.at(i_s));
-    l2->AddEntry(h_v.at(i_s),legs.at(i_s).c_str(),"L");
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
+    h_v_clone.at(i_s)->SetLineColor(colors.at(i_s));
+    h_v_clone.at(i_s)->SetLineWidth(2);
+    hs_middle->Add(h_v_clone.at(i_s));
+    l2->AddEntry(h_v_clone.at(i_s),legs.at(i_s).c_str(),"L");
   }
 
   TCanvas* c2 = new TCanvas("c2","c2");
@@ -556,6 +584,7 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   c2->Print(name.c_str());
   delete c2;
   delete h;
+  for(TH1D* hh : h_v_clone) delete hh;
 
 }
 

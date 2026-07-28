@@ -46,10 +46,12 @@ const double FVtargs = (FVmass/40)*NAvo; // Number of Ar nuclei in FV
 const double flux_numu = 7.37623e-10; // numu flux in nu/POT/cm2
 const double flux_numubar = 4.55892e-11; // numubar flux in nu/POT/cm2
 
+const double flux_isqlaw_corr = 0.98; // Correction for inverse square law over length of tpc, ratio of flux at front of tpc to centre of tpc
+
 // Convert events into cross section in 10^-38 cm^2
 
 double CrossSection(double events,double pot){
-  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38;
+  return events/(flux_numu + flux_numubar)/pot/FVtargs/1e-38/flux_isqlaw_corr;
 }
 
 // Convert a histogram holding event counts to a cross section
@@ -109,7 +111,15 @@ void Normalise(TH2D* h){
 ///////////////////////////////////////////////////////////////////////
 // Take 1D hist divide by bin width 
 
+inline bool ends_with(std::string const & value, std::string const & ending)
+{
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 void DivideByBinWidth(TH1D* h) {
+  std::string name = static_cast<std::string>(h->GetName());
+  if(ends_with(name,"_dbbw")) return;
   int NBins = h->GetXaxis()->GetNbins();
   for (int i=1;i<NBins+1;i++){
     double CurrentEntry = h->GetBinContent(i);
@@ -119,12 +129,15 @@ void DivideByBinWidth(TH1D* h) {
     h->SetBinContent(i,NewEntry); 
     h->SetBinError(i,NewError); 
   }
+  h->SetName((string(h->GetName())+"_dbbw").c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////
 // Take 1D hist divide by bin width 
 
 void DivideByBinWidth2D(TH2D* h) {
+  std::string name = static_cast<std::string>(h->GetName());
+  if(ends_with(name,"_dbbw")) return;
   int NBins_X = h->GetXaxis()->GetNbins();
   int NBins_Y = h->GetYaxis()->GetNbins();
   for (int i=1;i<NBins_X+1;i++){
@@ -138,6 +151,7 @@ void DivideByBinWidth2D(TH2D* h) {
       h->SetBinError(i,j,NewError); 
     }
   }
+  h->SetName((string(h->GetName())+"_dbbw").c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////

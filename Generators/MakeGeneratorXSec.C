@@ -17,8 +17,10 @@ void MakeGeneratorXSec(){
   bool load_asimov = true;
   std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","Norm"};
   bool dbbw = true;
+  bool draw_o = false;
+  bool draw_u = false;
   
-  std::vector<std::string> generators = {"v3.0.6","NuWro"};
+  std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
 
   std::map<std::string, std::map<std::string, TH1D*>> h_m;
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
@@ -28,7 +30,7 @@ void MakeGeneratorXSec(){
       TFile* f_tp_truth = TFile::Open(("Analysis/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
       h_m[var][gen] = (TH1D*)f_tp_truth->Get("h_template_All")->Clone(("h_xsec_"+var+"_"+gen).c_str());
       auto* xbins = h_m[var][gen]->GetXaxis()->GetXbins()->GetArray();
-      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",100,0.0,3.0,h_m[var][gen]->GetNbinsX(),xbins);
+      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,h_m[var][gen]->GetNbinsX(),xbins);
       h_m[var][gen]->SetDirectory(0);
       h_m_2d[var][gen]->SetDirectory(0);
       f_tp_truth->Close();
@@ -36,10 +38,19 @@ void MakeGeneratorXSec(){
   }
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Generators/";
+  
   std::vector<std::string> files_v = {
-    "14_1000180400_CC_v3_0_6_G18_10a_02_11aEvents.root",
-    "NuWroEvents.root"
+    "GENIEEvents.root",
+    "GENIEEvents.root",
+    "NuWroEvents.root",
+    "GiBUU_allEvents.root"
   };
+  
+  /*
+  std::vector<std::string> files_v = {
+    "-14_1000180400_CC_v3_6_2_G18_10a_02_11aEvents.root"
+  };
+  */
 
   for(int i_f=0;i_f<(int)files_v.size();i_f++){
 
@@ -58,11 +69,15 @@ void MakeGeneratorXSec(){
       vars_t->emplace("Norm",0.5);
       vars_t->emplace("Enu",nu_e);
 
+      if(generators.at(i_f) == "Untunedv3.0.6") gen_weight = 1.0;
+      
+      double weight = flux_weight*gen_weight*scale*1e38*40;
+
       if(is_signal_t){
         for(const std::string& var : vars){
           if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
-          h_m.at(var).at(gen)->Fill(vars_t->at(var), gen_weight*scale*1e38*40);
-          h_m_2d.at(var).at(gen)->Fill(nu_e,vars_t->at(var),gen_weight*scale*1e38*40);
+          h_m.at(var).at(gen)->Fill(vars_t->at(var),weight);
+          h_m_2d.at(var).at(gen)->Fill(nu_e,vars_t->at(var),weight);
         }
       }
 
@@ -89,7 +104,6 @@ void MakeGeneratorXSec(){
     std::vector<int> cols;
     int ctr = 0;
     for(const std::string& gen : generators){
-      if(dbbw) DivideByBinWidth(h_m.at(var).at(gen));
       h_v.push_back(h_m.at(var).at(gen));
       cols.push_back(ctr+2);
       ctr++;
@@ -106,14 +120,26 @@ void MakeGeneratorXSec(){
       CrossSectionH(h_asimov,POT);
       mchm.Restore(h_asimov,"All",true);
       f_in_hist->Close();
-      if(dbbw) DivideByBinWidth(h_asimov);
     }
     if(h_asimov != nullptr){
       h_v.push_back(h_asimov);
       legs.push_back("MicroBooNE");
       cols.push_back(kBlack);
     }
-    pfs::DrawUnstacked(h_v, cols, legs,true,true,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
+    pfs::DrawUnstacked(h_v,cols,legs,draw_o,draw_u,false,dbbw,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
+
+    // Draw the ratio of each generator to the asimov if loaded
+    if(load_asimov){
+      TH1D* h_asimov = h_v.back();
+      std::vector<TH1D*> h_ratios;
+      for(TH1D* h : h_v){ 
+        std::string name = h->GetName();
+        h_ratios.push_back((TH1D*)h->Clone((name+"_Ratio").c_str()));
+        h_ratios.back()->Divide(h_asimov);
+        std::cout << name << " " << h_ratios.back()->GetBinContent(1) << std::endl;
+      }
+      pfs::DrawUnstacked(h_ratios,cols,legs,draw_o,draw_u,false,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSecRatios.png");
+    }
 
     // Shape comparison: normalise each histogram to unit area
     std::vector<TH1D*> h_shape_v;
@@ -125,7 +151,7 @@ void MakeGeneratorXSec(){
       h_norm->GetYaxis()->SetTitle("Normalised");
       h_shape_v.push_back(h_norm);
     }
-    pfs::DrawUnstacked(h_shape_v, cols, legs,true,true,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec_Shape.png");
+    pfs::DrawUnstacked(h_shape_v, cols, legs,draw_o,draw_u,false,dbbw,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec_Shape.png");
     for(TH1D* h : h_shape_v) delete h;
   }
 

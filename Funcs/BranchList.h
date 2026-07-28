@@ -582,6 +582,7 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
 // Generator tree variables
 Double_t        scale;
 Double_t        gen_weight;
+Double_t        flux_weight;
 Int_t           lepton_pdg;
 TLorentzVector  *lepton_p4=0;
 std::vector<int> *pdg=0;
@@ -598,6 +599,7 @@ void LoadGeneratorTree(std::string filename, TFile*& f_in, TTree*& t_in) {
 
   t_in->SetBranchAddress("scale", &scale);
   t_in->SetBranchAddress("gen_weight", &gen_weight);
+  t_in->SetBranchAddress("flux_weight", &flux_weight);
   t_in->SetBranchAddress("nu_e", &nu_e);
   t_in->SetBranchAddress("nu_pdg", &nu_pdg);
   t_in->SetBranchAddress("ccnc", &ccnc);

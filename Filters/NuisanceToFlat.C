@@ -4,17 +4,26 @@
 #include "WeightFuncs.h"
 #include "EnergyEstimatorFuncs.h"
 
-const std::string generator = "GENIE";
+//const std::string generator = "-14_1000180400_CC_v3_6_2_G18_10a_02_11a";
+//const std::string generator = "14_1000180400_CC_v3_0_6_G18_10a_02_11a";
+const std::string generator = "GiBUU_all";
+//const std::string generator = "NuWro";
 
 // GiBUU ntuple is made of many files - scaling branch needs to be corrected
 // for this, use this variable to do so
-const int num_files = 1;
+const int num_files = 1000;
 
 void NuisanceToFlat(){
 
+  // Weight used to combine separate samples of numus and numubars together
+  //double flux_weight = flux_numu/(flux_numu + flux_numubar); // numus
+  //double flux_weight = flux_numubar/(flux_numu + flux_numubar); // numubars
+  flux_weight = 1.0;
+
   gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
 
-  TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/GENIE.flat.root");
+  //TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/GENIE.flat.root");
+  TFile* f_in = TFile::Open(("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/"+generator+".flat.root").c_str());
   TTree* t_in = static_cast<TTree*>(f_in->Get("FlatTree_VARS")) ;
 
   Char_t          cc;
@@ -40,6 +49,7 @@ void NuisanceToFlat(){
   t_in->SetBranchAddress("pdg", pdg_in);
   t_in->SetBranchAddress("Weight", &Weight);
   t_in->SetBranchAddress("fScaleFactor", &fScaleFactor);
+  t_in->SetBranchAddress("Mode",&interaction);
 
   TFile* f_out = new TFile((generator+"Events.root").c_str(),"RECREATE");
   TTree* t_out = new TTree("eventtree","eventtree");
@@ -69,9 +79,11 @@ void NuisanceToFlat(){
 
   t_out->Branch("scale",&scale);
   t_out->Branch("gen_weight",&gen_weight);
+  t_out->Branch("flux_weight",&flux_weight);
   t_out->Branch("nu_e",&nu_e);
   t_out->Branch("nu_pdg",&nu_pdg);
   t_out->Branch("ccnc",&ccnc);
+  t_out->Branch("interaction",&interaction);
   t_out->Branch("lepton_pdg",&lepton_pdg);
   t_out->Branch("lepton_p4",&lepton_p4);
   t_out->Branch("pdg",&pdg);
@@ -103,11 +115,15 @@ void NuisanceToFlat(){
     p4.clear();
     pdg.clear();
 
+
+    is_signal_t = false;
     scale = fScaleFactor / num_files;
     gen_weight = Weight;
     nu_e = Enu_true;
     ccnc = cc;
     nu_pdg = PDGnu;
+
+    //std::cout << interaction << std::endl;
 
     lepton_pdg = 0;
     lepton_p4 = TLorentzVector(0,0,0,0);
