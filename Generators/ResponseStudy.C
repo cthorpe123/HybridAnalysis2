@@ -15,7 +15,10 @@ using namespace binning;
 void ResponseStudy(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta"};
+  //std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta"};
+  std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
+  vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   
   bool blinded = true;
@@ -57,15 +60,13 @@ void ResponseStudy(){
 
     // Convert BG subtracted data to cross section space
     CrossSectionH(h_reco_data,POT);
+    h_reco_data->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2}/unit)");
 
     // Data just gets stat error for now, plus MC stat error from BG subtracted
     TH2D* h_cov_data_stat = blinded ? (TH2D*)f_hist->Get("Reco/Cov/EstDataStat/Cov_Tot") : (TH2D*)f_hist->Get("Reco/Cov/MCStat/Cov_Data");
     CrossSectionCov(h_cov_data_stat,POT);
     h_cov_breakdown_v["DataStat"] = h_cov_data_stat;   
     h_cov_data->Add(h_cov_data_stat); 
-
-    TH2D* h_cov_bg_mc_stat = (TH2D*)f_hist->Get("Reco/Cov/MCStat/Cov_AllBG");
-    CrossSectionCov(h_cov_bg_mc_stat,POT);
 
     // Add errors to the background subtracted data
     for(int i=0;i<h_reco_data->GetNbinsX()+2;i++) 
@@ -182,6 +183,7 @@ void ResponseStudy(){
       legs.at(i_g) += ", #chi^{2}/n = " + chi2s.at(i_g);
 
       if(restore) mchm.Restore(h_gen_ff_cv_v.at(i_g));
+      h_gen_ff_cv_v.at(i_g)->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2}/unit)");
       
       pfs::DrawUnstacked({h_gen_ff_cv_v.at(i_g),h_reco_data},{cols.at(i_g),1},{legs.at(i_g),"Data"},draw_o,draw_u,true,dbbw,plot_dir+"Test_"+gen+".png");
 
@@ -241,6 +243,7 @@ void ResponseStudy(){
  
     for(TH1D*& h : h_gen_ff_cv_v){
       if(restore) mchm.Restore(h);
+      h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2}/unit)");
     }
 
     pfs::DrawUnstacked(h_gen_ff_cv_v,cols,legs,draw_o,draw_u,true,dbbw,plot_dir+"Test.png");
@@ -258,6 +261,8 @@ void ResponseStudy(){
      
       for(int i_b=0;i_b<h_gen_ff_cv_v.at(i_g)->GetNbinsX()+2;i_b++) 
         h_gen_ff_cv_v.at(i_g)->SetBinError(i_b,sqrt(h_cov->GetBinContent(i_b,i_b))); 
+
+      h_gen_ff_cv_v.at(i_g)->SetTitle("d#sigma (10^{-38} cm^{2}/unit)");
       
       h_cov->Add(h_cov_data);
       std::cout << h_gen_ff_cv_v.at(i_g)->GetNbinsX() << std::endl;
