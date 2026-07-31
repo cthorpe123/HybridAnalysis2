@@ -15,7 +15,10 @@ using namespace binning;
 void MakeGeneratorXSec(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","Norm"};
+  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","Norm","LeadProtonKE","LeadPionE","NProt"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
+  //vars.push_back("Norm");
   bool dbbw = true;
   bool draw_o = false;
   bool draw_u = false;
@@ -45,12 +48,6 @@ void MakeGeneratorXSec(){
     "NuWroEvents.root",
     "GiBUU_allEvents.root"
   };
-  
-  /*
-  std::vector<std::string> files_v = {
-    "-14_1000180400_CC_v3_6_2_G18_10a_02_11aEvents.root"
-  };
-  */
 
   for(int i_f=0;i_f<(int)files_v.size();i_f++){
 
@@ -71,6 +68,8 @@ void MakeGeneratorXSec(){
 
       if(generators.at(i_f) == "Untunedv3.0.6") gen_weight = 1.0;
       
+      is_signal_t = abs(nu_pdg) == 14 && ccnc == 1 && has_muon_t/* && nprot_t > 0*/; 
+
       double weight = flux_weight*gen_weight*scale*1e38*40;
 
       if(is_signal_t){

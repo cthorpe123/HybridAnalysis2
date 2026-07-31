@@ -247,7 +247,7 @@ void InvertIgnoringEmpty(TMatrixDSym& m, double tol = 1e-12)
 ///////////////////////////////////////////////////////////////////////
 // Calculate chi2 between two histograms 
 
-std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false){
+std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false, bool diag_only=false){
 
   int min_bin = under ? 0 : 1;  
   int max_bin = over ? h1->GetNbinsX()+2 : h1->GetNbinsX()+1;
@@ -256,6 +256,7 @@ std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool un
   for(int i=min_bin;i<max_bin;i++){
     for(int j=min_bin;j<max_bin;j++){
       m[i-min_bin][j-min_bin] = h_Cov->GetBinContent(i,j);
+      if(diag_only && i != j) m[i-min_bin][j-min_bin] = 0;
     }
   }
 
