@@ -49,10 +49,17 @@ void ResponseAndBackground(){
 
     std::vector<std::string> legs_full;
     std::vector<std::string> legs_nobg;
+    std::vector<std::string> legs_ref;
     std::vector<std::string> chi2s_full;
     std::vector<std::string> chi2s_nobg;
+    std::vector<std::string> chi2s_ref;
     std::vector<int> cols;
 
+    // Store the total systematic covariance from smearing from each generator, 
+    // and the total fractional covariance from smearing from the first generator
+    TH2D* h_fcov_sys_res_ref = nullptr;
+
+    // Open the files containing all of the data
     TFile* f_hist = TFile::Open(("Analysis/"+var+"/rootfiles/Histograms.root").c_str());
     TFile* f_gen = TFile::Open(("Analysis/"+var+"/rootfiles/GeneratorXSec.root").c_str());
     const double POT = ((TH1D*)f_hist->Get("Meta/POT"))->GetBinContent(1);
@@ -66,7 +73,7 @@ void ResponseAndBackground(){
     h_cov_template->Reset();
 
     TH2D* h_cov_data_stat = (TH2D*)f_hist->Get("Reco/Cov/EstDataStat/Cov_Tot");
-    h_cov_data_stat->Add((TH2D*)f_hist->Get("Reco/Cov/Flux/Cov_Tot"));
+    //h_cov_data_stat->Add((TH2D*)f_hist->Get("Reco/Cov/Flux/Cov_Tot"));
 
     for(int i=0;i<h_reco_data->GetNbinsX()+2;i++) 
       h_reco_data->SetBinError(i,sqrt(h_cov_data_stat->GetBinContent(i,i)));
@@ -115,6 +122,8 @@ void ResponseAndBackground(){
     // Multiply the generator predictions by the response in each genie, g4 and detvar universe, combine with background
     std::vector<TH2D*> h_cov_full_tot_v;
     std::vector<TH2D*> h_cov_nobg_tot_v;
+    std::vector<TH2D*> h_cov_ref_tot_v;
+
     for(size_t i_g=0;i_g<generators.size();i_g++){
 
       std::string gen = generators.at(i_g);
@@ -128,6 +137,13 @@ void ResponseAndBackground(){
 
       std::map<std::string,TH2D*> h_cov_full_m; // Cov calculated including background vars
       std::map<std::string,TH2D*> h_cov_nobg_m; // Cov calculated neglecting BG contribution
+
+      // Store the total sys uncertainty from smearing only, and the frac unc from 
+      // smearing for the first generator
+      if(i_g == 0){
+        h_fcov_sys_res_ref = (TH2D*)h_cov_template->Clone("h_fcov_sys_res_ref");
+        h_fcov_sys_res_ref->Reset();
+      }
 
       // Multisims
       
@@ -159,7 +175,8 @@ void ResponseAndBackground(){
         CalcCovMultisim(sys_str.at(i_s),h_nobg,c_nobg,fc_nobg);
         h_cov_nobg_m[sys_str.at(i_s)] = ((TH2D*)c_nobg->Clone(("h_cov_nobg_"+sys_str.at(i_s)+"_"+gen).c_str()));
         h_cov_nobg_m.at(sys_str.at(i_s))->SetDirectory(0);
-        h_cov_nobg_tot->Add(h_cov_nobg_m.at(sys_str.at(i_s)));
+        h_cov_nobg_tot->Add(c_nobg);
+        if(i_g == 0) h_fcov_sys_res_ref->Add(fc_nobg);
         delete c_nobg;
         delete fc_nobg;
 
@@ -203,6 +220,7 @@ void ResponseAndBackground(){
         h_cov_nobg_m.at(unisims_str.at(i_s))->SetDirectory(0);
         h_cov_nobg_m.at("Unisims")->Add(c_nobg);
         h_cov_nobg_tot->Add(c_nobg);  
+        if(i_g == 0) h_fcov_sys_res_ref->Add(fc_nobg);
 
         delete c_nobg;
         delete fc_nobg;
@@ -211,20 +229,29 @@ void ResponseAndBackground(){
         delete h_bg;
         
       }
-      
+
+      // Calculate thecovariance from the smearing using the first generator as a 
+      TH2D* h_cov_ref = (TH2D*)h_fcov_sys_res_ref->Clone(("h_cov_ref_"+gen).c_str()); 
+      for(int i_b=0;i_b<h_fcov_sys_res_ref->GetNbinsX()+2;i_b++)
+          for(int j_b=0;j_b<h_fcov_sys_res_ref->GetNbinsX()+2;j_b++)
+            h_cov_ref->SetBinContent(i_b,j_b,h_fcov_sys_res_ref->GetBinContent(i_b,j_b)*h_gen_ff_cv_v.at(i_g)->GetBinContent(i_b)*h_gen_ff_cv_v.at(i_g)->GetBinContent(j_b));
+
       // Include the data and BG MC stat in the mix, and build total
 
       h_cov_full_tot->Add(h_cov_bg_mc_stat);
       h_cov_nobg_tot->Add(h_cov_bg_mc_stat);
+      h_cov_ref->Add(h_cov_bg_mc_stat);
 
       h_cov_full_m["BGMCStat"] = (TH2D*)h_cov_bg_mc_stat->Clone(("h_cov_full_BGMCStat_"+gen).c_str());
       h_cov_nobg_m["BGMCStat"] = (TH2D*)h_cov_bg_mc_stat->Clone(("h_cov_nobg_BGMCStat_"+gen).c_str());
       
       TH2D* h_cov_full_tot_wdatastat = (TH2D*)h_cov_full_tot->Clone("h_cov_full_tot_wdatastat");
       TH2D* h_cov_nobg_tot_wdatastat = (TH2D*)h_cov_nobg_tot->Clone("h_cov_nobg_tot_wdatastat");
+      TH2D* h_cov_ref_tot_wdatastat = (TH2D*)h_cov_ref->Clone("h_cov_ref_tot_wdatastat");
 
       h_cov_full_tot_wdatastat->Add(h_cov_data_stat);
       h_cov_nobg_tot_wdatastat->Add(h_cov_data_stat);
+      h_cov_ref_tot_wdatastat->Add(h_cov_data_stat);
 
       h_cov_full_m["DataStat"] = (TH2D*)h_cov_data_stat->Clone(("h_cov_full_DataStat_"+gen).c_str());
       h_cov_nobg_m["DataStat"] = (TH2D*)h_cov_data_stat->Clone(("h_cov_nobg_DataStat_"+gen).c_str());
@@ -234,6 +261,10 @@ void ResponseAndBackground(){
 
       h_cov_full_m["Total"] = h_cov_full_tot_wdatastat;
       h_cov_nobg_m["Total"] = h_cov_nobg_tot_wdatastat;
+
+      // Add the BG uncertainties to the ref method
+      for(int i_s=0;i_s<kSystMAX;i_s++) h_cov_ref_tot_wdatastat->Add(h_cov_bg_m.at(sys_str.at(i_s)));
+      for(int i_s=0;i_s<kUnisimMAX;i_s++) h_cov_ref_tot_wdatastat->Add(h_cov_bg_m.at(unisims_str.at(i_s)));
 
       // Now try the two different ways of assembling the systematics budget
 
@@ -247,9 +278,10 @@ void ResponseAndBackground(){
       for(std::map<std::string,TH2D*>::iterator it = h_cov_nobg_m.begin();it != h_cov_nobg_m.end();it++){
         std::string sys = it->first;
 
-        if(sys != "DataStat" && sys != "BGMCStat")
+        if(sys != "DataStat" && sys != "BGMCStat"){
           h_cov_nobg_m.at(sys)->Add(h_cov_bg_m.at(sys));
-          
+        }
+
         //pfs::Draw2DHist(h_cov_full_m.at(sys),plot_dir+"Cov_"+sys+"_"+gen+"_full.png");
         //pfs::Draw2DHist(h_cov_nobg_m.at(sys),plot_dir+"Cov_"+sys+"_"+gen+"_nobg.png");
 
@@ -261,13 +293,10 @@ void ResponseAndBackground(){
           h_fe_nobg->SetBinContent(i_b,sqrt(h_cov_nobg_m.at(sys)->GetBinContent(i_b,i_b))/x);
         }
 
-
-
         mchm.Restore(h_fe_full);
         mchm.Restore(h_fe_nobg);
 
         h_fe_full->GetYaxis()->SetTitle("Frac. Unc.");
-
         h_fe_nobg->SetLineStyle(2);
         h_fe_nobg->GetYaxis()->SetTitle("Frac. Unc.");
 
@@ -299,11 +328,17 @@ void ResponseAndBackground(){
       chi2s_nobg.push_back(to_string_with_precision(chi2_nobg.first/chi2_nobg.second,2));
       legs_nobg.push_back(generators.at(i_g)+ ", #chi^{2}/n = " + chi2s_nobg.at(i_g));
 
+      std::pair<double,int> chi2_ref = Chi2(h_gen_ff_cv_v.at(i_g),h_reco_data,h_cov_ref_tot_wdatastat,draw_o,draw_u,diag_only);
+      chi2s_ref.push_back(to_string_with_precision(chi2_ref.first/chi2_ref.second,2));
+      legs_ref.push_back(generators.at(i_g)+ ", #chi^{2}/n = " + chi2s_ref.at(i_g));
+
       delete h_cov_full_tot_wdatastat;
       delete h_cov_nobg_tot_wdatastat;
+      delete h_cov_ref_tot_wdatastat;
 
       h_cov_full_tot_v.push_back(h_cov_full_tot);
       h_cov_nobg_tot_v.push_back(h_cov_nobg_tot);
+      h_cov_ref_tot_v.push_back(h_cov_ref);
 
     }
 
@@ -311,6 +346,7 @@ void ResponseAndBackground(){
     cols.push_back(1);
     legs_full.push_back(!blinded ? "uboone Data" : "Asimov Data");
     legs_nobg.push_back(!blinded ? "uboone Data" : "Asimov Data");
+    legs_ref.push_back(!blinded ? "uboone Data" : "Asimov Data");
 
     mchm.Restore(h_gen_ff_cv_v.back()); // Restore binning for data as well
 
@@ -324,13 +360,17 @@ void ResponseAndBackground(){
     for(size_t i_g=0;i_g<generators.size();i_g++){
       for(int i_b=0;i_b<h_gen_ff_cv_v.at(i_g)->GetNbinsX()+2;i_b++) 
         h_gen_ff_cv_v.at(i_g)->SetBinError(i_b,sqrt(h_cov_nobg_tot_v.at(i_g)->GetBinContent(i_b,i_b)));
-    mchm.Restore(h_gen_ff_cv_v.at(i_g));
-   }
-
-
-
-    pfs::DrawUnstacked(h_gen_ff_cv_v,cols,legs_nobg,draw_o,draw_u,true,dbbw,plot_dir+"Test_NoBG.png");  
-
+      mchm.Restore(h_gen_ff_cv_v.at(i_g));
+    }
+    pfs::DrawUnstacked(h_gen_ff_cv_v,cols,legs_nobg,draw_o,draw_u,true,dbbw,plot_dir+"Test_NoBG.png"); 
+    
+    for(size_t i_g=0;i_g<generators.size();i_g++){
+      for(int i_b=0;i_b<h_gen_ff_cv_v.at(i_g)->GetNbinsX()+2;i_b++) 
+        h_gen_ff_cv_v.at(i_g)->SetBinError(i_b,sqrt(h_cov_ref_tot_v.at(i_g)->GetBinContent(i_b,i_b)));
+      mchm.Restore(h_gen_ff_cv_v.at(i_g));
+    }
+    pfs::DrawUnstacked(h_gen_ff_cv_v,cols,legs_ref,draw_o,draw_u,true,dbbw,plot_dir+"Test_Ref.png");
+    
     f_hist->Close();
     f_gen->Close();
 

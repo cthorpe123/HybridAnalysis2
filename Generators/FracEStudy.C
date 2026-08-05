@@ -18,7 +18,7 @@ using namespace binning;
 void FracEStudy(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta","LeadProtonKE","LeadPionE"};
+  std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta","LeadProtonKE","LeadPionE","NProt"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");

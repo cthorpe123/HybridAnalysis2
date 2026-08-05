@@ -14,7 +14,7 @@
 
 void CheckCorr(){
 
-  std::string var = "MuonMom";
+  std::string var = "NProt";
 
   std::string plot_dir = "Analysis/"+var+"/Plots/CheckCorr/";
   gSystem->Exec(("mkdir -p " + plot_dir).c_str());
