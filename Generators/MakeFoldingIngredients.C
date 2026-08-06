@@ -22,9 +22,6 @@ void MakeFoldingIngredients(){
   std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta"};
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
-  //std::vector<std::string> vars = {"Enu"};
-  //std::vector<std::string> generators = {"Untunedv3.0.6"};  
-
   bool blinded = true;
   bool add_detvars = false;
 
@@ -119,7 +116,6 @@ void MakeFoldingIngredients(){
     std::map<std::string,std::vector<TH1D*>> h_bg_m;
 
     for(int i_s=0;i_s<kSystMAX;i_s++){
-      if(i_s == kFlux) continue;
       std::string sys = sys_str.at(i_s);
       f_out->cd();
       f_out->mkdir(("Vars/"+sys+"/BG").c_str());
@@ -141,6 +137,77 @@ void MakeFoldingIngredients(){
       mchm.Restore(c);
       c->Write("Cov_BG");
     }
+
+    for(int i_s=0;i_s<kUnisimMAX;i_s++){
+      std::string sys = unisims_str.at(i_s);
+      f_out->cd();
+      f_out->mkdir(("Vars/"+sys+"/BG").c_str());
+      f_out->cd(("Vars/"+sys+"/BG").c_str());
+      TH1D* h = (TH1D*)f_hist->Get(("Reco/Vars/"+sys+"/h_AllBG").c_str());
+      mchm.Restore(h);
+      h->Write("BG");
+
+      f_out->cd();
+      f_out->mkdir(("Cov/"+sys+"/BG").c_str());
+      f_out->cd(("Cov/"+sys+"/BG").c_str());
+      TH2D *c,*fc;
+      CalcCovUnisim(sys,h_bg_cv,h,c,fc);
+      mchm.Restore(c);
+      c->Write("Cov_BG");
+    }
+
+    // Calculate the data and BG subtracted data when using different total fluxes
+    f_out->cd();
+    f_out->mkdir("Vars/Flux/Data");
+    f_out->cd("Vars/Flux/Data");
+    std::vector<TH1D*> h_data_v; 
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++){
+
+      double ratio = (h_numu_integrals->GetBinContent(i_u+1)*flux_numu + h_numubar_integrals->GetBinContent(i_u+1)*flux_numubar)/(flux_numu+flux_numubar);
+
+      h_data_v.push_back(blinded ? (TH1D*)f_hist->Get("Reco/CV/h_Tot")->Clone(("h_reco_data_"+std::to_string(i_u)).c_str())
+                                 : (TH1D*)f_hist->Get("Reco/CV/h_Data")->Clone(("h_reco_data_"+std::to_string(i_u)).c_str()));
+
+      CrossSectionH(h_data_v.back(),POT*ratio);
+      mchm.Restore(h_data_v.back());
+      h_data_v.back()->Write(("Data_"+std::to_string(i_u)).c_str());
+    }
+
+    f_out->cd();
+    f_out->mkdir("Cov/Flux/Data");
+    f_out->cd("Cov/Flux/Data");
+    TH2D *c,*fc;
+    CalcCovMultisim("Flux",h_data_v,c,fc);
+    mchm.Restore(c);
+    c->Write("Cov_Data");
+
+    f_out->cd();
+    f_out->mkdir("Vars/Flux/BGSData");
+    f_out->cd("Vars/Flux/BGSData");
+    std::vector<TH1D*> h_bgs_data_v; 
+    for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++){
+
+      double ratio = (h_numu_integrals->GetBinContent(i_u+1)*flux_numu + h_numubar_integrals->GetBinContent(i_u+1)*flux_numubar)/(flux_numu+flux_numubar);
+
+      h_bgs_data_v.push_back(blinded ? (TH1D*)f_hist->Get("Reco/CV/h_Tot")->Clone(("h_bgs_data_"+std::to_string(i_u)).c_str())
+                                 : (TH1D*)f_hist->Get("Reco/CV/h_Data")->Clone(("h_bgs_data_"+std::to_string(i_u)).c_str()));
+
+      TH1D* h_bg = (TH1D*)f_hist->Get(("Reco/Vars/Flux/h_AllBG_"+std::to_string(i_u)).c_str());
+      h_bgs_data_v.back()->Add(h_bg,-1);
+      CrossSectionH(h_data_v.back(),POT*ratio);
+
+      mchm.Restore(h_bgs_data_v.back());
+      h_bgs_data_v.back()->Write(("BGSData_"+std::to_string(i_u)).c_str());
+    }
+
+    f_out->cd();
+    f_out->mkdir("Cov/Flux/BGSData");
+    f_out->cd("Cov/Flux/BGSData");
+    TH2D *c_flux,*fc_flux;
+    CalcCovMultisim("Flux",h_data_v,c_flux,fc_flux);
+    mchm.Restore(c_flux);
+    c_flux->Write("Cov_BGSData");
+
 
     // Fold the generator predictions in different universes
     for(size_t i_g=0;i_g<generators.size();i_g++){
@@ -192,8 +259,29 @@ void MakeFoldingIngredients(){
         c->Write("Cov_Pred");
       }
 
-    }
 
+
+      // Calculate the generator predictions in each flux universe
+      const TH2D* h_gen_truth_2d = (TH2D*)f_gen->Get(("h_xsec_2D_"+var+"_"+gen).c_str());
+      f_out->cd();
+      f_out->mkdir(("Vars/Flux/"+gen).c_str());
+      f_out->cd(("Vars/Flux/"+gen).c_str());
+      std::vector<TH1D*> h_gen_ff_flux_v;
+      for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++){
+        TH1D* h_flux_ratio = (TH1D*)f_flux_ratios->Get(Form("ShapeRatios/NuMu/h_NuMu_FluxRatio_%i",i_u)); // Ratio of alt flux to CV in true nu_e
+        TH1D* h_gen_truth_flux = Multiply(h_flux_ratio,h_gen_truth_2d,Form("h_gen_truth_f%i",i_u)); // Gen truth in flux universe
+        h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res_cv,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
+        delete h_gen_truth_flux;
+        h_gen_ff_flux_v.back()->Write(("Pred_"+std::to_string(i_u)).c_str());
+      }
+
+      f_out->cd();
+      f_out->mkdir(("Cov/Flux/"+gen).c_str());
+      f_out->cd(("Cov/Flux/"+gen).c_str());
+      TH2D *c,*fc;
+      CalcCovMultisim("Flux",h_gen_ff_flux_v,c,fc);
+
+    }
 
     f_hist->Close();
     f_gen->Close();
