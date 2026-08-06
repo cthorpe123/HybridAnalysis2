@@ -247,7 +247,7 @@ void InvertIgnoringEmpty(TMatrixDSym& m, double tol = 1e-12)
 ///////////////////////////////////////////////////////////////////////
 // Calculate chi2 between two histograms 
 
-std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false, bool diag_only=false){
+std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false, bool diag_only=false){
 
   int min_bin = under ? 0 : 1;  
   int max_bin = over ? h1->GetNbinsX()+2 : h1->GetNbinsX()+1;
@@ -272,6 +272,17 @@ std::pair<double,int> Chi2(TH1D* h1,TH1D* h2,TH2D* h_Cov,bool over=false,bool un
   return {chi2,max_bin-min_bin};
 
 }
+
+
+///////////////////////////////////////////////////////////////////////
+// Make fractional uncertainty histogram
+
+void MakeFEHist(TH1D* h_fe,const TH1D* h_val,const TH2D* h_cov){
+  for(int i_b=0;i_b<h_fe->GetNbinsX()+2;i_b++)
+    h_fe->SetBinContent(i_b,sqrt(h_cov->GetBinContent(i_b,i_b))/h_val->GetBinContent(i_b));
+}
+
+///////////////////////////////////////////////////////////////////////
 
 }
 

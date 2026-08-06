@@ -329,6 +329,7 @@ void MakeFoldingIngredients(){
         TH1D* h_gen_truth_flux = Multiply(h_flux_ratio,h_gen_truth_2d,Form("h_gen_truth_f%i",i_u)); // Gen truth in flux universe
         h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res_cv,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
         delete h_gen_truth_flux;
+        mchm.Restore(h_gen_ff_flux_v.back());
         h_gen_ff_flux_v.back()->Write(("Pred_"+std::to_string(i_u)).c_str());
       }
 
