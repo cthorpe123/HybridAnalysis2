@@ -126,6 +126,7 @@ void MakeFoldingIngredients(){
         CrossSectionH(h_bg_v.back(),POT);
         mchm.Restore(h_bg_v.back());
         h_bg_v.back()->Write(("BG_"+std::to_string(i_u)).c_str());
+
       }
       h_bg_m[sys] = h_bg_v;
 
@@ -136,6 +137,35 @@ void MakeFoldingIngredients(){
       CalcCovMultisim(sys,h_bg_v,c,fc);
       mchm.Restore(c);
       c->Write("Cov_BG");
+
+      f_out->cd();
+      f_out->mkdir(("Vars/"+sys+"/Data").c_str());
+      f_out->cd(("Vars/"+sys+"/Data").c_str());
+      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++)
+        h_reco_data->Write(("Data_"+std::to_string(i_u)).c_str());
+
+      f_out->cd();
+      f_out->mkdir(("Cov/"+sys+"/Data").c_str());
+      f_out->cd(("Cov/"+sys+"/Data").c_str());
+      TH2D* h_cov_data_tmp = (TH2D*)c->Clone("Cov_Data");
+      h_cov_data_tmp->Reset();
+      h_cov_data_tmp->Write("Cov_Data");
+
+      f_out->cd();
+      f_out->mkdir(("Vars/"+sys+"/BGSData").c_str());
+      f_out->cd(("Vars/"+sys+"/BGSData").c_str());
+      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+        TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone(("BGSData_"+std::to_string(i_u)).c_str());
+        h_bgs_data_tmp->Add(h_bg_v.at(i_u),-1);
+        h_bgs_data_tmp->Write(("BGSData_"+std::to_string(i_u)).c_str());   
+      }
+
+      f_out->cd();
+      f_out->mkdir(("Cov/"+sys+"/BGSData").c_str());
+      f_out->cd(("Cov/"+sys+"/BGSData").c_str());
+      TH2D* h_cov_bgs_data_tmp = (TH2D*)c->Clone("Cov_BGSData");
+      h_cov_bgs_data_tmp->Write("Cov_BGSData");
+
     }
 
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
@@ -144,6 +174,7 @@ void MakeFoldingIngredients(){
       f_out->mkdir(("Vars/"+sys+"/BG").c_str());
       f_out->cd(("Vars/"+sys+"/BG").c_str());
       TH1D* h = (TH1D*)f_hist->Get(("Reco/Vars/"+sys+"/h_AllBG").c_str());
+      CrossSectionH(h,POT);
       mchm.Restore(h);
       h->Write("BG");
 
@@ -154,6 +185,32 @@ void MakeFoldingIngredients(){
       CalcCovUnisim(sys,h_bg_cv,h,c,fc);
       mchm.Restore(c);
       c->Write("Cov_BG");
+
+      f_out->cd();
+      f_out->mkdir(("Vars/"+sys+"/Data").c_str());
+      f_out->cd(("Vars/"+sys+"/Data").c_str());
+      h_reco_data->Write("Data");
+
+      f_out->cd();
+      f_out->mkdir(("Cov/"+sys+"/Data").c_str());
+      f_out->cd(("Cov/"+sys+"/Data").c_str());
+      TH2D* h_cov_data_tmp = (TH2D*)c->Clone("Cov_Data");
+      h_cov_data_tmp->Reset();
+      h_cov_data_tmp->Write("Cov_Data");
+
+      f_out->cd();
+      f_out->mkdir(("Vars/"+sys+"/BGSData").c_str());
+      f_out->cd(("Vars/"+sys+"/BGSData").c_str());
+      TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone("BGSData");
+      h_bgs_data_tmp->Add(h,-1);
+      h_bgs_data_tmp->Write("BGSData");   
+      
+      f_out->cd();
+      f_out->mkdir(("Cov/"+sys+"/BGSData").c_str());
+      f_out->cd(("Cov/"+sys+"/BGSData").c_str());
+      TH2D* h_cov_bgs_data_tmp = (TH2D*)c->Clone("Cov_BGSData");
+      h_cov_bgs_data_tmp->Write("Cov_BGSData");
+
     }
 
     // Calculate the data and BG subtracted data when using different total fluxes
@@ -190,11 +247,11 @@ void MakeFoldingIngredients(){
       double ratio = (h_numu_integrals->GetBinContent(i_u+1)*flux_numu + h_numubar_integrals->GetBinContent(i_u+1)*flux_numubar)/(flux_numu+flux_numubar);
 
       h_bgs_data_v.push_back(blinded ? (TH1D*)f_hist->Get("Reco/CV/h_Tot")->Clone(("h_bgs_data_"+std::to_string(i_u)).c_str())
-                                 : (TH1D*)f_hist->Get("Reco/CV/h_Data")->Clone(("h_bgs_data_"+std::to_string(i_u)).c_str()));
+                                     : (TH1D*)f_hist->Get("Reco/CV/h_Data")->Clone(("h_bgs_data_"+std::to_string(i_u)).c_str()));
 
       TH1D* h_bg = (TH1D*)f_hist->Get(("Reco/Vars/Flux/h_AllBG_"+std::to_string(i_u)).c_str());
       h_bgs_data_v.back()->Add(h_bg,-1);
-      CrossSectionH(h_data_v.back(),POT*ratio);
+      CrossSectionH(h_bgs_data_v.back(),POT*ratio);
 
       mchm.Restore(h_bgs_data_v.back());
       h_bgs_data_v.back()->Write(("BGSData_"+std::to_string(i_u)).c_str());
