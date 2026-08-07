@@ -38,7 +38,6 @@ void Recipe1(){
     std::vector<TH2D*> h_cov_tot; // Total cov for each generator 
     std::map<std::string,std::vector<TH2D*>> h_cov_m; // map with cov by category for each generator
 
-    // Calculate the stat errors
     for(std::string gen : generators){
 
       f_out->cd();

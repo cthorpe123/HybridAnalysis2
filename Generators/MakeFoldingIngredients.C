@@ -138,35 +138,38 @@ void MakeFoldingIngredients(){
       mchm.Restore(c);
       c->Write("Cov_BG");
 
-      f_out->cd();
-      f_out->mkdir(("Vars/"+sys+"/Data").c_str());
-      f_out->cd(("Vars/"+sys+"/Data").c_str());
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++)
-        h_reco_data->Write(("Data_"+std::to_string(i_u)).c_str());
+      if(i_s != kFlux){
+        f_out->cd();
+        f_out->mkdir(("Vars/"+sys+"/Data").c_str());
+        f_out->cd(("Vars/"+sys+"/Data").c_str());
+        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++)
+          h_reco_data->Write(("Data_"+std::to_string(i_u)).c_str());
 
-      f_out->cd();
-      f_out->mkdir(("Cov/"+sys+"/Data").c_str());
-      f_out->cd(("Cov/"+sys+"/Data").c_str());
-      TH2D* h_cov_data_tmp = (TH2D*)c->Clone("Cov_Data");
-      h_cov_data_tmp->Reset();
-      h_cov_data_tmp->Write("Cov_Data");
+        f_out->cd();
+        f_out->mkdir(("Cov/"+sys+"/Data").c_str());
+        f_out->cd(("Cov/"+sys+"/Data").c_str());
+        TH2D* h_cov_data_tmp = (TH2D*)c->Clone("Cov_Data");
+        h_cov_data_tmp->Reset();
+        h_cov_data_tmp->Write("Cov_Data");
 
-      f_out->cd();
-      f_out->mkdir(("Vars/"+sys+"/BGSData").c_str());
-      f_out->cd(("Vars/"+sys+"/BGSData").c_str());
-      for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-        TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone(("BGSData_"+std::to_string(i_u)).c_str());
-        h_bgs_data_tmp->Add(h_bg_v.at(i_u),-1);
-        h_bgs_data_tmp->Write(("BGSData_"+std::to_string(i_u)).c_str());   
+        f_out->cd();
+        f_out->mkdir(("Vars/"+sys+"/BGSData").c_str());
+        f_out->cd(("Vars/"+sys+"/BGSData").c_str());
+        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+          TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone(("BGSData_"+std::to_string(i_u)).c_str());
+          h_bgs_data_tmp->Add(h_bg_v.at(i_u),-1);
+          h_bgs_data_tmp->Write(("BGSData_"+std::to_string(i_u)).c_str());   
+        }
+
+        f_out->cd();
+        f_out->mkdir(("Cov/"+sys+"/BGSData").c_str());
+        f_out->cd(("Cov/"+sys+"/BGSData").c_str());
+        TH2D* h_cov_bgs_data_tmp = (TH2D*)c->Clone("Cov_BGSData");
+        h_cov_bgs_data_tmp->Write("Cov_BGSData");
       }
 
-      f_out->cd();
-      f_out->mkdir(("Cov/"+sys+"/BGSData").c_str());
-      f_out->cd(("Cov/"+sys+"/BGSData").c_str());
-      TH2D* h_cov_bgs_data_tmp = (TH2D*)c->Clone("Cov_BGSData");
-      h_cov_bgs_data_tmp->Write("Cov_BGSData");
-
     }
+
 
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
       std::string sys = unisims_str.at(i_s);
@@ -261,7 +264,7 @@ void MakeFoldingIngredients(){
     f_out->mkdir("Cov/Flux/BGSData");
     f_out->cd("Cov/Flux/BGSData");
     TH2D *c_flux,*fc_flux;
-    CalcCovMultisim("Flux",h_data_v,c_flux,fc_flux);
+    CalcCovMultisim("Flux",h_bgs_data_v,c_flux,fc_flux);
     mchm.Restore(c_flux);
     c_flux->Write("Cov_BGSData");
 
@@ -338,6 +341,7 @@ void MakeFoldingIngredients(){
       f_out->cd(("Cov/Flux/"+gen).c_str());
       TH2D *c,*fc;
       CalcCovMultisim("Flux",h_gen_ff_flux_v,c,fc);
+      c->Write("Cov_Pred");
 
     }
 

@@ -93,8 +93,8 @@ void Recipe3(){
         for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
           for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
             c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
-
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
+        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
@@ -108,7 +108,8 @@ void Recipe3(){
           for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
             c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
 
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());

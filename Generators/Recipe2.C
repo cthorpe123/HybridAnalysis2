@@ -70,7 +70,8 @@ void Recipe2(){
         }
         TH2D *c,*fc;
         CalcCovMultisim(gen+"_"+sys,h,c,fc);
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
@@ -82,7 +83,8 @@ void Recipe2(){
         TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str());
         TH2D *c,*fc;
         CalcCovUnisim(gen+"_"+sys,h_pred,h,c,fc);
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
