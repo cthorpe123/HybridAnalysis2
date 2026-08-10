@@ -247,7 +247,7 @@ void InvertIgnoringEmpty(TMatrixDSym& m, double tol = 1e-12)
 ///////////////////////////////////////////////////////////////////////
 // Calculate chi2 between two histograms 
 
-std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,TH2D* h_Cov,bool over=false,bool under=false, bool diag_only=false){
+std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,const TH2D* h_Cov,bool over=false,bool under=false, bool diag_only=false){
 
   int min_bin = under ? 0 : 1;  
   int max_bin = over ? h1->GetNbinsX()+2 : h1->GetNbinsX()+1;
@@ -273,6 +273,14 @@ std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,TH2D* h_Cov,bool over=f
 
 }
 
+///////////////////////////////////////////////////////////////////////
+// Make fractional covariance from covariance
+
+void MakeFCov(TH2D* h_cov,const TH1D* h_val){
+  for(int i_b=0;i_b<h_cov->GetNbinsX()+2;i_b++)
+    for(int j_b=0;j_b<h_cov->GetNbinsX()+2;j_b++)
+    h_cov->SetBinContent(i_b,j_b,h_cov->GetBinContent(i_b,j_b)/h_val->GetBinContent(i_b)/h_val->GetBinContent(j_b));
+}
 
 ///////////////////////////////////////////////////////////////////////
 // Make fractional uncertainty histogram

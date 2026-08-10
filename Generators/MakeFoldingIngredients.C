@@ -19,7 +19,10 @@ using namespace binning;
 void MakeFoldingIngredients(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
+  vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
   bool blinded = true;

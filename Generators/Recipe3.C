@@ -17,7 +17,10 @@ using namespace syst;
 
 void Recipe3(){
 
-  std::vector<std::string> vars = {"Norm","Enu","MuonMom","MuonCosTheta"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
+  vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = false;
   bool draw_o = false;
@@ -115,7 +118,7 @@ void Recipe3(){
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }      
 
-      h_cov_tot.back()->Write("Cov_Tot");
+      h_cov_tot.back()->Write("Cov_Total");
 
       std::vector<TH1D*> h_fe_v;
       std::vector<std::string> legs;

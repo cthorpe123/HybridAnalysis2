@@ -55,7 +55,8 @@ std::vector<TLorentzVector> RecoProton4MomV(Int_t nTracks,Int_t trackIsSecondary
     if(trackIsSecondary[i]) continue;
     if(abs(trackPID[i]) == 2212){
       double mom = sqrt(trackRecoE[i]*trackRecoE[i]/1e6 + 2*0.938*trackRecoE[i]/1e3);
-      p4.push_back(TLorentzVector(mom*trackStartDirX[i],mom*trackStartDirY[i],mom*trackStartDirZ[i],sqrt(mom*mom+0.938*0.938)));
+      if(mom > thresholds.at(2212).first)
+        p4.push_back(TLorentzVector(mom*trackStartDirX[i],mom*trackStartDirY[i],mom*trackStartDirZ[i],sqrt(mom*mom+0.938*0.938)));
     }
   }
   SortTLorentzVector(p4);
