@@ -18,14 +18,17 @@ using namespace binning;
 
 void MakeFluxRatios(){
 
-  TH1D* h_NuMu_CV = new TH1D("h_NuMu_CV","#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",100,0,3);
-  TH1D* h_NuMuBar_CV = new TH1D("h_NuMuBar_CV","#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",100,0,3);
+  const int nbins = 200;
+  bool use_alt = true;
+
+  TH1D* h_NuMu_CV = new TH1D("h_NuMu_CV","#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",nbins,0,3);
+  TH1D* h_NuMuBar_CV = new TH1D("h_NuMuBar_CV","#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",nbins,0,3);
 
   std::vector<TH1D*> h_NuMu_FluxUniv(nuniv_Flux,nullptr);
   std::vector<TH1D*> h_NuMuBar_FluxUniv(nuniv_Flux,nullptr);
   for(int i_u=0;i_u<nuniv_Flux;i_u++){
-    h_NuMu_FluxUniv.at(i_u) = new TH1D(("h_NuMu_FluxUniv_"+std::to_string(i_u)).c_str(),"#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",100,0,3);
-    h_NuMuBar_FluxUniv.at(i_u) = new TH1D(("h_NuMuBar_FluxUniv_"+std::to_string(i_u)).c_str(),"#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",100,0,3);
+    h_NuMu_FluxUniv.at(i_u) = new TH1D(("h_NuMu_FluxUniv_"+std::to_string(i_u)).c_str(),"#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",nbins,0,3);
+    h_NuMuBar_FluxUniv.at(i_u) = new TH1D(("h_NuMuBar_FluxUniv_"+std::to_string(i_u)).c_str(),"#nu_{#mu} True Neutrino Energy [GeV];Events/GeV",nbins,0,3);
   }
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
@@ -68,14 +71,19 @@ void MakeFluxRatios(){
 
   }
 
-  // Ratio histograms (universe shape / CV shape)
-  std::vector<TH1D*> h_NuMu_FluxRatio(nuniv_Flux,nullptr);
-  std::vector<TH1D*> h_NuMuBar_FluxRatio(nuniv_Flux,nullptr);
-  for(int i_u=0;i_u<nuniv_Flux;i_u++){
-    h_NuMu_FluxRatio.at(i_u) = static_cast<TH1D*>(h_NuMu_FluxUniv.at(i_u)->Clone(("h_NuMu_FluxRatio_"+std::to_string(i_u)).c_str()));
-    h_NuMu_FluxRatio.at(i_u)->Divide(h_NuMu_CV);
-    h_NuMuBar_FluxRatio.at(i_u) = static_cast<TH1D*>(h_NuMuBar_FluxUniv.at(i_u)->Clone(("h_NuMuBar_FluxRatio_"+std::to_string(i_u)).c_str()));
-    h_NuMuBar_FluxRatio.at(i_u)->Divide(h_NuMuBar_CV);
+  // Build an alternative CV that is the mean of the variations
+  TH1D* h_NuMu_CV_Alt = (TH1D*)h_NuMu_CV->Clone("h_NuMu_CV_Alt");
+  TH1D* h_NuMuBar_CV_Alt = (TH1D*)h_NuMu_CV->Clone("h_NuMu_CV_Alt");
+  for(int i=0;i<h_NuMu_CV_Alt->GetNbinsX()+2;i++){
+    double numu_mean = Mean(h_NuMu_FluxUniv,i);
+    double numubar_mean = Mean(h_NuMuBar_FluxUniv,i);
+    h_NuMu_CV_Alt->SetBinContent(i,numu_mean);
+    h_NuMuBar_CV_Alt->SetBinContent(i,numubar_mean);
+  }
+
+  if(use_alt){
+    h_NuMu_CV = h_NuMu_CV_Alt;
+    h_NuMuBar_CV = h_NuMuBar_CV_Alt;
   }
 
   // Integral ratios (one entry per universe)
@@ -88,15 +96,43 @@ void MakeFluxRatios(){
     h_NuMuBar_IntegralRatio->SetBinContent(i_u+1, h_NuMuBar_FluxUniv.at(i_u)->Integral() / cv_numubar_integral);
   }
 
+  // Ratio histograms (universe / CV)
+  std::vector<TH1D*> h_NuMu_FluxRatio(nuniv_Flux,nullptr);
+  std::vector<TH1D*> h_NuMuBar_FluxRatio(nuniv_Flux,nullptr);
+  for(int i_u=0;i_u<nuniv_Flux;i_u++){
+    h_NuMu_FluxRatio.at(i_u) = static_cast<TH1D*>(h_NuMu_FluxUniv.at(i_u)->Clone(("h_NuMu_FluxRatio_"+std::to_string(i_u)).c_str()));
+    h_NuMu_FluxRatio.at(i_u)->Divide(h_NuMu_CV);
+    h_NuMuBar_FluxRatio.at(i_u) = static_cast<TH1D*>(h_NuMuBar_FluxUniv.at(i_u)->Clone(("h_NuMuBar_FluxRatio_"+std::to_string(i_u)).c_str()));
+    h_NuMuBar_FluxRatio.at(i_u)->Divide(h_NuMuBar_CV);
+  }
+
+  // Ratio histograms (universe shape / CV shape)
+  std::vector<TH1D*> h_NuMu_ShapeRatio(nuniv_Flux,nullptr);
+  std::vector<TH1D*> h_NuMuBar_ShapeRatio(nuniv_Flux,nullptr);
+  for(int i_u=0;i_u<nuniv_Flux;i_u++){
+    h_NuMu_ShapeRatio.at(i_u) = static_cast<TH1D*>(h_NuMu_FluxUniv.at(i_u)->Clone(("h_NuMu_ShapeRatio_"+std::to_string(i_u)).c_str()));
+    h_NuMu_ShapeRatio.at(i_u)->Scale(h_NuMu_CV->Integral()/h_NuMu_ShapeRatio.at(i_u)->Integral());
+    h_NuMu_ShapeRatio.at(i_u)->Divide(h_NuMu_CV);
+    h_NuMuBar_ShapeRatio.at(i_u) = static_cast<TH1D*>(h_NuMuBar_FluxUniv.at(i_u)->Clone(("h_NuMuBar_ShapeRatio_"+std::to_string(i_u)).c_str()));
+    h_NuMuBar_ShapeRatio.at(i_u)->Scale(h_NuMuBar_CV->Integral()/h_NuMuBar_ShapeRatio.at(i_u)->Integral());
+    h_NuMuBar_ShapeRatio.at(i_u)->Divide(h_NuMuBar_CV);
+  }
+
   TFile* f_out = new TFile("FluxRatios.root","RECREATE");
 
   TDirectory* d_cv      = f_out->mkdir("CV");
   TDirectory* d_univ    = f_out->mkdir("Universes");
   TDirectory* d_univ_numu    = d_univ->mkdir("NuMu");
   TDirectory* d_univ_numubar = d_univ->mkdir("NuMuBar");
-  TDirectory* d_ratio   = f_out->mkdir("ShapeRatios");
+
+  TDirectory* d_ratio   = f_out->mkdir("Ratios");
   TDirectory* d_ratio_numu    = d_ratio->mkdir("NuMu");
   TDirectory* d_ratio_numubar = d_ratio->mkdir("NuMuBar");
+
+  TDirectory* d_shaperatio   = f_out->mkdir("ShapeRatios");
+  TDirectory* d_shaperatio_numu    = d_shaperatio->mkdir("NuMu");
+  TDirectory* d_shaperatio_numubar = d_shaperatio->mkdir("NuMuBar");
+
   TDirectory* d_int     = f_out->mkdir("IntegralRatios");
 
   d_cv->cd();
@@ -114,6 +150,12 @@ void MakeFluxRatios(){
 
   d_ratio_numubar->cd();
   for(int i_u=0;i_u<nuniv_Flux;i_u++) h_NuMuBar_FluxRatio.at(i_u)->Write();
+
+  d_shaperatio_numu->cd();
+  for(int i_u=0;i_u<nuniv_Flux;i_u++) h_NuMu_ShapeRatio.at(i_u)->Write();
+
+  d_shaperatio_numubar->cd();
+  for(int i_u=0;i_u<nuniv_Flux;i_u++) h_NuMuBar_ShapeRatio.at(i_u)->Write();
 
   d_int->cd();
   h_NuMu_IntegralRatio->Write();

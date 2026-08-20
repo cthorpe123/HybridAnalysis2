@@ -15,14 +15,14 @@ using namespace syst;
 
 void MakePrediction(){
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool blinded = true;
-  bool draw_underflow = false;
-  bool draw_overflow = false;
-  bool divide_by_bin_width = true;
+  bool draw_underflow = true;
+  bool draw_overflow = true;
+  bool dbbw = true;
   bool draw_truth = false;
 
-  std::vector<std::string> vars = {"NProt","ProtonKE","Channel"};
+  std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
@@ -55,7 +55,6 @@ void MakePrediction(){
         if(draw_truth && i_c != kSignal) continue;
         h_CV.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+categories.at(i_c)).c_str()));
         mchm.Restore(h_CV.back(),ch,draw_truth);
-        if(divide_by_bin_width) DivideByBinWidth(h_CV.back());
         fill_colors.push_back(cat_colors[i_c]); 
         legs.push_back(categories.at(i_c));
       }
@@ -73,20 +72,18 @@ void MakePrediction(){
 
       mchm.Restore(h_Cov,ch,draw_truth);
       for(int i=0;i<h_CV_Tot->GetNbinsX()+2;i++) h_CV_Tot->SetBinError(i,sqrt(h_Cov->GetBinContent(i,i)));
-      if(divide_by_bin_width) DivideByBinWidth(h_CV_Tot);
 
       // If not blindded, load the data
       TH1D* h_Data = nullptr;
       if(!blinded && !draw_truth){
         h_Data = (TH1D*)f_in_hist->Get("Reco/CV/h_Data");
         mchm.Restore(h_Data,ch,false);
-        if(divide_by_bin_width) DivideByBinWidth(h_Data);
       }
 
       std::string plot_dir = "Analysis/"+label+"/Plots/MakePrediction/";
       gSystem->Exec(("mkdir -p "+plot_dir).c_str());
       std::string name = draw_truth ? plot_dir+"Pred_Truth_"+ch+".png" : plot_dir+"Pred_"+ch+".png";
-      pfs::DrawStacked(h_CV,fill_colors,legs,h_CV_Tot,h_Data,draw_overflow,draw_underflow,name);
+      pfs::DrawStacked(h_CV,fill_colors,legs,h_CV_Tot,h_Data,draw_overflow,draw_underflow,dbbw,name,{0,-1});
 
     }
 

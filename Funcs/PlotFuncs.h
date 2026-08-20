@@ -12,6 +12,7 @@ void Draw2DHist(TH2D* h,std::string name){
   TCanvas* c = new TCanvas("c2","c2");
   h->Draw("colz");
   h->SetStats(0);
+  c->SetRightMargin(0.2);
   c->Print(name.c_str());
   c->Close();
 }

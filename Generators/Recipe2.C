@@ -65,16 +65,23 @@ void Recipe2(){
       h_cov_tot.back()->Add(h_cov_bg_mc_stat);
 
       // Multisims
+      
       for(int i_s=0;i_s<kSystMAX;i_s++){
         std::string sys = sys_str.at(i_s);
+        /*
         std::vector<TH1D*> h;
         for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
           h.push_back((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred_"+std::to_string(i_u)).c_str()));
         }
         TH2D *c,*fc;
         CalcCovMultisim(gen+"_"+sys,h,c,fc);
+        */
+        TH2D* c = (TH2D*)f_in->Get(("Cov/"+sys+"/"+gen+"/Cov_Pred").c_str());
+        
         //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
+        //pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()),plot_dir+"Cov_Flux_BG_"+gen+".png");
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());

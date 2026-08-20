@@ -27,12 +27,13 @@ void MakeFoldingIngredients(){
 
   bool blinded = true;
   bool add_detvars = false;
+  bool alt_method = true;
 
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = "Analysis/"+var+"/Plots/FoldGeneratorXSec/";
-    gSystem->Exec(("mkdir -p " + plot_dir).c_str());
+    //std::string plot_dir = "Analysis/"+var+"/Plots/FoldGeneratorXSec/";
+    //gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
     hist::MultiChannelHistogramManager mchm(var);
     mchm.LoadTemplates();    
@@ -129,7 +130,6 @@ void MakeFoldingIngredients(){
         CrossSectionH(h_bg_v.back(),POT);
         mchm.Restore(h_bg_v.back());
         h_bg_v.back()->Write(("BG_"+std::to_string(i_u)).c_str());
-
       }
       h_bg_m[sys] = h_bg_v;
 
@@ -231,7 +231,8 @@ void MakeFoldingIngredients(){
       h_data_v.push_back(blinded ? (TH1D*)f_hist->Get("Reco/CV/h_Tot")->Clone(("h_reco_data_"+std::to_string(i_u)).c_str())
                                  : (TH1D*)f_hist->Get("Reco/CV/h_Data")->Clone(("h_reco_data_"+std::to_string(i_u)).c_str()));
 
-      CrossSectionH(h_data_v.back(),POT*ratio);
+      if(!alt_method) CrossSectionH(h_data_v.back(),POT*ratio);
+      else CrossSectionH(h_data_v.back(),POT);
       mchm.Restore(h_data_v.back());
       h_data_v.back()->Write(("Data_"+std::to_string(i_u)).c_str());
     }
@@ -257,7 +258,8 @@ void MakeFoldingIngredients(){
 
       TH1D* h_bg = (TH1D*)f_hist->Get(("Reco/Vars/Flux/h_AllBG_"+std::to_string(i_u)).c_str());
       h_bgs_data_v.back()->Add(h_bg,-1);
-      CrossSectionH(h_bgs_data_v.back(),POT*ratio);
+      if(!alt_method) CrossSectionH(h_bgs_data_v.back(),POT*ratio);
+      else CrossSectionH(h_bgs_data_v.back(),POT);
 
       mchm.Restore(h_bgs_data_v.back());
       h_bgs_data_v.back()->Write(("BGSData_"+std::to_string(i_u)).c_str());
@@ -322,8 +324,6 @@ void MakeFoldingIngredients(){
         c->Write("Cov_Pred");
       }
 
-
-
       // Calculate the generator predictions in each flux universe
       const TH2D* h_gen_truth_2d = (TH2D*)f_gen->Get(("h_xsec_2D_"+var+"_"+gen).c_str());
       f_out->cd();
@@ -331,9 +331,11 @@ void MakeFoldingIngredients(){
       f_out->cd(("Vars/Flux/"+gen).c_str());
       std::vector<TH1D*> h_gen_ff_flux_v;
       for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++){
-        TH1D* h_flux_ratio = (TH1D*)f_flux_ratios->Get(Form("ShapeRatios/NuMu/h_NuMu_FluxRatio_%i",i_u)); // Ratio of alt flux to CV in true nu_e
+        TH1D* h_flux_ratio = !alt_method ? (TH1D*)f_flux_ratios->Get(Form("ShapeRatios/NuMu/h_NuMu_ShapeRatio_%i",i_u)) // Ratio of alt flux to CV in true nu_e
+                                         : (TH1D*)f_flux_ratios->Get(Form("Ratios/NuMu/h_NuMu_FluxRatio_%i",i_u));
         TH1D* h_gen_truth_flux = Multiply(h_flux_ratio,h_gen_truth_2d,Form("h_gen_truth_f%i",i_u)); // Gen truth in flux universe
-        h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res_cv,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
+        TH2D* h_res = (TH2D*)f_hist->Get(("Response/Vars/Flux/h_Signal_"+std::to_string(i_u)).c_str());
+        h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
         delete h_gen_truth_flux;
         mchm.Restore(h_gen_ff_flux_v.back());
         h_gen_ff_flux_v.back()->Write(("Pred_"+std::to_string(i_u)).c_str());
