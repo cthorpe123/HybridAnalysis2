@@ -13,22 +13,24 @@ using namespace syst;
 
 void CompareRecipes(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");
+  //std::vector<std::string> vars = {"NProt"};
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe1_5"};
-  std::vector<int> styles = {2,3,4,6};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3"};
+  std::vector<int> styles = {2,3,4};
   int n_r=recipes.size();
   bool add_detvars = false;
   bool draw_o = false;
   bool draw_u = false;
   bool shape_only = false;
-
+  
   std::vector<std::string> sys_v = {"Total","DataStat","BGMCStat"};
   for(int i_s=0;i_s<kSystMAX;i_s++) sys_v.push_back(sys_str.at(i_s));
   for(int i_s=0;i_s<kUnisimMAX;i_s++) sys_v.push_back(unisims_str.at(i_s));
+  
 
   for(const std::string& var : vars){
     std::cout << var << std::endl;
@@ -56,6 +58,7 @@ void CompareRecipes(){
         for(size_t i_r=0;i_r<recipes.size();i_r++){
           h_cov_m[sys].at(i_g).at(i_r) = (TH2D*)f_in_v.at(i_r)->Get((generators.at(i_g)+"/"+"Cov_"+sys).c_str());
           h_fe_m[sys].at(i_g).at(i_r) = (TH1D*)f_in_v.at(i_r)->Get((generators.at(i_g)+"/"+"FE_"+sys).c_str());
+          if(sys == "Flux") pfs::Draw2DHist(h_cov_m[sys].at(i_g).at(i_r),plot_dir+"Cov_"+generators.at(i_g)+"_"+recipes.at(i_r)+".png"); 
           //h_fe_m[sys].at(i_g).at(i_r)->SetLineStyle(styles.at(i_r));
         }
       }

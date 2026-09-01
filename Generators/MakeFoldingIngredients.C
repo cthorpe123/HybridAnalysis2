@@ -19,8 +19,8 @@ using namespace binning;
 void MakeFoldingIngredients(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
@@ -42,7 +42,6 @@ void MakeFoldingIngredients(){
     std::vector<std::string> legs;
     std::vector<int> cols;
     std::vector<std::string> chi2s;
-
 
     // Open the file containing the histograms
     TFile* f_hist = TFile::Open(("Analysis/"+var+"/rootfiles/Histograms.root").c_str());
@@ -333,7 +332,9 @@ void MakeFoldingIngredients(){
       for(int i_u=0;i_u<sys_nuniv.at(kFlux);i_u++){
         TH1D* h_flux_ratio = !alt_method ? (TH1D*)f_flux_ratios->Get(Form("ShapeRatios/NuMu/h_NuMu_ShapeRatio_%i",i_u)) // Ratio of alt flux to CV in true nu_e
                                          : (TH1D*)f_flux_ratios->Get(Form("Ratios/NuMu/h_NuMu_FluxRatio_%i",i_u));
+        
         TH1D* h_gen_truth_flux = Multiply(h_flux_ratio,h_gen_truth_2d,Form("h_gen_truth_f%i",i_u)); // Gen truth in flux universe
+        h_gen_truth_flux->Write(("Truth_"+std::to_string(i_u)).c_str());
         TH2D* h_res = (TH2D*)f_hist->Get(("Response/Vars/Flux/h_Signal_"+std::to_string(i_u)).c_str());
         h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
         delete h_gen_truth_flux;

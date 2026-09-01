@@ -17,8 +17,8 @@ using namespace syst;
 
 void Recipe1(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
@@ -79,6 +79,7 @@ void Recipe1(){
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }
       
+      
       // Unisims
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);
@@ -94,6 +95,7 @@ void Recipe1(){
         delete h_bgs_data_tmp;
       }
       
+
       h_cov_tot.back()->Write("Cov_Total");
 
       std::vector<TH1D*> h_fe_v;

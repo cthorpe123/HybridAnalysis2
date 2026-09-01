@@ -17,8 +17,8 @@ using namespace syst;
 
 void Recipe3(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
@@ -57,6 +57,7 @@ void Recipe3(){
         h_fcov_ref[sys] = fc;
       }
 
+      
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);
         TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen_ref+"/Pred").c_str());
@@ -64,6 +65,7 @@ void Recipe3(){
         CalcCovUnisim(gen_ref+"_"+sys,h_pred_ref,h,c,fc);
         h_fcov_ref[sys] = fc;
       }
+      
 
     // Calculate the stat errors
     for(std::string gen : generators){
@@ -91,18 +93,19 @@ void Recipe3(){
 
       // Multisims
       for(int i_s=0;i_s<kSystMAX;i_s++){
+        //if(i_s != kFlux) continue;
         std::string sys = sys_str.at(i_s);
         TH2D* c = (TH2D*)h_fcov_ref.at(sys)->Clone((sys+"_"+gen).c_str());
         for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
           for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
             c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
-        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }
 
+      
       // Unisims
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);
@@ -116,10 +119,11 @@ void Recipe3(){
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
-      }      
+      }   
+      
 
       h_cov_tot.back()->Write("Cov_Total");
-
+      
       std::vector<TH1D*> h_fe_v;
       std::vector<std::string> legs;
       std::vector<int> cols;
@@ -139,7 +143,7 @@ void Recipe3(){
       legs.push_back("Total");
       cols.push_back(1);
       pfs::DrawUnstacked(h_fe_v,cols,legs,draw_o,draw_u,false,false,plot_dir+"FE_"+gen+".png");
-
+      
     } 
     
     f_in->Close();

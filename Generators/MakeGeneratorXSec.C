@@ -15,10 +15,10 @@ using namespace binning;
 void MakeGeneratorXSec(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","Norm","LeadProtonKE","LeadPionE","NProt"};
-  //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
-  //vars.push_back("Norm");
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
+  vars.push_back("Norm");
   bool dbbw = true;
   bool draw_o = false;
   bool draw_u = false;
@@ -29,15 +29,20 @@ void MakeGeneratorXSec(){
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
 
   for(const std::string& var : vars){
+    TFile* f_tp_truth = TFile::Open(("Analysis/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
+    std::vector<double> bin_edges;
+    const TH1D* h_tmp =  (TH1D*)f_tp_truth->Get("h_template_All");
+    for(int i_b=1;i_b<h_tmp->GetNbinsX()+2;i_b++) bin_edges.push_back(h_tmp->GetBinLowEdge(i_b));
+    auto* xbins = &bin_edges[0];
     for(const std::string& gen : generators){
-      TFile* f_tp_truth = TFile::Open(("Analysis/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
-      h_m[var][gen] = (TH1D*)f_tp_truth->Get("h_template_All")->Clone(("h_xsec_"+var+"_"+gen).c_str());
-      auto* xbins = h_m[var][gen]->GetXaxis()->GetXbins()->GetArray();
-      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,h_m[var][gen]->GetNbinsX(),xbins);
+      h_m[var][gen] = (TH1D*)h_tmp->Clone(("h_xsec_"+var+"_"+gen).c_str());
+      //auto* xbins = h_m[var][gen]->GetXaxis()->GetXbins()->GetArray();
+      //h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,h_m[var][gen]->GetNbinsX(),xbins);
+      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,bin_edges.size()-1,&bin_edges[0]);
       h_m[var][gen]->SetDirectory(0);
       h_m_2d[var][gen]->SetDirectory(0);
-      f_tp_truth->Close();
     }
+    f_tp_truth->Close();
   }
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Generators/";
@@ -77,6 +82,7 @@ void MakeGeneratorXSec(){
           if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
           h_m.at(var).at(gen)->Fill(vars_t->at(var),weight);
           h_m_2d.at(var).at(gen)->Fill(nu_e,vars_t->at(var),weight);
+          //std::cout << nu_e << " " << vars_t->at(var) << std::endl;
         }
       }
 

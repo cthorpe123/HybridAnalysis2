@@ -16,8 +16,8 @@ using namespace syst;
 
 void Recipe2(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
@@ -65,23 +65,18 @@ void Recipe2(){
       h_cov_tot.back()->Add(h_cov_bg_mc_stat);
 
       // Multisims
-      
       for(int i_s=0;i_s<kSystMAX;i_s++){
         std::string sys = sys_str.at(i_s);
-        /*
         std::vector<TH1D*> h;
         for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
           h.push_back((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred_"+std::to_string(i_u)).c_str()));
         }
         TH2D *c,*fc;
         CalcCovMultisim(gen+"_"+sys,h,c,fc);
-        */
-        TH2D* c = (TH2D*)f_in->Get(("Cov/"+sys+"/"+gen+"/Cov_Pred").c_str());
-        
-        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
-
+        for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
+          for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
+            c->SetBinContent(i_b,j_b,fc->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
-        //pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()),plot_dir+"Cov_Flux_BG_"+gen+".png");
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
@@ -102,6 +97,7 @@ void Recipe2(){
       
       h_cov_tot.back()->Write("Cov_Total");
 
+      
       std::vector<TH1D*> h_fe_v;
       std::vector<std::string> legs;
       std::vector<int> cols;
@@ -121,9 +117,9 @@ void Recipe2(){
       legs.push_back("Total");
       cols.push_back(1);
       pfs::DrawUnstacked(h_fe_v,cols,legs,draw_o,draw_u,false,false,plot_dir+"FE_"+gen+".png");
-
+      
     } 
-
+      
     f_in->Close();
     f_out->Close();
 
