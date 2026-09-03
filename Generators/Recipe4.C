@@ -11,10 +11,11 @@
 
 using namespace syst;
 
-// Calculate the forward folded cross sections and covariances decoupling the background
-// from the response
+// Calculate the forward folded cross sections and covariances, decoupling the
+// background from the response, and the total flux from the flux shape (if original
+// method is used). Assume the FCov from the first generator is valid for the others
 
-void Recipe2(){
+void Recipe4(){
 
   //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
   std::vector<std::string> vars = var_names;
@@ -28,11 +29,11 @@ void Recipe2(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = "Analysis/"+var+"/Plots/Recipe1_5/";
+    std::string plot_dir = "Analysis/"+var+"/Plots/Recipe3/";
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
     TFile* f_in = TFile::Open(("Analysis/"+var+"/rootfiles/FFGenerators.root").c_str());
-    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/Recipe1_5.root").c_str(),"RECREATE");
+    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/Recipe3.root").c_str(),"RECREATE");
 
     TH2D* h_cov_data_stat = (TH2D*)f_in->Get("Cov/DataStat/h_Cov"); // Cov for errors on data 
     TH2D* h_cov_bg_mc_stat = (TH2D*)f_in->Get("Cov/BGMCStat/h_Cov");
@@ -40,6 +41,33 @@ void Recipe2(){
     std::vector<TH2D*> h_cov_tot; // Total cov for each generator 
     std::map<std::string,std::vector<TH2D*>> h_cov_m; // map with cov by category for each generator
 
+    // Calculate the fractional covariance from smearing using the first generator
+    std::string gen_ref = generators.at(0);
+    std::map<std::string,TH2D*> h_fcov_ref;
+    const TH1D* h_pred_ref = (TH1D*)f_in->Get(("CV/"+gen_ref).c_str())->Clone("h_pred_ref");
+
+    for(int i_s=0;i_s<kSystMAX;i_s++){
+        std::string sys = sys_str.at(i_s);
+        std::vector<TH1D*> h;
+        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+          h.push_back((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen_ref+"/Pred_"+std::to_string(i_u)).c_str()));
+        }
+        TH2D *c,*fc;
+        CalcCovMultisim(gen_ref+"_"+sys,h,c,fc);
+        h_fcov_ref[sys] = fc;
+      }
+
+      
+      for(int i_s=0;i_s<kUnisimMAX;i_s++){
+        std::string sys = unisims_str.at(i_s);
+        TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen_ref+"/Pred").c_str());
+        TH2D *c,*fc;
+        CalcCovUnisim(gen_ref+"_"+sys,h_pred_ref,h,c,fc);
+        h_fcov_ref[sys] = fc;
+      }
+      
+
+    // Calculate the stat errors
     for(std::string gen : generators){
 
       f_out->cd();
@@ -65,38 +93,37 @@ void Recipe2(){
 
       // Multisims
       for(int i_s=0;i_s<kSystMAX;i_s++){
+        //if(i_s != kFlux) continue;
         std::string sys = sys_str.at(i_s);
-        std::vector<TH1D*> h;
-        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
-          h.push_back((TH1D*)f_in->Get(("Vars/"+sys+"/Data/Data_"+std::to_string(i_u)).c_str())->Clone(("Data_c_"+std::to_string(i_u)).c_str()));
-          h.back()->Add((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred_"+std::to_string(i_u)).c_str()),-1);
-        }
-        TH2D *c,*fc;
-        CalcCovMultisim(gen+"_"+sys,h,c,fc);
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        TH2D* c = (TH2D*)h_fcov_ref.at(sys)->Clone((sys+"_"+gen).c_str());
+        for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
+          for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
+            c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }
+
       
       // Unisims
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);
-        TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/Data/Data").c_str())->Clone("BGSData_c");
-        h->Add((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str()),-1);
-        TH1D* h_data_tmp = (TH1D*)f_in->Get("CV/Data")->Clone("h_data_tmp");
-        h_data_tmp->Add(h_pred,-1);
-        TH2D *c,*fc;
-        CalcCovUnisim(gen+"_"+sys,h_data_tmp,h,c,fc);
-        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        TH2D* c = (TH2D*)h_fcov_ref.at(sys)->Clone((sys+"_"+gen).c_str());
+        for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
+          for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
+            c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
+
+        //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+        c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
-        delete h_data_tmp;
-      }
+      }   
       
-      h_cov_tot.back()->Write("Cov_Total");
 
+      h_cov_tot.back()->Write("Cov_Total");
+      
       std::vector<TH1D*> h_fe_v;
       std::vector<std::string> legs;
       std::vector<int> cols;
@@ -116,9 +143,9 @@ void Recipe2(){
       legs.push_back("Total");
       cols.push_back(1);
       pfs::DrawUnstacked(h_fe_v,cols,legs,draw_o,draw_u,false,false,plot_dir+"FE_"+gen+".png");
-
+      
     } 
-
+    
     f_in->Close();
     f_out->Close();
 
