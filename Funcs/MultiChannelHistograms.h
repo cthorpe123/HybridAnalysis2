@@ -340,6 +340,9 @@ void MultiChannelHistogramManager::FillSpecialHistograms2D(std::string name,bool
 
 void MultiChannelHistogramManager::Restore(TH1D*& h,std::string ch,bool truth) const
 {
+  if(truth && !_save_truth)
+    throw std::invalid_argument("Trying to restore truth binning when MultiChannelHistogramManager was initialised with save_truth=false");
+
   std::string name = string(h->GetName());
 
   const std::vector<std::string>& ch_list = truth ? _ch_list_t : _ch_list_r;

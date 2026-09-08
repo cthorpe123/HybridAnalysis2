@@ -19,23 +19,20 @@ using namespace binning;
 void MakeFoldingIngredients(){
 
   bool load_asimov = true;
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  std::vector<std::string> vars = var_names;
-  vars.push_back("Enu");
-  vars.push_back("Norm");
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
+  //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
   bool blinded = true;
   bool add_detvars = false;
-  bool alt_method = true;
+  bool alt_method = false;
 
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    //std::string plot_dir = "Analysis/"+var+"/Plots/FoldGeneratorXSec/";
-    //gSystem->Exec(("mkdir -p " + plot_dir).c_str());
-
-    hist::MultiChannelHistogramManager mchm(var);
+    hist::MultiChannelHistogramManager mchm(var,true);
     mchm.LoadTemplates();    
 
     std::vector<TH1D*> h_v;
@@ -66,7 +63,10 @@ void MakeFoldingIngredients(){
     TH2D* h_res_cv = (TH2D*)f_hist->Get("Response/CV/h_Signal");
     std::vector<TH1D*> h_gen_ff_cv_v;
     for(std::string gen : generators){
-      h_gen_ff_cv_v.push_back(Multiply((TH1D*)f_gen->Get(("h_xsec_"+var+"_"+gen).c_str()),h_res_cv,"h_xsec_ff_"+gen)); 
+      TH1D* h_truth = (TH1D*)f_gen->Get(("h_xsec_"+var+"_"+gen).c_str());
+      mchm.Restore(h_truth,"All",true);
+      h_truth->Write((gen+"_Truth").c_str());
+      h_gen_ff_cv_v.push_back(Multiply(h_truth,h_res_cv,"h_xsec_ff_"+gen)); 
       mchm.Restore(h_gen_ff_cv_v.back());
       h_gen_ff_cv_v.back()->Write(gen.c_str()); 
     }
