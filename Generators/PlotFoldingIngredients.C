@@ -65,12 +65,66 @@ void PlotFoldingIngredients(){
     hist::MultiChannelHistogramManager mchm(var,true);
     mchm.LoadTemplates();
 
+    // Raw response matrices carry no axis titles, unlike the 1D histograms
+    // (whose titles come along for free when Restore() clones the binning
+    // template). Grab the variable's axis title off the restored CV truth
+    // histogram instead, and label the response matrices' axes with it.
+    std::string axis_title;
+
+    // Draw the CV truth-level distribution, also read from Histograms.root
+    if(f_hist && !f_hist->IsZombie()){
+      TH1D* h_truth_cv = (TH1D*)f_hist->Get("Truth/CV/h_Signal");
+      if(h_truth_cv){
+        TH1D* h_truth_cv_r = (TH1D*)h_truth_cv->Clone("h_truth_cv");
+        mchm.Restore(h_truth_cv_r,"All",true);
+        axis_title = h_truth_cv_r->GetXaxis()->GetTitle();
+        std::string name = plot_dir+"CV_Truth.png";
+        pfs::DrawUnstacked({h_truth_cv_r},{kBlack},{"Truth"},draw_o,draw_u,false,true,name);
+        std::cout << "Wrote " << name << std::endl;
+        delete h_truth_cv_r;
+      }
+    }
+
+    // Draw each generator's own truth-level (CV) prediction, from
+    // GeneratorXSec.root, one canvas per generator
+    TFile* f_gen = TFile::Open(("Analysis/"+var+"/rootfiles/GeneratorXSec.root").c_str());
+    if(!f_gen || f_gen->IsZombie())
+      std::cout << "Could not open GeneratorXSec.root for " << var << ", won't be able to plot generator truth" << std::endl;
+    else{
+      for(size_t i_g=0;i_g<generators.size();i_g++){
+        const std::string& gen = generators.at(i_g);
+        TH1D* h_gen_truth = (TH1D*)f_gen->Get(("h_xsec_"+var+"_"+gen).c_str());
+        if(!h_gen_truth) continue;
+        std::string name = plot_dir+gen+"_CV_Truth.png";
+        pfs::DrawUnstacked({h_gen_truth},{colors.at(i_g % colors.size())},{gen},draw_o,draw_u,false,true,name);
+        std::cout << "Wrote " << name << std::endl;
+      }
+    }
+
+    // Draw each generator's CV folded prediction (reco-space), from
+    // FFGenerators.root, one canvas per generator, same style as above
+    for(size_t i_g=0;i_g<generators.size();i_g++){
+      const std::string& gen = generators.at(i_g);
+      TH1D* h_gen_pred = (TH1D*)f_in->Get(("CV/"+gen).c_str());
+      if(!h_gen_pred) continue;
+      std::string name = plot_dir+gen+"_CV_Pred.png";
+      pfs::DrawUnstacked({h_gen_pred},{colors.at(i_g % colors.size())},{gen},draw_o,draw_u,false,true,name);
+      std::cout << "Wrote " << name << std::endl;
+    }
+
+    auto SetResponseAxisTitles = [&](TH2D* h){
+      if(axis_title.empty()) return;
+      //h->GetXaxis()->SetTitle(axis_title.c_str());
+      //h->GetYaxis()->SetTitle(axis_title.c_str());
+    };
+
     // Draw the CV response matrix, also read from Histograms.root
     if(f_hist && !f_hist->IsZombie()){
       TH2D* h_res_cv = (TH2D*)f_hist->Get("Response/CV/h_Signal");
       if(h_res_cv){
         TH2D* h_res_cv_r = (TH2D*)h_res_cv->Clone("h_res_cv");
         mchm.RestoreRes(h_res_cv_r);
+        SetResponseAxisTitles(h_res_cv_r);
         std::string name = plot_dir+"CV_Response.png";
         pfs::Draw2DHist(h_res_cv_r,name);
         std::cout << "Wrote " << name << std::endl;
@@ -109,6 +163,7 @@ void PlotFoldingIngredients(){
             if(!h_res) continue;
             TH2D* h_res_r = (TH2D*)h_res->Clone("h_res");
             mchm.RestoreRes(h_res_r);
+            SetResponseAxisTitles(h_res_r);
             std::string name = plot_dir_sys+"Response_"+std::to_string(i_u)+".png";
             pfs::Draw2DHist(h_res_r,name);
             std::cout << "Wrote " << name << std::endl;
@@ -119,6 +174,7 @@ void PlotFoldingIngredients(){
           if(h_res){
             TH2D* h_res_r = (TH2D*)h_res->Clone("h_res");
             mchm.RestoreRes(h_res_r);
+            SetResponseAxisTitles(h_res_r);
             std::string name = plot_dir_sys+"Response.png";
             pfs::Draw2DHist(h_res_r,name);
             std::cout << "Wrote " << name << std::endl;
@@ -126,6 +182,49 @@ void PlotFoldingIngredients(){
           }
         }
       }
+
+      // Draw the difference between the (background-subtracted) data and
+      // each generator's folded prediction, one canvas per generator with
+      // this systematic's (first 5) universes overlaid on it.
+      auto MakeSysDiffPlot = [&](const std::string& ref_name){
+        TDirectory* d_ref = d_sys->GetDirectory(ref_name.c_str());
+        if(!d_ref) return;
+
+        auto it_ms2 = std::find(sys_str.begin(),sys_str.end(),sys);
+        bool is_multisim = it_ms2 != sys_str.end();
+        int n_univ = is_multisim ? std::min<int>(sys_nuniv.at(std::distance(sys_str.begin(),it_ms2)),n_max) : 1;
+
+        for(const std::string& gen : generators){
+          TDirectory* d_gen = d_sys->GetDirectory(gen.c_str());
+          if(!d_gen) continue;
+
+          std::vector<TH1D*> h_diff_v;
+          std::vector<std::string> legs;
+          for(int i_u=0;i_u<n_univ;i_u++){
+            std::string suffix = is_multisim ? "_"+std::to_string(i_u) : "";
+            TH1D* h_ref = dynamic_cast<TH1D*>(d_ref->Get((ref_name+suffix).c_str()));
+            TH1D* h_pred = dynamic_cast<TH1D*>(d_gen->Get(("Pred"+suffix).c_str()));
+            if(!h_ref || !h_pred) continue;
+            TH1D* h_diff = (TH1D*)h_ref->Clone((ref_name+"_minus_"+gen+suffix).c_str());
+            h_diff->Add(h_pred,-1);
+            h_diff_v.push_back(h_diff);
+            legs.push_back(is_multisim ? "Universe "+std::to_string(i_u) : sys);
+          }
+          if(h_diff_v.empty()) continue;
+
+          std::vector<int> cols;
+          for(size_t i=0;i<h_diff_v.size();i++) cols.push_back(colors.at(i % colors.size()));
+
+          std::string name = plot_dir_sys+gen+"_"+ref_name+"Minus.png";
+          pfs::DrawUnstacked(h_diff_v,cols,legs,draw_o,draw_u,false,true,name);
+          std::cout << "Wrote " << name << std::endl;
+
+          for(TH1D* h : h_diff_v) delete h;
+        }
+      };
+
+      MakeSysDiffPlot("BGSData");
+      MakeSysDiffPlot("Data");
 
       TIter next_sub(d_sys->GetListOfKeys());
       TKey* k_sub;
@@ -152,7 +251,11 @@ void PlotFoldingIngredients(){
           if(!h) continue;
           if(h_v.empty()) group_order.push_back(prefix);
           h_v.push_back(h);
-          legs_m[prefix].push_back(hname);
+          // Multisim entries (name has a "_<universe index>" suffix) get
+          // labelled "Universe n", matching the BGSDataMinus plots. Unisim
+          // entries (no suffix) just keep their bare name.
+          std::string leg = hname == prefix ? hname : "Universe "+hname.substr(prefix.size()+1);
+          legs_m[prefix].push_back(leg);
         }
 
         for(const std::string& prefix : group_order){
@@ -225,6 +328,7 @@ void PlotFoldingIngredients(){
 
     f_in->Close();
     if(f_hist) f_hist->Close();
+    if(f_gen) f_gen->Close();
   }
 
 }

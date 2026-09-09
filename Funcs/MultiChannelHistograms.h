@@ -411,8 +411,8 @@ void MultiChannelHistogramManager::Restore(TH2D*& h,std::string ch,bool truth) c
 void MultiChannelHistogramManager::RestoreRes(TH2D*& h,std::string ch_t="All",std::string ch_r="All") const
 {
   std::string name = string(h->GetName());
-  const char* x_label = h->GetXaxis()->GetTitle();
-  const char* y_label = h->GetYaxis()->GetTitle();
+  //const char* x_label = h->GetXaxis()->GetTitle();
+  //const char* y_label = h->GetYaxis()->GetTitle();
 
   int ch_idx_t = -1;
   for(size_t i_ch=0;i_ch<_ch_list_t.size();i_ch++)
@@ -427,6 +427,9 @@ void MultiChannelHistogramManager::RestoreRes(TH2D*& h,std::string ch_t="All",st
 
   if(ch_idx_r == -1) 
     throw std::invalid_argument("MultiChannelHistogramManager::Restore channel " +  ch_r + " not found");
+
+  const char* x_label = _h_tp_truth_v.at(ch_idx_t)->GetXaxis()->GetTitle();
+  const char* y_label = _h_tp_v.at(ch_idx_r)->GetXaxis()->GetTitle();
 
   int offset_t = _offset_t.at(ch_idx_t);
   int offset_r = _offset_r.at(ch_idx_r);

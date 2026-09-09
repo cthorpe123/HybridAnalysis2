@@ -110,7 +110,9 @@ bool MakeMultiChannelTemplate(std::string label,std::map<std::string,TH1D*> h_da
       throw std::invalid_argument("BinningFuncs::MakeMultichannelTemplate: Too few edges");
 
     TH1D* h_template = new TH1D(("h_template_"+ch+"_"+label).c_str(),"",bin_edges.size()-1,&bin_edges[0]); 
-    h_template->GetXaxis()->SetTitle(h_data->GetXaxis()->GetTitle());
+    std::string title = !truth ? string(h_data->GetXaxis()->GetTitle())
+                               : "True " + string(h_data->GetXaxis()->GetTitle());
+    h_template->GetXaxis()->SetTitle(title.c_str());
     h_template->GetYaxis()->SetTitle(h_data->GetYaxis()->GetTitle());
     h_template->Write(("h_template_"+ch).c_str());
 

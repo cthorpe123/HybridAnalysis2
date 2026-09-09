@@ -17,10 +17,10 @@ using namespace syst;
 
 void Recipe3(){
 
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  std::vector<std::string> vars = var_names;
-  vars.push_back("Enu");
-  vars.push_back("Norm");
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
+  //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = false;
   bool draw_o = false;
@@ -29,11 +29,11 @@ void Recipe3(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = "Analysis/"+var+"/Plots/Recipe2/";
+    std::string plot_dir = "Analysis/"+var+"/Plots/Recipe3/";
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
     TFile* f_in = TFile::Open(("Analysis/"+var+"/rootfiles/FFGenerators.root").c_str());
-    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/Recipe2.root").c_str(),"RECREATE");
+    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/Recipe3.root").c_str(),"RECREATE");
 
     TH2D* h_cov_data_stat = (TH2D*)f_in->Get("Cov/DataStat/h_Cov"); // Cov for errors on data 
     TH2D* h_cov_bg_mc_stat = (TH2D*)f_in->Get("Cov/BGMCStat/h_Cov");
@@ -77,6 +77,8 @@ void Recipe3(){
         for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
           for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
             c->SetBinContent(i_b,j_b,fc->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
+        pfs::Draw2DHist(c,plot_dir+"Cov_Gen_"+sys+"_"+gen+".png");
+        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()),plot_dir+"Cov_BGSData_"+sys+"_"+gen+".png");
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
@@ -89,6 +91,8 @@ void Recipe3(){
         TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str());
         TH2D *c,*fc;
         CalcCovUnisim(gen+"_"+sys,h_pred,h,c,fc);
+        pfs::Draw2DHist(c,plot_dir+"Cov_Gen_"+sys+"_"+gen+".png");
+        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()),plot_dir+"Cov_BGSData_"+sys+"_"+gen+".png");
         //c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
         h_cov_tot.back()->Add(c);

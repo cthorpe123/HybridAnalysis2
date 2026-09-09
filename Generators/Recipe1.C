@@ -17,10 +17,10 @@ using namespace syst;
 
 void Recipe1(){
 
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  std::vector<std::string> vars = var_names;
-  vars.push_back("Enu");
-  vars.push_back("Norm");
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
+  //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = false;
   bool draw_o = false;
