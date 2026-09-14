@@ -13,14 +13,13 @@ using namespace syst;
 
 void CompareRecipes(){
 
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  std::vector<std::string> vars = var_names;
-  vars.push_back("Enu");
-  vars.push_back("Norm");
-  //std::vector<std::string> vars = {"NProt"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
+  //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3"};
-  std::vector<int> styles = {2,3,4};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe4","Recipe5"};
+  std::vector<int> styles = {2,3,4,6,7};
   int n_r=recipes.size();
   bool add_detvars = false;
   bool draw_o = false;

@@ -65,9 +65,11 @@ void MakeFoldingIngredients(){
     for(std::string gen : generators){
       TH1D* h_truth = (TH1D*)f_gen->Get(("h_xsec_"+var+"_"+gen).c_str());
       mchm.Restore(h_truth,"All",true);
+      h_truth->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h_truth->Write((gen+"_Truth").c_str());
       h_gen_ff_cv_v.push_back(Multiply(h_truth,h_res_cv,"h_xsec_ff_"+gen)); 
       mchm.Restore(h_gen_ff_cv_v.back());
+      h_gen_ff_cv_v.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h_gen_ff_cv_v.back()->Write(gen.c_str()); 
     }
 
@@ -75,6 +77,7 @@ void MakeFoldingIngredients(){
     TH1D* h_bg_cv = (TH1D*)f_hist->Get("Reco/CV/h_AllBG");
     CrossSectionH(h_bg_cv,POT);
     mchm.Restore(h_bg_cv);
+    h_bg_cv->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
     h_bg_cv->Write("BG");
 
     TH1D* h_reco_data = blinded ? (TH1D*)f_hist->Get("Reco/CV/h_Tot")->Clone("h_reco_data") 
@@ -82,10 +85,12 @@ void MakeFoldingIngredients(){
 
     CrossSectionH(h_reco_data,POT);
     mchm.Restore(h_reco_data);
+    h_reco_data->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
     h_reco_data->Write("Data");
 
     TH1D* h_bgs_data = (TH1D*)h_reco_data->Clone("BGSData");
     h_bgs_data->Add(h_bg_cv,-1);
+    h_bgs_data->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
     h_bgs_data->Write("BGSData");
 
     f_out->cd();
@@ -128,6 +133,7 @@ void MakeFoldingIngredients(){
         h_bg_v.push_back((TH1D*)f_hist->Get(("Reco/Vars/"+sys+"/h_AllBG_"+std::to_string(i_u)).c_str()));
         CrossSectionH(h_bg_v.back(),POT);
         mchm.Restore(h_bg_v.back());
+        h_bg_v.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
         h_bg_v.back()->Write(("BG_"+std::to_string(i_u)).c_str());
       }
       h_bg_m[sys] = h_bg_v;
@@ -144,9 +150,10 @@ void MakeFoldingIngredients(){
         f_out->cd();
         f_out->mkdir(("Vars/"+sys+"/Data").c_str());
         f_out->cd(("Vars/"+sys+"/Data").c_str());
-        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++)
+        for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
+          h_reco_data->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
           h_reco_data->Write(("Data_"+std::to_string(i_u)).c_str());
-
+        }
         f_out->cd();
         f_out->mkdir(("Cov/"+sys+"/Data").c_str());
         f_out->cd(("Cov/"+sys+"/Data").c_str());
@@ -160,6 +167,7 @@ void MakeFoldingIngredients(){
         for(int i_u=0;i_u<sys_nuniv.at(i_s);i_u++){
           TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone(("BGSData_"+std::to_string(i_u)).c_str());
           h_bgs_data_tmp->Add(h_bg_v.at(i_u),-1);
+          h_bgs_data_tmp->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
           h_bgs_data_tmp->Write(("BGSData_"+std::to_string(i_u)).c_str());   
         }
 
@@ -181,6 +189,7 @@ void MakeFoldingIngredients(){
       TH1D* h = (TH1D*)f_hist->Get(("Reco/Vars/"+sys+"/h_AllBG").c_str());
       CrossSectionH(h,POT);
       mchm.Restore(h);
+      h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h->Write("BG");
 
       f_out->cd();
@@ -208,6 +217,7 @@ void MakeFoldingIngredients(){
       f_out->cd(("Vars/"+sys+"/BGSData").c_str());
       TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone("BGSData");
       h_bgs_data_tmp->Add(h,-1);
+      h_bgs_data_tmp->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h_bgs_data_tmp->Write("BGSData");   
       
       f_out->cd();
@@ -233,6 +243,7 @@ void MakeFoldingIngredients(){
       if(!alt_method) CrossSectionH(h_data_v.back(),POT*ratio);
       else CrossSectionH(h_data_v.back(),POT);
       mchm.Restore(h_data_v.back());
+      h_data_v.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h_data_v.back()->Write(("Data_"+std::to_string(i_u)).c_str());
     }
 
@@ -261,6 +272,7 @@ void MakeFoldingIngredients(){
       else CrossSectionH(h_bgs_data_v.back(),POT);
 
       mchm.Restore(h_bgs_data_v.back());
+      h_bgs_data_v.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       h_bgs_data_v.back()->Write(("BGSData_"+std::to_string(i_u)).c_str());
     }
 
@@ -293,6 +305,7 @@ void MakeFoldingIngredients(){
           TH2D* h_res = (TH2D*)f_hist->Get(("Response/Vars/"+sys+"/h_Signal_"+std::to_string(i_u)).c_str());
           h.push_back(Multiply(h_gen_truth,h_res,"Pred_"+std::to_string(i_u)));
           mchm.Restore(h.back());
+          h.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
           h.back()->Write(("Pred_"+std::to_string(i_u)).c_str());
         }
         f_out->cd();
@@ -312,6 +325,7 @@ void MakeFoldingIngredients(){
         f_out->cd(("Vars/"+sys+"/"+gen).c_str());
         TH1D* h = Multiply(h_gen_truth,(TH2D*)f_hist->Get(("Response/Vars/"+sys+"/h_Signal").c_str()),"Pred");
         mchm.Restore(h);
+        h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
         h->Write("Pred");
 
         f_out->cd();
@@ -334,11 +348,14 @@ void MakeFoldingIngredients(){
                                          : (TH1D*)f_flux_ratios->Get(Form("Ratios/NuMu/h_NuMu_FluxRatio_%i",i_u));
         
         TH1D* h_gen_truth_flux = Multiply(h_flux_ratio,h_gen_truth_2d,Form("h_gen_truth_f%i",i_u)); // Gen truth in flux universe
+        h_gen_truth_flux->GetXaxis()->SetTitle(h_gen_truth_2d->GetYaxis()->GetTitle());
+        h_gen_truth_flux->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
         h_gen_truth_flux->Write(("Truth_"+std::to_string(i_u)).c_str());
         TH2D* h_res = (TH2D*)f_hist->Get(("Response/Vars/Flux/h_Signal_"+std::to_string(i_u)).c_str());
         h_gen_ff_flux_v.push_back(Multiply(h_gen_truth_flux,h_res,Form("h_gen_f%i",i_u))); // Gen in reco space in flux universe
         delete h_gen_truth_flux;
         mchm.Restore(h_gen_ff_flux_v.back());
+        h_gen_ff_flux_v.back()->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
         h_gen_ff_flux_v.back()->Write(("Pred_"+std::to_string(i_u)).c_str());
       }
 
