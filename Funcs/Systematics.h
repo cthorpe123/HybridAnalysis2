@@ -279,7 +279,16 @@ std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,const TH2D* h_Cov,bool 
 void MakeFCov(TH2D* h_cov,const TH1D* h_val){
   for(int i_b=0;i_b<h_cov->GetNbinsX()+2;i_b++)
     for(int j_b=0;j_b<h_cov->GetNbinsX()+2;j_b++)
-    h_cov->SetBinContent(i_b,j_b,h_cov->GetBinContent(i_b,j_b)/h_val->GetBinContent(i_b)/h_val->GetBinContent(j_b));
+      h_cov->SetBinContent(i_b,j_b,h_cov->GetBinContent(i_b,j_b)/h_val->GetBinContent(i_b)/h_val->GetBinContent(j_b));
+}
+
+///////////////////////////////////////////////////////////////////////
+// Make covariance from fractional covariance
+
+void MakeCov(TH2D* h_cov,const TH1D* h_val){
+  for(int i_b=0;i_b<h_cov->GetNbinsX()+2;i_b++)
+    for(int j_b=0;j_b<h_cov->GetNbinsX()+2;j_b++)
+      h_cov->SetBinContent(i_b,j_b,h_cov->GetBinContent(i_b,j_b)*h_val->GetBinContent(i_b)*h_val->GetBinContent(j_b));
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -291,6 +300,64 @@ void MakeFEHist(TH1D* h_fe,const TH1D* h_val,const TH2D* h_cov){
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Calculate covariance matrix decompositions
+
+void ShapeCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_shape){
+  double N = IntegralWithOU(h);
+  h_cov_shape = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Shape").c_str());
+  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
+    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
+      double x = h_cov->GetBinContent(i,j);
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        x -= (h->GetBinContent(j)/N)*h_cov->GetBinContent(i,k);
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        x -= (h->GetBinContent(i)/N)*h_cov->GetBinContent(k,j);
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
+          x += (h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
+      h_cov_shape->SetBinContent(i,j,x);
+    }
+  }
+}
+
+void MixCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_mix){
+  double N = IntegralWithOU(h);
+  h_cov_mix = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Mixed").c_str());
+  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
+    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
+      double x = 0;
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        x += (h->GetBinContent(j)/N)*h_cov->GetBinContent(i,k);
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        x += (h->GetBinContent(i)/N)*h_cov->GetBinContent(k,j);
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
+          x -= 2*(h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
+      h_cov_mix->SetBinContent(i,j,x);
+    }
+  }
+}
+
+void NormCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_norm){
+  double N = IntegralWithOU(h);
+  h_cov_norm = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Norm").c_str());
+  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
+    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
+      double x = 0;
+      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
+        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
+          x += (h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
+      h_cov_norm->SetBinContent(i,j,x);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+
 
 }
 

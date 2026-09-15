@@ -47,10 +47,14 @@ void Recipe1(){
       f_out->mkdir(gen.c_str());
       f_out->cd(gen.c_str());
 
-      const TH1D* h_bgs_data = (TH1D*)f_in->Get("CV/BGSData");
-      const TH1D* h_pred = (TH1D*)f_in->Get(("CV/"+gen).c_str());
+      TH1D* h_bgs_data = (TH1D*)f_in->Get("CV/BGSData");
+      TH1D* h_pred = (TH1D*)f_in->Get(("CV/"+gen).c_str());
 
-      h_pred->Write("Pred");
+      // The covariance calculated in this macro only covers the Pred
+      // side of the BGSData-Pred residual, so zero out BGSData's errors
+      // rather than leave them showing an incomplete/misleading uncertainty
+      for(int i=0;i<=h_bgs_data->GetNbinsX()+1;i++)
+        h_bgs_data->SetBinError(i,0);
       h_bgs_data->Write("BGSData");
 
       h_cov_tot.push_back((TH2D*)f_in->Get("Cov/DataStat/h_Cov")->Clone(("h_Cov_Tot_"+gen).c_str()));
@@ -95,6 +99,12 @@ void Recipe1(){
         delete h_bgs_data_tmp;
       }
       
+
+      // Set the errors on the Pred histogram from the diagonal of the
+      // total covariance, then write it out
+      for(int i=0;i<=h_pred->GetNbinsX()+1;i++)
+        h_pred->SetBinError(i,std::sqrt(h_cov_tot.back()->GetBinContent(i,i)));
+      h_pred->Write("Pred");
 
       h_cov_tot.back()->Write("Cov_Total");
 

@@ -76,11 +76,8 @@ void Recipe5(){
       f_out->mkdir(gen.c_str());
       f_out->cd(gen.c_str());
 
-      const TH1D* h_bgs_data = (TH1D*)f_in->Get("CV/BGSData");
-      const TH1D* h_pred = (TH1D*)f_in->Get(("CV/"+gen).c_str());
-
-      h_pred->Write("Pred");
-      h_bgs_data->Write("BGSData");
+      TH1D* h_bgs_data = (TH1D*)f_in->Get("CV/BGSData");
+      TH1D* h_pred = (TH1D*)f_in->Get(("CV/"+gen).c_str());
 
       // Size this to match the stitched (BGSData+Pred) histograms used
       // throughout this loop, rather than the plain BGSData binning
@@ -164,6 +161,17 @@ void Recipe5(){
         for(int j=0;j<n_stitch+2;j++)
           h_cov_tot_stitch.back()->SetBinContent(i,j,h_fcov_tot_stitch.back()->GetBinContent(i,j)*StitchCV(i)*StitchCV(j));
 
+      // Set the errors on h_bgs_data/h_pred from the diagonal of their
+      // respective blocks (first/second) of the total stitched covariance
+      // matrix, then write them out
+      for(int i=0;i<=n1+1;i++)
+        h_bgs_data->SetBinError(i,std::sqrt(h_cov_tot_stitch.back()->GetBinContent(i,i)));
+      int n2 = h_pred->GetNbinsX();
+      for(int i=0;i<=n2+1;i++)
+        h_pred->SetBinError(i,std::sqrt(h_cov_tot_stitch.back()->GetBinContent(n1+2+i,n1+2+i)));
+      h_pred->Write("Pred");
+      h_bgs_data->Write("BGSData");
+
       std::map<std::string,std::vector<TH2D*>> h_cov_m_stitch;
       for(auto item : h_fcov_m_stitch){
         h_cov_m_stitch[item.first].push_back((TH2D*)item.second.back()->Clone(("h_Cov_"+item.first+"_Stitch_"+gen).c_str()));
@@ -171,6 +179,13 @@ void Recipe5(){
           for(int j=0;j<n_stitch+2;j++)
             h_cov_m_stitch[item.first].back()->SetBinContent(i,j,item.second.back()->GetBinContent(i,j)*StitchCV(i)*StitchCV(j));
       }
+
+      // Also write out the stitched (BGSData+Pred) covariance matrices
+      // themselves, on the unit-width stitched binning, alongside the
+      // diff (residual) covariances computed below
+      h_cov_tot_stitch.back()->Write("Cov_Stitch_Total");
+      for(auto item : h_cov_m_stitch)
+        item.second.back()->Write(("Cov_Stitch_"+item.first).c_str());
 
       // Use the (now absolute) stitched covariance matrices to build the
       // covariance matrix of the residual z = h_bgs_data-h_pred. With x,y

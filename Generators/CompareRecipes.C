@@ -102,8 +102,11 @@ void CompareRecipes(){
         h_data = (TH1D*)f_in_v.at(i_r)->Get((generators.at(i_g)+"/BGSData").c_str()); 
         const TH2D* h_cov =  h_cov_m["Total"].at(i_g).at(i_r);
         const TH2D* h_cov_data = h_cov_m["DataStat"].at(i_g).at(i_r);
+        
+        /*
         TH2D* h_cov_pred = (TH2D*)h_cov->Clone("h_cov_pred"); 
         h_cov_pred->Add(h_cov_m["DataStat"].at(i_g).at(i_r),-1);
+        */
 
         std::pair<double,int> chi2 = Chi2(h_pred,h_data,h_cov,draw_o,draw_u,false);
         chi2_v.back().push_back(chi2);
@@ -111,15 +114,16 @@ void CompareRecipes(){
         
         std::pair<double,int> chi2_diag = Chi2(h_pred,h_data,h_cov,draw_o,draw_u,true);
         std::cout << "Recipe " << i_r+1 << " "  << var << " " << gen << ", chi2/ndof = " << chi2_diag.first << "/" << chi2_diag.second << " = " << chi2_diag.first/chi2_diag.second << std::endl;
-
+        /*
         for(int i=0;i<h_data->GetNbinsX()+2;i++){
           h_data->SetBinError(i,sqrt(h_cov_data->GetBinContent(i,i)));
           h_pred->SetBinError(i,sqrt(h_cov_pred->GetBinContent(i,i)));
         }
-
+        */
         std::string leg = gen + ", chi2/ndof = " + to_string_with_precision(chi2.first/chi2.second,2);
         pfs::DrawUnstacked({h_data,h_pred},{1,(int)i_g+2},{"Data",leg},draw_o,draw_u,true,true,plot_dir_gen+"Test_"+recipes.at(i_r)+".png");
 
+        /*
         for(int i=0;i<h_data->GetNbinsX()+2;i++){
           h_data->SetBinError(i,0);
           h_pred->SetBinError(i,sqrt(h_cov->GetBinContent(i,i)));
@@ -129,9 +133,11 @@ void CompareRecipes(){
 
         leg = gen + ", chi2/ndof = " + to_string_with_precision(chi2_diag.first/chi2_diag.second,2);
         pfs::DrawUnstacked({h_data,h_pred},{1,(int)i_g+2},{"Data",leg},draw_o,draw_u,true,true,plot_dir_gen+"Test_DiagOnly_"+recipes.at(i_r)+".png");
-        
+        */
 
+        /*
         delete h_cov_pred;
+        */
 
       }
 
@@ -148,11 +154,11 @@ void CompareRecipes(){
         h_pred_v.push_back((TH1D*)f_in_v.at(0)->Get((gen+"/Pred").c_str())->Clone(("h_Pred_"+gen).c_str()));
         legs.push_back(gen+" #chi^{2}/n="+to_string_with_precision(chi2_v.at(i_g).at(i_r).first/chi2_v.at(i_g).at(i_r).second,2));
         const TH2D* h_cov =  h_cov_m["Total"].at(i_g).at(i_r);
-        for(int i_b=0;i_b<h_pred_v.back()->GetNbinsX()+2;i_b++) h_pred_v.back()->SetBinError(i_b,sqrt(h_cov->GetBinContent(i_b,i_b)));
+        //for(int i_b=0;i_b<h_pred_v.back()->GetNbinsX()+2;i_b++) h_pred_v.back()->SetBinError(i_b,sqrt(h_cov->GetBinContent(i_b,i_b)));
       }
 
       h_pred_v.push_back((TH1D*)f_in_v.at(i_r)->Get((generators.at(0)+"/BGSData").c_str())->Clone("h_data"));
-      for(int i_b=0;i_b<h_pred_v.back()->GetNbinsX()+2;i_b++) h_pred_v.back()->SetBinError(i_b,0);
+      //for(int i_b=0;i_b<h_pred_v.back()->GetNbinsX()+2;i_b++) h_pred_v.back()->SetBinError(i_b,0);
       cols.push_back(1);
       legs.push_back("Asimov Data");
 
