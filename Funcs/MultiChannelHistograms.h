@@ -104,7 +104,7 @@ void MultiChannelHistogramManager::LoadTemplates()
   if(_template_set) 
     throw std::invalid_argument("MultiChannelHistogramManager::LoadTemplates: Error, template is already set");
 
-  TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str());
+  TFile* f_tp = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/BinningTemplate.root").c_str());
 
   // Check if multiple templates exist or not
   std::vector<const char*> keys;
@@ -125,7 +125,7 @@ void MultiChannelHistogramManager::LoadTemplates()
 
   if(_save_truth){
 
-    TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
+    TFile* f_tp_truth = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str());
 
   // Check if multiple templates exist or not
     for(auto key : *f_tp_truth->GetListOfKeys())
@@ -171,17 +171,17 @@ void MultiChannelHistogramManager::SetTemplates(std::string axis_title,int nbins
   // If templates not provided in file, generate the file here, will be needed later on
   // when using other scripts that call Restore without having access to the original templates
 
-  system(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
+  system(("mkdir -p "+AnalysisDir()+"/"+_label+"/rootfiles/").c_str());
 
   TH1D* h_tp = new TH1D("h_template_All",axis_title.c_str(),nbins_r,low_r,high_r);
-  TFile* f_tp = TFile::Open(("Analysis/"+_label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
+  TFile* f_tp = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE");
   h_tp->Write();
   f_tp->Close();
   delete h_tp;  
 
     if(_save_truth){
       TH1D* h_tp_truth = new TH1D("h_template_All",axis_title.c_str(),nbins_t,low_t,high_t);
-      TFile* f_tp_truth = TFile::Open(("Analysis/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
+      TFile* f_tp_truth = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
       h_tp_truth->Write();
       f_tp_truth->Close();
       delete h_tp_truth;  

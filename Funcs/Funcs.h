@@ -2,6 +2,19 @@
 #define _Funcs_h_
 
 #include <vector>
+#include <string>
+#include <cstdlib>
+#include <stdexcept>
+
+///////////////////////////////////////////////////////////////////////
+// Top level directory for analysis outputs, set by $DIS_ANALYSIS_DIR
+
+std::string AnalysisDir(){
+  const char* dir = std::getenv("DIS_ANALYSIS_DIR");
+  if(dir == nullptr || std::string(dir).empty())
+    throw std::runtime_error("AnalysisDir: DIS_ANALYSIS_DIR environment variable is not set");
+  return std::string(dir);
+}
 
 ///////////////////////////////////////////////////////////////////////
 // Fiducial volume definitions

@@ -1,6 +1,8 @@
 #ifndef _BinningFuncs_h_
 #define _BinningFuncs_h_
 
+#include "Funcs.h"
+
 namespace binning {
 
 const double _EPSILON_ = 1e-10;
@@ -45,9 +47,10 @@ bool MakeBinningTemplate(std::string label,TH1D* h_data,bool truth=false,double 
 
   std::cout << "Generating binning template for " << label << std::endl;
 
-  gSystem->Exec(("mkdir -p Analysis/"+label+"/rootfiles/").c_str());
-  TFile* f_out = !truth ? TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE")
-                        : TFile::Open(("Analysis/"+label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
+  std::string dir = AnalysisDir() + "/" + label + "/rootfiles/";
+  gSystem->Exec(("mkdir -p " + dir).c_str());
+  TFile* f_out = !truth ? TFile::Open((dir+"BinningTemplate.root").c_str(),"RECREATE")
+                        : TFile::Open((dir+"TruthBinningTemplate.root").c_str(),"RECREATE");
   
   // If stats in channel are too low to have more than 1 bin
   if(h_data->Integral() < _EPSILON_ || 1.0/sqrt(h_data->Integral()) >= target_fe){
@@ -83,9 +86,10 @@ bool MakeMultiChannelTemplate(std::string label,std::map<std::string,TH1D*> h_da
 
   std::cout << "Generating binning template for " << label << std::endl;
 
-  gSystem->Exec(("mkdir -p Analysis/"+label+"/rootfiles/").c_str());
-  TFile* f_out = !truth ? TFile::Open(("Analysis/"+label+"/rootfiles/BinningTemplate.root").c_str(),"RECREATE")
-                        : TFile::Open(("Analysis/"+label+"/rootfiles/TruthBinningTemplate.root").c_str(),"RECREATE");
+  std::string dir = AnalysisDir() + "/" + label + "/rootfiles/";
+  gSystem->Exec(("mkdir -p " + dir).c_str());
+  TFile* f_out = !truth ? TFile::Open((dir+"BinningTemplate.root").c_str(),"RECREATE")
+                        : TFile::Open((dir+"TruthBinningTemplate.root").c_str(),"RECREATE");
  
   std::map<std::string,TH1D*>::iterator it;
   for(it = h_data_m.begin();it != h_data_m.end();it++){

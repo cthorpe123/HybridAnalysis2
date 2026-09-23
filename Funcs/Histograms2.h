@@ -117,14 +117,14 @@ void HistogramManager::LoadTemplate(std::string t)
 
   if(t == "") t = _label;
 
-  TFile* f_tp = TFile::Open(("Analysis/"+t+"/rootfiles/BinningTemplate.root").c_str());
+  TFile* f_tp = TFile::Open((AnalysisDir()+"/"+t+"/rootfiles/BinningTemplate.root").c_str());
   _h_tp = (TH1D*)f_tp->Get("h_template");
   _h_tp->SetDirectory(0);
   f_tp->Close();
   _h_tp->SetName(("h_template_"+_label).c_str()); 
 
   if(_save_truth){ 
-    TFile* f_tp_truth = TFile::Open(("Analysis/"+t+"/rootfiles/TruthBinningTemplate.root").c_str());
+    TFile* f_tp_truth = TFile::Open((AnalysisDir()+"/"+t+"/rootfiles/TruthBinningTemplate.root").c_str());
     _h_tp_truth = (TH1D*)f_tp_truth->Get("h_template");
     _h_tp_truth->SetDirectory(0);
     f_tp_truth->Close();
@@ -533,8 +533,8 @@ void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool se
 void HistogramManager::Write()
 {
   std::cout << "Writing histograms for " << _label << std::endl;
-  gSystem->Exec(("mkdir -p Analysis/"+_label+"/rootfiles/").c_str());
-  _f_out = TFile::Open(("Analysis/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
+  gSystem->Exec(("mkdir -p "+AnalysisDir()+"/"+_label+"/rootfiles/").c_str());
+  _f_out = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
 
   _GetIntegrals();
   _ScaleSpecial();
