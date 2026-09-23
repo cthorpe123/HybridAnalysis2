@@ -71,8 +71,6 @@ void MakeGeneratorXSec(){
       vars_t->emplace("Enu",nu_e);
 
       if(generators.at(i_f) == "Untunedv3.0.6") gen_weight = 1.0;
-      
-      //is_signal_t = abs(nu_pdg) == 14 && ccnc == 1 && has_muon_t/* && nprot_t > 0*/; 
 
       double weight = flux_weight*gen_weight*scale*1e38*40;
 

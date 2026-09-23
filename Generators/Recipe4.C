@@ -55,7 +55,9 @@ void Recipe4(){
         TH2D *c,*fc;
         CalcCovMultisim(gen_ref+"_"+sys,h,c,fc);
         h_fcov_ref[sys] = fc;
-        pfs::Draw2DHist(fc,plot_dir+"FCov_Ref_"+sys+"_"+gen_ref+".png");
+        std::string plot_dir_sys = plot_dir+sys+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(fc,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+".png");
       }
 
       
@@ -65,7 +67,9 @@ void Recipe4(){
         TH2D *c,*fc;
         CalcCovUnisim(gen_ref+"_"+sys,h_pred_ref,h,c,fc);
         h_fcov_ref[sys] = fc;
-        pfs::Draw2DHist(fc,plot_dir+"FCov_Ref_"+sys+"_"+gen_ref+".png");
+        std::string plot_dir_sys = plot_dir+sys+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(fc,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+".png");
       }
       
 
@@ -141,7 +145,9 @@ void Recipe4(){
       std::vector<int> cols;
       int col = 2;
       for(auto item : h_cov_m){
-        pfs::Draw2DHist(item.second.back(),plot_dir+"Cov_"+item.first+"_"+gen+".png");
+        std::string plot_dir_sys = plot_dir+item.first+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(item.second.back(),plot_dir_sys+"Cov_"+item.first+"_"+gen+".png");
         h_fe_v.push_back((TH1D*)h_pred->Clone(("h_fe_"+item.first+"_"+gen).c_str()));
         legs.push_back(item.first);
         cols.push_back(col);

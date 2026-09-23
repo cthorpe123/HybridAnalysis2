@@ -18,7 +18,7 @@ void CompareRecipes(){
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe4","Recipe5"};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe4","Recipe7"};
   std::vector<int> styles = {2,3,4,6,7};
   int n_r=recipes.size();
   bool add_detvars = false;

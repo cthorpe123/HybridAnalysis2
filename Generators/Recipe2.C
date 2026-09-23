@@ -77,14 +77,16 @@ void Recipe2(){
         }
         TH2D *c,*fc;
         CalcCovMultisim(gen+"_"+sys,h,c,fc);
-        pfs::Draw2DHist(c,plot_dir+"Cov_NoBG_"+sys+"_"+gen+".png");
-        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()),plot_dir+"Cov_BG_"+sys+"_"+gen+".png");
+        std::string plot_dir_sys = plot_dir+sys+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(c,plot_dir_sys+"Cov_NoBG_"+sys+"_"+gen+".png");
+        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()),plot_dir_sys+"Cov_BG_"+sys+"_"+gen+".png");
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }
-      
+
       // Unisims
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);
@@ -94,8 +96,10 @@ void Recipe2(){
         h_data_tmp->Add(h_pred,-1);
         TH2D *c,*fc;
         CalcCovUnisim(gen+"_"+sys,h_data_tmp,h,c,fc);
-        pfs::Draw2DHist(c,plot_dir+"Cov_NoBG_"+sys+"_"+gen+".png");
-        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()),plot_dir+"Cov_BG_"+sys+"_"+gen+".png");
+        std::string plot_dir_sys = plot_dir+sys+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(c,plot_dir_sys+"Cov_NoBG_"+sys+"_"+gen+".png");
+        pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()),plot_dir_sys+"Cov_BG_"+sys+"_"+gen+".png");
         c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
@@ -116,7 +120,9 @@ void Recipe2(){
       std::vector<int> cols;
       int col = 2;
       for(auto item : h_cov_m){
-        pfs::Draw2DHist(item.second.back(),plot_dir+"Cov_"+item.first+"_"+gen+".png");
+        std::string plot_dir_sys = plot_dir+item.first+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(item.second.back(),plot_dir_sys+"Cov_"+item.first+"_"+gen+".png");
         h_fe_v.push_back((TH1D*)h_pred->Clone(("h_fe_"+item.first+"_"+gen).c_str()));
         legs.push_back(item.first);
         cols.push_back(col);

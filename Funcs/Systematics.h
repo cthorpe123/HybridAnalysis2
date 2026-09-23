@@ -97,7 +97,51 @@ void CalcCovMultisim(std::string sys,std::vector<TH1D*> h_Vars,TH2D*& h_Cov,TH2D
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Unisim covariance calculator 
+// Multisim covariance calculator for a single off-diagonal block, eg
+// Cov(A,B), between two (potentially different) observables. Each
+// universe in h_VarsA must correspond to the same universe in h_VarsB.
+
+void CalcCovMultisimBlock(std::string sys,std::vector<TH1D*> h_VarsA,std::vector<TH1D*> h_VarsB,TH2D*& h_Cov,TH2D*& h_FCov){
+
+  std::string axis_title_A = h_VarsA.at(0)->GetXaxis()->GetTitle();
+  std::string axis_title_B = h_VarsB.at(0)->GetXaxis()->GetTitle();
+
+  std::vector<double> bins_A;
+  for(int i=1;i<h_VarsA.at(0)->GetNbinsX()+2;i++) bins_A.push_back(h_VarsA.at(0)->GetBinLowEdge(i));
+  int n_bins_A = bins_A.size()-1;
+  double* bins_A_a = &bins_A[0];
+
+  std::vector<double> bins_B;
+  for(int i=1;i<h_VarsB.at(0)->GetNbinsX()+2;i++) bins_B.push_back(h_VarsB.at(0)->GetBinLowEdge(i));
+  int n_bins_B = bins_B.size()-1;
+  double* bins_B_a = &bins_B[0];
+
+  h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title_A+";"+axis_title_B+";").c_str(),n_bins_A,bins_A_a,n_bins_B,bins_B_a);
+  h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title_A+";"+axis_title_B+";").c_str(),n_bins_A,bins_A_a,n_bins_B,bins_B_a);
+
+  for(int i_bx=0;i_bx<h_VarsA.at(0)->GetNbinsX()+2;i_bx++){
+    for(int i_by=0;i_by<h_VarsB.at(0)->GetNbinsX()+2;i_by++){
+
+      double x = Mean(h_VarsA,i_bx);
+      double y = Mean(h_VarsB,i_by);
+
+      double cov = 0;
+      for(int i_u=0;i_u<h_VarsA.size();i_u++)
+        cov += (h_VarsA.at(i_u)->GetBinContent(i_bx) - x)*(h_VarsB.at(i_u)->GetBinContent(i_by) - y);
+      cov /= h_VarsA.size();
+
+      if(abs(x) > 0 && abs(y) > 0){
+        h_Cov->SetBinContent(i_bx,i_by,cov);
+        h_FCov->SetBinContent(i_bx,i_by,cov/x/y);
+      }
+
+    }
+  }
+
+}
+
+///////////////////////////////////////////////////////////////////////
+// Unisim covariance calculator
 
 void CalcCovUnisim(std::string sys,const TH1D* h_CV,TH1D* h_Var,TH2D*& h_Cov,TH2D*& h_FCov){
 
@@ -126,6 +170,43 @@ void CalcCovUnisim(std::string sys,const TH1D* h_CV,TH1D* h_Var,TH2D*& h_Cov,TH2
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Unisim covariance calculator for a single off-diagonal block, eg
+// Cov(A,B), between two (potentially different) observables. h_CVA/h_VarA
+// are the CV/variation for observable A, h_CVB/h_VarB for observable B.
+
+void CalcCovUnisimBlock(std::string sys,const TH1D* h_CVA,TH1D* h_VarA,const TH1D* h_CVB,TH1D* h_VarB,TH2D*& h_Cov,TH2D*& h_FCov){
+
+  std::string axis_title_A = h_CVA->GetXaxis()->GetTitle();
+  std::string axis_title_B = h_CVB->GetXaxis()->GetTitle();
+
+  std::vector<double> bins_A;
+  for(int i=1;i<h_CVA->GetNbinsX()+2;i++) bins_A.push_back(h_CVA->GetBinLowEdge(i));
+  int n_bins_A = bins_A.size()-1;
+  double* bins_A_a = &bins_A[0];
+
+  std::vector<double> bins_B;
+  for(int i=1;i<h_CVB->GetNbinsX()+2;i++) bins_B.push_back(h_CVB->GetBinLowEdge(i));
+  int n_bins_B = bins_B.size()-1;
+  double* bins_B_a = &bins_B[0];
+
+  h_Cov = new TH2D(("Cov_" + sys).c_str(),(";"+axis_title_A+";"+axis_title_B+";").c_str(),n_bins_A,bins_A_a,n_bins_B,bins_B_a);
+  h_FCov = new TH2D(("FCov_" + sys).c_str(),(";"+axis_title_A+";"+axis_title_B+";").c_str(),n_bins_A,bins_A_a,n_bins_B,bins_B_a);
+
+  for(int i_bx=0;i_bx<h_CVA->GetNbinsX()+2;i_bx++){
+    for(int i_by=0;i_by<h_CVB->GetNbinsX()+2;i_by++){
+      double x = h_CVA->GetBinContent(i_bx);
+      double y = h_CVB->GetBinContent(i_by);
+      double cov = (h_VarA->GetBinContent(i_bx) - x)*(h_VarB->GetBinContent(i_by) - y);
+      if(abs(x) > 0 && abs(y) > 0){
+        h_Cov->SetBinContent(i_bx,i_by,cov);
+        h_FCov->SetBinContent(i_bx,i_by,cov/x/y);
+      }
+    }
+  }
+
+}
+
+///////////////////////////////////////////////////////////////////////
 // Calculate correlation matrix
 
 TH2D* CalcCorrelationMatrix(std::string sys,const TH2D* h_Cov){
@@ -139,56 +220,7 @@ TH2D* CalcCorrelationMatrix(std::string sys,const TH2D* h_Cov){
   return h_Corr;
 } 
 
-///////////////////////////////////////////////////////////////////////
-// Convert a 2D histogram into a tmatrix 
-/*
-TMatrixDSym MakeCovMat(TH2D* h,bool over=false,bool under=false){
 
-  TMatrixDSym m(h->GetNbinsX());
-  for(int i=0;i<h->GetNbinsX()+2;i++)
-    for(int j=0;j<h->GetNbinsX()+2;j++)
-      m[i][j] = h->GetBinContent(i,j);
-
-  return m;
-}
-*/
-///////////////////////////////////////////////////////////////////////
-// Convert a 2D histogram into a tmatrix 
-/*
-std::vector<TH1D*> PadUniverses(TH1D* h,TH2D* h_cov,int nuniv){
-
-  //std::cout << "Doing PadUniverses" << std::endl;
-
-  TMatrixDSym m_Cov = MakeCovMat(h_cov); 
-  int dim = m_Cov.GetNrows();
-
-  TDecompChol* decomp = new TDecompChol(m_Cov);
-  bool valid = decomp->Decompose();
-  //std::cout << "valid = " << valid << std::endl;  
- 
-  if(!valid) return std::vector<TH1D*>();
-
-  TMatrixD m_decomp = decomp->GetU(); 
-  TMatrixD m_decomp_t = m_decomp;
-
-  TRandom2* r = new TRandom2();
-  std::vector<TH1D*> univ;
-
-  for(int i_u=0;i_u<nuniv;i_u++){
-    TMatrixD v(dim,1);
-    for(int i=0;i<dim;i++) v[i][0] = r->Gaus(0.0,1.0); 
-    TMatrixD weights = m_decomp*v;
-    univ.push_back((TH1D*)h->Clone((string(h->GetName())+"_"+std::to_string(i_u)).c_str()));
-    for(int i=1;i<h->GetNbinsX()+1;i++) univ.back()->SetBinContent(i,(1+weights[i-1][0])*h->GetBinContent(i));
-  }
-
-  delete r;
-  delete decomp;
-
-  return univ;
-
-}
-*/
 ///////////////////////////////////////////////////////////////////////
 // Select the correct unisim weight 
 
@@ -300,64 +332,6 @@ void MakeFEHist(TH1D* h_fe,const TH1D* h_val,const TH2D* h_cov){
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Calculate covariance matrix decompositions
-
-void ShapeCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_shape){
-  double N = IntegralWithOU(h);
-  h_cov_shape = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Shape").c_str());
-  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
-    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
-      double x = h_cov->GetBinContent(i,j);
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        x -= (h->GetBinContent(j)/N)*h_cov->GetBinContent(i,k);
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        x -= (h->GetBinContent(i)/N)*h_cov->GetBinContent(k,j);
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
-          x += (h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
-      h_cov_shape->SetBinContent(i,j,x);
-    }
-  }
-}
-
-void MixCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_mix){
-  double N = IntegralWithOU(h);
-  h_cov_mix = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Mixed").c_str());
-  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
-    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
-      double x = 0;
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        x += (h->GetBinContent(j)/N)*h_cov->GetBinContent(i,k);
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        x += (h->GetBinContent(i)/N)*h_cov->GetBinContent(k,j);
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
-          x -= 2*(h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
-      h_cov_mix->SetBinContent(i,j,x);
-    }
-  }
-}
-
-void NormCov(TH2D* h_cov,TH1D* h,TH2D*& h_cov_norm){
-  double N = IntegralWithOU(h);
-  h_cov_norm = (TH2D*)h_cov->Clone((string(h_cov->GetName())+"_Norm").c_str());
-  for(int i=0;i<h_cov->GetNbinsX()+2;i++){
-    for(int j=0;j<h_cov->GetNbinsY()+2;j++){
-      double x = 0;
-      for(int k=0;k<h_cov->GetNbinsX()+2;k++) 
-        for(int l=0;l<h_cov->GetNbinsX()+2;l++) 
-          x += (h->GetBinContent(i)*h->GetBinContent(j)/N/N)*h_cov->GetBinContent(k,l);
-      h_cov_norm->SetBinContent(i,j,x);
-    }
-  }
-}
-
-///////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////
-
 
 }
 
