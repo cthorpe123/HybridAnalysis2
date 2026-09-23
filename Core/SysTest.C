@@ -15,11 +15,12 @@ using namespace syst;
 
 void SysTest(){
 
-  std::vector<std::string> vars = {"ProtonKE","NProt","Channel"};
+  //std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta"};
 
-  bool draw_underflow = false;
-  bool draw_overflow = false;
-  bool add_detvars = false;
+  bool draw_underflow = true;
+  bool draw_overflow = true;
+  bool add_detvars = true;
   bool blinded = true;
   bool show_truth = false;
 
@@ -30,13 +31,13 @@ void SysTest(){
 
     std::string label = vars.at(i_f);
 
-    TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
+    TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
  
     hist::MultiChannelHistogramManager mchm(label);
     mchm.LoadTemplates();
 
-    std::string plot_dir = "Analysis/"+label+"/Plots/SysTest/" + dir + "/";
+    std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/" + dir + "/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
     std::string sub = dir+"/Cov/Total/"; 
@@ -56,7 +57,7 @@ void SysTest(){
 
     // Print Genie, Flux and Reint covariance and fractional covariance
     for(int i_s=0;i_s<kSystMAX;i_s++){
-      plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
+      plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
       sub = dir+"/Cov/"+sys_str.at(i_s)+"/"; 
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_"+plot).c_str()));
       mchm.Restore(h);
@@ -74,7 +75,7 @@ void SysTest(){
 
     // Print unisim covariance and fractional covariance
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
+      plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
       sub = dir+"/Cov/"+unisims_str.at(i_s)+"/"; 
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_"+plot).c_str()));
       mchm.Restore(h);
@@ -91,7 +92,7 @@ void SysTest(){
     }
 
     // Print the stat error covariance and fractional covariance
-    plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
+    plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
     TH2D* h_Cov_MCStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/MCStat/Cov_"+plot).c_str()));
     mchm.Restore(h_Cov_MCStat);
     pfs::Draw2DHist(h_Cov_MCStat,plot_dir+"Cov_MCStat.png");
@@ -119,7 +120,7 @@ void SysTest(){
       pfs::Draw2DHist(h_FCov_Detvar,plot_dir+"FCov_Detvar.png");
     } 
 
-    plot_dir = "Analysis/"+label+"/Plots/SysTest/"+dir+"/";
+    plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
     std::vector<TH1D*> h_FE;
     std::vector<int> colors;
     std::vector<std::string> legs;

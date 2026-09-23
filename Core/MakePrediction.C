@@ -15,16 +15,16 @@ using namespace syst;
 
 void MakePrediction(){
 
-  bool add_detvars = true;
+  bool add_detvars = false;
   bool blinded = true;
   bool draw_underflow = true;
   bool draw_overflow = true;
   bool dbbw = true;
   bool draw_truth = false;
 
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE"};
   //std::vector<std::string> vars = {"NPi"};
-  std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   vars.push_back("Norm");  
   std::vector<std::string> channels_t = {"All"};
@@ -33,8 +33,8 @@ void MakePrediction(){
   for(size_t i_f=0;i_f<vars.size();i_f++){
     std::string label = vars.at(i_f);
 
-    TFile* f_in_hist = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
+    TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     std::string dir = draw_truth ? "Truth" : "Reco"; 
 
@@ -84,7 +84,7 @@ void MakePrediction(){
         mchm.Restore(h_Data,ch,false);
       }
 
-      std::string plot_dir = "Analysis/"+label+"/Plots/MakePrediction/";
+      std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/MakePrediction/";
       gSystem->Exec(("mkdir -p "+plot_dir).c_str());
       std::string name = draw_truth ? plot_dir+"Pred_Truth_"+ch+".png" : plot_dir+"Pred_"+ch+".png";
       pfs::DrawStacked(h_CV,fill_colors,legs,h_CV_Tot,h_Data,draw_overflow,draw_underflow,dbbw,name,{0,-1});

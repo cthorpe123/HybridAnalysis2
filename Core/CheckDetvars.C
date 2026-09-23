@@ -27,11 +27,11 @@ void CheckDetvars(){
 
   for(std::string label : vars){
 
-    std::string plot_dir = "Analysis/"+label+"/Plots/CheckDetvars/";
+    std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/CheckDetvars/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
-    TFile* f_in = TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str());
-    TFile* f_in_hist = draw_hist ? TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str()) : nullptr;
+    TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str());
+    TFile* f_in_hist = draw_hist ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str()) : nullptr;
  
     hist::MultiChannelHistogramManager mchm(label);
     mchm.LoadTemplates();
