@@ -8,7 +8,7 @@
 #include "MultiChannelHistograms.h"
 #include "WeightFuncs.h"
 
-void MakeCov(){
+void MakeCovNuWro(){
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   std::vector<std::string> files_v = {

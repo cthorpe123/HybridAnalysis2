@@ -22,7 +22,11 @@ void MakePrediction(){
   bool dbbw = true;
   bool draw_truth = false;
 
+  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  //std::vector<std::string> vars = {"NPi"};
   std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
+  vars.push_back("Norm");  
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
