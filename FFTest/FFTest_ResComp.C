@@ -46,11 +46,11 @@ void FFTest_ResComp(){
     std::string label = vars.at(i_f);
     std::cout << label << std::endl;
 
-    std::string plot_dir = "Analysis/"+label+"/Plots/FFTest/";
+    std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/FFTest/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
-    TFile* f_in = TFile::Open(("Analysis/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = add_detvars ? TFile::Open(("Analysis/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
+    TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     hist::MultiChannelHistogramManager mchm(label,true);
     mchm.SetTrueChannelList(channels_t);

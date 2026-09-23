@@ -29,7 +29,7 @@ void MakeGeneratorXSec(){
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
 
   for(const std::string& var : vars){
-    TFile* f_tp_truth = TFile::Open(("Analysis/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
+    TFile* f_tp_truth = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/TruthBinningTemplate.root").c_str());
     std::vector<double> bin_edges;
     const TH1D* h_tmp =  (TH1D*)f_tp_truth->Get("h_template_All");
     for(int i_b=1;i_b<h_tmp->GetNbinsX()+2;i_b++) bin_edges.push_back(h_tmp->GetBinLowEdge(i_b));
@@ -89,7 +89,7 @@ void MakeGeneratorXSec(){
   }
 
   for(const std::string& var : vars){
-    TFile* f_out = TFile::Open(("Analysis/"+var+"/rootfiles/GeneratorXSec.root").c_str(), "RECREATE");
+    TFile* f_out = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/GeneratorXSec.root").c_str(), "RECREATE");
     for(const std::string& gen : generators){
       h_m.at(var).at(gen)->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
       f_out->cd();
@@ -100,7 +100,7 @@ void MakeGeneratorXSec(){
   }
 
   for(const std::string& var : vars){
-    gSystem->Exec(("mkdir -p Analysis/"+var+"/Plots/MakeGeneratorXSec").c_str());
+    gSystem->Exec(("mkdir -p "+AnalysisDir()+"/"+var+"/Plots/MakeGeneratorXSec").c_str());
     std::vector<TH1D*> h_v;
     std::vector<std::string> legs = generators;
     std::vector<int> cols;
@@ -113,7 +113,7 @@ void MakeGeneratorXSec(){
 
     TH1D* h_asimov = nullptr;
     if(load_asimov){
-      TFile* f_in_hist = TFile::Open(("Analysis/"+var+"/rootfiles/Histograms.root").c_str());
+      TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
       const double POT = ((TH1D*)f_in_hist->Get("Meta/POT"))->GetBinContent(1);
       hist::MultiChannelHistogramManager mchm(var,true);
       mchm.LoadTemplates();
@@ -128,7 +128,7 @@ void MakeGeneratorXSec(){
       legs.push_back("MicroBooNE");
       cols.push_back(kBlack);
     }
-    pfs::DrawUnstacked(h_v,cols,legs,draw_o,draw_u,false,dbbw,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
+    pfs::DrawUnstacked(h_v,cols,legs,draw_o,draw_u,false,dbbw,AnalysisDir()+"/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec.png");
 
     // Draw the ratio of each generator to the asimov if loaded
     if(load_asimov){
@@ -140,7 +140,7 @@ void MakeGeneratorXSec(){
         h_ratios.back()->Divide(h_asimov);
         std::cout << name << " " << h_ratios.back()->GetBinContent(1) << std::endl;
       }
-      pfs::DrawUnstacked(h_ratios,cols,legs,draw_o,draw_u,false,false,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSecRatios.png");
+      pfs::DrawUnstacked(h_ratios,cols,legs,draw_o,draw_u,false,false,AnalysisDir()+"/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSecRatios.png");
     }
 
     // Shape comparison: normalise each histogram to unit area
@@ -153,7 +153,7 @@ void MakeGeneratorXSec(){
       h_norm->GetYaxis()->SetTitle("Normalised");
       h_shape_v.push_back(h_norm);
     }
-    pfs::DrawUnstacked(h_shape_v, cols, legs,draw_o,draw_u,false,dbbw,"Analysis/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec_Shape.png");
+    pfs::DrawUnstacked(h_shape_v, cols, legs,draw_o,draw_u,false,dbbw,AnalysisDir()+"/"+var+"/Plots/MakeGeneratorXSec/GeneratorXSec_Shape.png");
     for(TH1D* h : h_shape_v) delete h;
   }
 

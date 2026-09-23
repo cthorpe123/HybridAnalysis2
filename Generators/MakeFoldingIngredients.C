@@ -41,14 +41,14 @@ void MakeFoldingIngredients(){
     std::vector<std::string> chi2s;
 
     // Open the file containing the histograms
-    TFile* f_hist = TFile::Open(("Analysis/"+var+"/rootfiles/Histograms.root").c_str());
+    TFile* f_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
     const double POT = ((TH1D*)f_hist->Get("Meta/POT"))->GetBinContent(1);
 
     // Open the file containing the generator predictions
-    TFile* f_gen = TFile::Open(("Analysis/"+var+"/rootfiles/GeneratorXSec.root").c_str());
+    TFile* f_gen = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/GeneratorXSec.root").c_str());
 
     // Open a file to write the outputs
-    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/FFGenerators.root").c_str(),"RECREATE");
+    TFile* f_out = new TFile((AnalysisDir()+"/"+var+"/rootfiles/FFGenerators.root").c_str(),"RECREATE");
 
     // Open the file containing the flux variations
     TFile* f_flux_ratios = TFile::Open("../Flux/FluxRatios.root");

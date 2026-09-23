@@ -44,10 +44,10 @@ void PlotFoldingIngredients(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = "Analysis/"+var+"/Plots/FoldingIngredients/";
+    std::string plot_dir = AnalysisDir()+"/"+var+"/Plots/FoldingIngredients/";
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
-    TFile* f_in = TFile::Open(("Analysis/"+var+"/rootfiles/FFGenerators.root").c_str());
+    TFile* f_in = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/FFGenerators.root").c_str());
     if(!f_in || f_in->IsZombie()){
       std::cout << "Could not open FFGenerators.root for " << var << ", run MakeFoldingIngredients.C first" << std::endl;
       continue;
@@ -55,7 +55,7 @@ void PlotFoldingIngredients(){
 
     // Response matrices themselves aren't copied into FFGenerators.root by
     // MakeFoldingIngredients.C, so pull them from Histograms.root instead
-    TFile* f_hist = TFile::Open(("Analysis/"+var+"/rootfiles/Histograms.root").c_str());
+    TFile* f_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
     if(!f_hist || f_hist->IsZombie())
       std::cout << "Could not open Histograms.root for " << var << ", won't be able to plot response matrices" << std::endl;
 
@@ -87,7 +87,7 @@ void PlotFoldingIngredients(){
 
     // Draw each generator's own truth-level (CV) prediction, from
     // GeneratorXSec.root, one canvas per generator
-    TFile* f_gen = TFile::Open(("Analysis/"+var+"/rootfiles/GeneratorXSec.root").c_str());
+    TFile* f_gen = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/GeneratorXSec.root").c_str());
     if(!f_gen || f_gen->IsZombie())
       std::cout << "Could not open GeneratorXSec.root for " << var << ", won't be able to plot generator truth" << std::endl;
     else{

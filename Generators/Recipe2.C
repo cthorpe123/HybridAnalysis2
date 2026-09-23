@@ -28,11 +28,11 @@ void Recipe2(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = "Analysis/"+var+"/Plots/Recipe2/";
+    std::string plot_dir = AnalysisDir()+"/"+var+"/Plots/Recipe2/";
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
-    TFile* f_in = TFile::Open(("Analysis/"+var+"/rootfiles/FFGenerators.root").c_str());
-    TFile* f_out = new TFile(("Analysis/"+var+"/rootfiles/Recipe2.root").c_str(),"RECREATE");
+    TFile* f_in = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/FFGenerators.root").c_str());
+    TFile* f_out = new TFile((AnalysisDir()+"/"+var+"/rootfiles/Recipe2.root").c_str(),"RECREATE");
 
     TH2D* h_cov_data_stat = (TH2D*)f_in->Get("Cov/DataStat/h_Cov"); // Cov for errors on data 
     TH2D* h_cov_bg_mc_stat = (TH2D*)f_in->Get("Cov/BGMCStat/h_Cov");

@@ -34,16 +34,16 @@ void CompareRecipes(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
-    std::string plot_dir = !shape_only ? "Analysis/"+var+"/Plots/CompareRecipes/" 
-                                       : "Analysis/"+var+"/Plots/CompareRecipesShape/";
+    std::string plot_dir = !shape_only ? AnalysisDir()+"/"+var+"/Plots/CompareRecipes/" 
+                                       : AnalysisDir()+"/"+var+"/Plots/CompareRecipesShape/";
     
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 
     // Open the files contianing the different recipes 
     std::vector<TFile*> f_in_v;
     for(std::string r : recipes){
-      if(!shape_only) f_in_v.push_back(TFile::Open(("Analysis/"+var+"/rootfiles/"+r+".root").c_str()));
-      else f_in_v.push_back(TFile::Open(("Analysis/"+var+"/rootfiles/"+r+"_ShapeOnly.root").c_str()));
+      if(!shape_only) f_in_v.push_back(TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/"+r+".root").c_str()));
+      else f_in_v.push_back(TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/"+r+"_ShapeOnly.root").c_str()));
     }
 
     // Big map storing the covariance calculated for each systematic, generator and recipe
@@ -68,8 +68,8 @@ void CompareRecipes(){
     std::vector<std::vector<std::pair<double,int>>> chi2_v;
     for(size_t i_g=0;i_g<generators.size();i_g++){
       std::string gen = generators.at(i_g);
-      std::string plot_dir_gen = !shape_only ? "Analysis/"+var+"/Plots/CompareRecipes/"+gen+"/" 
-                                             : "Analysis/"+var+"/Plots/CompareRecipesShape/"+gen+"/";
+      std::string plot_dir_gen = !shape_only ? AnalysisDir()+"/"+var+"/Plots/CompareRecipes/"+gen+"/" 
+                                             : AnalysisDir()+"/"+var+"/Plots/CompareRecipesShape/"+gen+"/";
       gSystem->Exec(("mkdir -p " + plot_dir_gen).c_str());
 
       TH1D* h_pred = (TH1D*)f_in_v.at(0)->Get((gen+"/Pred").c_str()); 
