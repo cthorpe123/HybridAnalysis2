@@ -32,6 +32,8 @@ void MakeCovDetvar(){
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root",
+    "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_4d.root",
+    "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root"/*,
 
@@ -43,6 +45,8 @@ void MakeCovDetvar(){
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root",
+    "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root",
+    "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
   };
@@ -59,7 +63,7 @@ void MakeCovDetvar(){
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
   } 
-
+  
   h_m.emplace("Norm",hist::MultiChannelHistogramManager("Norm",true));
   h_m.at("Norm").DetvarMode();
   h_m.at("Norm").SetTrueChannelList(channels_t);
@@ -75,6 +79,7 @@ void MakeCovDetvar(){
   h_m.at("Enu").KeepAll();
   h_m.at("Enu").LoadTemplates();
   h_m.at("Enu").MakeHM();
+  
 
   for(int i_f=0;i_f<files.size();i_f++){
     std::string file = files.at(i_f);

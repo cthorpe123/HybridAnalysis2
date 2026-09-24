@@ -144,7 +144,7 @@ void DetvarHistogramManager::_SetupHistograms()
   if(_save_truth){
    _SetupTruthHistograms();
    _SetupJointHistograms();
-  }
+  } 
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -152,7 +152,7 @@ void DetvarHistogramManager::_SetupHistograms()
 
 void DetvarHistogramManager::_SetupRecoHistograms()
 {
-
+  
   _bin_edges_r.clear();
   for(int i=1;i<_h_tp->GetNbinsX()+2;i++) _bin_edges_r.push_back(_h_tp->GetXaxis()->GetBinLowEdge(i));
   _nbins_r = _bin_edges_r.size()-1;
@@ -177,7 +177,7 @@ void DetvarHistogramManager::_SetupRecoHistograms()
 
 void DetvarHistogramManager::_SetupTruthHistograms()
 {
-
+  
   _bin_edges_t.clear();
   for(int i=1;i<_h_tp_truth->GetNbinsX()+2;i++) _bin_edges_t.push_back(_h_tp_truth->GetXaxis()->GetBinLowEdge(i));
   _nbins_t = _bin_edges_t.size()-1;
@@ -194,6 +194,7 @@ void DetvarHistogramManager::_SetupTruthHistograms()
 
 void DetvarHistogramManager::_SetupJointHistograms()
 {
+  
   // Storing totals
   std::string t_title = _h_tp_truth->GetXaxis()->GetTitle();
   std::string r_title = _h_tp->GetXaxis()->GetTitle();
@@ -203,7 +204,7 @@ void DetvarHistogramManager::_SetupJointHistograms()
   _h_tp_joint = new TH2D(("h_template_joint_"+_label).c_str(),title.c_str(),_nbins_t,&_bin_edges_t[0],_nbins_r,&_bin_edges_r[0]);
 
   for(int i_s=0;i_s<kDetvarMAX;i_s++)
-    _h_Vars_Joint_Signal.push_back((TH2D*)_h_CV_Joint_Signal->Clone(("h_Vars_Joint_Signal_"+unisims_str.at(i_s)+"_"+_label).c_str()));
+    _h_Vars_Joint_Signal.push_back((TH2D*)_h_CV_Joint_Signal->Clone(("h_Vars_Joint_Signal_"+detvar_str.at(i_s)+"_"+_label).c_str()));
  
 }
 

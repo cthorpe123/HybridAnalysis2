@@ -72,8 +72,8 @@ void Filter(){
   
 
   // Run 5 Detvars
-  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5_detvar/";
-  //is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5_detvar/";
+  is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root"; POT = 6.99969e+20; POT_weight = 1.547e+20/6.99969e+20; detvar_univ = -1;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root"; POT = 6.92835e+20; POT_weight = 1.547e+20/6.92835e+20; detvar_univ = syst::kLYAtt;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root"; POT = 6.92666e+20; POT_weight = 1.547e+20/6.92666e+20; detvar_univ = syst::kLYDown;
@@ -83,7 +83,7 @@ void Filter(){
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root"; POT = 6.63389e+20; POT_weight = 1.547e+20/6.63389e+20; detvar_univ = syst::kWMX;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root"; POT = 6.93401e+20; POT_weight = 1.547e+20/6.93401e+20; detvar_univ = syst::kWMYZ;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root"; POT = 6.88304e+20; POT_weight = 1.547e+20/6.88304e+20; detvar_univ = syst::kWMThXZ;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root"; POT = 6.69678e+20; POT_weight = 1.547e+20/6.69678e+20; detvar_univ = syst::kWMThYZ;
+  std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root"; POT = 6.69678e+20; POT_weight = 1.547e+20/6.69678e+20; detvar_univ = syst::kWMThYZ;
 
   // NuWro FD - run 5 - weight to run 5 data POT
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
