@@ -15,7 +15,7 @@ using namespace syst;
 
 void MakePrediction(){
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool blinded = true;
   bool draw_underflow = true;
   bool draw_overflow = true;
@@ -68,9 +68,7 @@ void MakePrediction(){
       // Detvar prediction isn't guaranteed to match CV's exposure - use FCov and scale
       if(add_detvars){
         TH2D* h_FCov_Detvar = draw_truth ? (TH2D*)f_in_hist->Get("Truth/Cov/Total/FCov_Signal") : (TH2D*)f_in_hist->Get("Reco/Cov/Total/FCov_Tot");
-        for(int i=0;i<h_CV_Tot->GetNbinsX()+2;i++)
-          for(int j=0;j<h_CV_Tot->GetNbinsX()+2;j++)
-            h_FCov_Detvar->SetBinContent(i,j,h_FCov_Detvar->GetBinContent(i,j)*h_CV_Tot->GetBinContent(i)*h_CV_Tot->GetBinContent(j));
+        MakeCov(h_FCov_Detvar,h_CV_Tot);
         h_Cov->Add(h_FCov_Detvar); 
       }
 

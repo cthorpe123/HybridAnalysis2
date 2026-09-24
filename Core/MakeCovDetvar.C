@@ -15,25 +15,12 @@ using namespace syst;
 
 void MakeCovDetvar(){
 
-  //std::vector<std::string> channels_t = {"1p","2p","3p"}; 
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta"};
+  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE"};
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
-
-  std::map<std::string,hist::MultiChannelHistogramManager> h_m;
-  for(std::string var : vars){
-    h_m.emplace(var,hist::MultiChannelHistogramManager(var,true));
-    h_m.at(var).DetvarMode();
-    h_m.at(var).SetTrueChannelList(channels_t);
-    h_m.at(var).SetRecoChannelList(channels_r);
-    h_m.at(var).KeepAll();
-    if(!in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
-    else h_m.at(var).SetTemplates("",4,-0.5,3.5,4,-0.5,3.5); 
-    h_m.at(var).MakeHM();
-  } 
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
   std::vector<std::string> files = {
@@ -46,7 +33,7 @@ void MakeCovDetvar(){
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
+    "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root"/*,
 
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root",
@@ -57,8 +44,37 @@ void MakeCovDetvar(){
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root" 
+    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
   };
+
+  std::map<std::string,hist::MultiChannelHistogramManager> h_m;
+  for(std::string var : vars){
+    h_m.emplace(var,hist::MultiChannelHistogramManager(var,true));
+    h_m.at(var).DetvarMode();
+    h_m.at(var).SetTrueChannelList(channels_t);
+    h_m.at(var).SetRecoChannelList(channels_r);
+    h_m.at(var).KeepAll();
+    if(!in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5); 
+    else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
+    h_m.at(var).MakeHM();
+  } 
+
+  h_m.emplace("Norm",hist::MultiChannelHistogramManager("Norm",true));
+  h_m.at("Norm").DetvarMode();
+  h_m.at("Norm").SetTrueChannelList(channels_t);
+  h_m.at("Norm").SetRecoChannelList(channels_r);
+  h_m.at("Norm").KeepAll();
+  h_m.at("Norm").SetTemplates("",1,0,1,1,0,1); 
+  h_m.at("Norm").MakeHM();
+
+  h_m.emplace("Enu",hist::MultiChannelHistogramManager("Enu",true));
+  h_m.at("Enu").DetvarMode();
+  h_m.at("Enu").SetTrueChannelList(channels_t);
+  h_m.at("Enu").SetRecoChannelList(channels_r);
+  h_m.at("Enu").KeepAll();
+  h_m.at("Enu").LoadTemplates();
+  h_m.at("Enu").MakeHM();
 
   for(int i_f=0;i_f<files.size();i_f++){
     std::string file = files.at(i_f);
@@ -76,6 +92,12 @@ void MakeCovDetvar(){
 
       std::string channel_t = "All";
       std::string channel_h8 = "All";
+
+      vars_t->emplace("Enu",nu_e);
+      vars_h8->emplace("Enu",nu_e);
+
+      vars_t->emplace("Norm",0.5);
+      vars_h8->emplace("Norm",0.5);
 
       for(const auto &item : h_m){
         std::string var = item.first;

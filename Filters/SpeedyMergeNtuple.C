@@ -9,11 +9,15 @@ void SpeedyMergeNtuple(){
 
   // Run 4b Main Samples
   //std::string dir_in = "/exp/uboone/data/users/uboonepro/SURPRISE/run4b_full_samples/BNB/";
-  //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";             is_data = false;  save_syst = false;
+  ////std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root";             is_data = false;  save_syst = false;
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/retuple/BNB/";
   //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root"; is_data = false;  save_syst = true;
   //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_off_metapatch_retuple_retuple_hist.root";  is_data = true;  save_syst = false;
   //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_on_metapatch_retuple_retuple_hist.root";         is_data = true;  save_syst = false;
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/temp/";
+  //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root"; is_data = false;  save_syst = false;
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/temp/";
+  //std::string filename = "checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root"; is_data = false;  save_syst = true;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run4b/";
 
   // Run 4c Main Samples
@@ -43,6 +47,9 @@ void SpeedyMergeNtuple(){
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/run5_full_samples/wc_processed/BNB/";
   //std::string filename = "checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root";        is_data = true;  save_syst = false;
   //std::string filename = "checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root";         is_data = true;  save_syst = false;
+  //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/temp/";
+  //std::string filename = "checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root";  is_data = false;  save_syst = false;
+  //std::string filename = "checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_5.root";     is_data = false;  save_syst = true;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5/";
 
   // Run 4 Detvars
@@ -55,6 +62,8 @@ void SpeedyMergeNtuple(){
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root";      is_data = false;  save_syst = false;
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root";     is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_4d.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_4d.root"; is_data = false;  save_syst = false;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run4_detvar/";
 
   // Run 5 Detvars
@@ -66,7 +75,9 @@ void SpeedyMergeNtuple(){
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_recomb2_surprise_reco2_hist_5.root";  is_data = false;  save_syst = false;
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root";      is_data = false;  save_syst = false;
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root";      is_data = false;  save_syst = false;
-  std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root";     is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root";     is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root";  is_data = false;  save_syst = false;
+  std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root"; is_data = false;  save_syst = false;
   std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5_detvar/";
  
   // Open the two files and setup branches to read the RSE numbers
