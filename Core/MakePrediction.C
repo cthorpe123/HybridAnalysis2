@@ -26,7 +26,7 @@ void MakePrediction(){
   //std::vector<std::string> vars = {"NPi"};
   //std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
-  vars.push_back("Norm");  
+  //vars.push_back("Norm");  
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
