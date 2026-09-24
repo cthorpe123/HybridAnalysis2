@@ -439,8 +439,8 @@ void DetvarHistogramManager::_WriteTruth()
 
   _f_out->mkdir("Truth/Cov/Total");
   _f_out->cd("Truth/Cov/Total");
-  h_Cov->Write("Cov_Tot"); 
-  h_FCov->Write("FCov_Tot"); 
+  h_Cov->Write("Cov_Signal"); 
+  h_FCov->Write("FCov_Signal"); 
   _f_out->cd();
 
 }
