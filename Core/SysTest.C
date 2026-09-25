@@ -16,13 +16,13 @@ using namespace syst;
 void SysTest(){
 
   //std::vector<std::string> vars = var_names;
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta"};
+  std::vector<std::string> vars = {"MuonMom","Norm","Enu","LeadProtonKE","run"};
 
   bool draw_underflow = true;
   bool draw_overflow = true;
   bool add_detvars = true;
   bool blinded = true;
-  bool show_truth = false;
+  bool show_truth = true;
 
   std::string dir = show_truth ? "Truth" : "Reco"; 
   std::string plot = show_truth ? "Signal" : "Tot";
@@ -34,7 +34,7 @@ void SysTest(){
     TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
     TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
  
-    hist::MultiChannelHistogramManager mchm(label);
+    hist::MultiChannelHistogramManager mchm(label,true);
     mchm.LoadTemplates();
 
     std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/" + dir + "/";
@@ -44,15 +44,15 @@ void SysTest(){
 
     // Print total covariance and total fractional covariance
     TH2D* h_Cov = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_"+plot).c_str()));
-    mchm.Restore(h_Cov);
+    mchm.Restore(h_Cov,"All",show_truth);
     pfs::Draw2DHist(h_Cov,plot_dir+"Cov.png");
 
     TH2D* h_FCov = static_cast<TH2D*>(f_in_hist->Get((sub+"FCov_"+plot).c_str()));
-    mchm.Restore(h_FCov);
+    mchm.Restore(h_FCov,"All",show_truth);
     pfs::Draw2DHist(h_FCov,plot_dir+"FCov.png");
 
     TH2D* h_Corr = CalcCorrelationMatrix("",h_Cov);
-    mchm.Restore(h_Corr);
+    mchm.Restore(h_Corr,"All",show_truth);
     pfs::Draw2DHist(h_Corr,plot_dir+"Corr.png");
 
     // Print Genie, Flux and Reint covariance and fractional covariance
@@ -60,13 +60,13 @@ void SysTest(){
       plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
       sub = dir+"/Cov/"+sys_str.at(i_s)+"/"; 
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_"+plot).c_str()));
-      mchm.Restore(h);
+      mchm.Restore(h,"All",show_truth);
       pfs::Draw2DHist(h,plot_dir+"Cov_"+sys_str.at(i_s)+".png");
       TH2D* hf = static_cast<TH2D*>(f_in_hist->Get((sub+"FCov_"+plot).c_str()));
-      mchm.Restore(hf);
+      mchm.Restore(hf,"All",show_truth);
       pfs::Draw2DHist(hf,plot_dir+"FCov_"+sys_str.at(i_s)+".png");
       TH2D* h2 = CalcCorrelationMatrix(sys_str.at(i_s),h);
-      mchm.Restore(h2);
+      mchm.Restore(h2,"All",show_truth);
       pfs::Draw2DHist(h2,plot_dir+"Corr_"+sys_str.at(i_s)+".png");
       delete h;
       delete hf;
@@ -78,13 +78,13 @@ void SysTest(){
       plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
       sub = dir+"/Cov/"+unisims_str.at(i_s)+"/"; 
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"Cov_"+plot).c_str()));
-      mchm.Restore(h);
+      mchm.Restore(h,"All",show_truth);
       pfs::Draw2DHist(h,plot_dir+"Cov_"+unisims_str.at(i_s)+".png");
       TH2D* hf = static_cast<TH2D*>(f_in_hist->Get((sub+"FCov_"+plot).c_str()));
-      mchm.Restore(hf);
+      mchm.Restore(hf,"All",show_truth);
       pfs::Draw2DHist(hf,plot_dir+"FCov_"+unisims_str.at(i_s)+".png");
       TH2D* h2 = CalcCorrelationMatrix(unisims_str.at(i_s),h);
-      mchm.Restore(h2);
+      mchm.Restore(h2,"All",show_truth);
       pfs::Draw2DHist(h2,plot_dir+"Corr_"+unisims_str.at(i_s)+".png");
       delete h;
       delete hf;
@@ -94,29 +94,29 @@ void SysTest(){
     // Print the stat error covariance and fractional covariance
     plot_dir = AnalysisDir()+"/"+label+"/Plots/SysTest/"+dir+"/";
     TH2D* h_Cov_MCStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/MCStat/Cov_"+plot).c_str()));
-    mchm.Restore(h_Cov_MCStat);
+    mchm.Restore(h_Cov_MCStat,"All",show_truth);
     pfs::Draw2DHist(h_Cov_MCStat,plot_dir+"Cov_MCStat.png");
 
     TH2D* h_FCov_MCStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/MCStat/FCov_"+plot).c_str()));
-    mchm.Restore(h_FCov_MCStat);
+    mchm.Restore(h_FCov_MCStat,"All",show_truth);
     pfs::Draw2DHist(h_FCov_MCStat,plot_dir+"FCov_MCStat.png");
 
     TH2D* h_Cov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/EstDataStat/Cov_"+plot).c_str()));
-    mchm.Restore(h_Cov_EstDataStat);
+    mchm.Restore(h_Cov_EstDataStat,"All",show_truth);
     pfs::Draw2DHist(h_Cov_EstDataStat,plot_dir+"Cov_EstDataStat.png");
 
     TH2D* h_FCov_EstDataStat = static_cast<TH2D*>(f_in_hist->Get((dir+"/Cov/EstDataStat/FCov_"+plot).c_str()));
-    mchm.Restore(h_FCov_EstDataStat);
+    mchm.Restore(h_FCov_EstDataStat,"All",show_truth);
     pfs::Draw2DHist(h_FCov_EstDataStat,plot_dir+"FCov_EstDataStat.png");
 
     // Print the total detector covariance and fractional covariance
     TH2D *h_Cov_Detvar = nullptr,*h_FCov_Detvar = nullptr;
     if(add_detvars){
       h_Cov_Detvar = (TH2D*)f_in_detvar->Get((dir+"/Cov/Total/Cov_"+plot).c_str());  
-      mchm.Restore(h_Cov_Detvar);
+      mchm.Restore(h_Cov_Detvar,"All",show_truth);
       pfs::Draw2DHist(h_Cov_Detvar,plot_dir+"Cov_Detvar.png");
       h_FCov_Detvar = (TH2D*)f_in_detvar->Get((dir+"/Cov/Total/FCov_"+plot).c_str());  
-      mchm.Restore(h_FCov_Detvar);
+      mchm.Restore(h_FCov_Detvar,"All",show_truth);
       pfs::Draw2DHist(h_FCov_Detvar,plot_dir+"FCov_Detvar.png");
     } 
 
@@ -127,7 +127,7 @@ void SysTest(){
     for(int i_s=0;i_s<kSystMAX;i_s++){
       sub = dir+"/Cov/"+sys_str.at(i_s)+"/"; 
       h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone(("h_FE_"+sys_str.at(i_s)).c_str()));
-      mchm.Restore(h_FE.back());
+      mchm.Restore(h_FE.back(),"All",show_truth);
       colors.push_back(sys_color.at(i_s));
       legs.push_back(sys_str.at(i_s));
       TH2D* h = static_cast<TH2D*>(f_in_hist->Get((sub+"FCov_"+plot).c_str()));
@@ -137,46 +137,46 @@ void SysTest(){
 
     TH2D* h_unisim = (TH2D*)h_FCov->Clone("h_unisim");
     h_unisim->Reset();
-    mchm.Restore(h_unisim);
+    mchm.Restore(h_unisim,"All",show_truth);
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
       TH2D* h = (TH2D*)f_in_hist->Get((dir+"/Cov/"+unisims_str.at(i_s)+"/FCov_"+plot).c_str());
-      mchm.Restore(h);
+      mchm.Restore(h,"All",show_truth);
       h_unisim->Add(h);
       delete h;
     }
     h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_FE_Unisim"));
-    mchm.Restore(h_FE.back());
+    mchm.Restore(h_FE.back(),"All",show_truth);
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_unisim->GetBinContent(i,i)));
     colors.push_back(unisim_color);
     legs.push_back("Unisim");
 
     h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_FE_MCStat"));
-    mchm.Restore(h_FE.back());
+    mchm.Restore(h_FE.back(),"All",show_truth);
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_MCStat->GetBinContent(i,i)));
     colors.push_back(stat_color[kMCStat]);
     legs.push_back("MCStat");
 
     h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_FE_EstDataStat"));
-    mchm.Restore(h_FE.back());
+    mchm.Restore(h_FE.back(),"All",show_truth);
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_EstDataStat->GetBinContent(i,i)));
     colors.push_back(special_color[kEstDataStat]);
     legs.push_back("EstDataStat");
 
     if(add_detvars){
       h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_Detvar"));
-      mchm.Restore(h_FE.back());
+      mchm.Restore(h_FE.back(),"All",show_truth);
       for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h_FCov_Detvar->GetBinContent(i,i)));
       colors.push_back(detvar_color);
       legs.push_back("Detvar");
     }
 
     h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone("h_FE_Total"));
-    mchm.Restore(h_FE.back());
+    mchm.Restore(h_FE.back(),"All",show_truth);
     for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,add_detvars ? sqrt(h_FCov->GetBinContent(i,i) + h_FCov_Detvar->GetBinContent(i,i)) : sqrt(h_FCov->GetBinContent(i,i)));
     colors.push_back(1);
     legs.push_back("Total");
 
-    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE.png");
+    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,false,false,plot_dir+"FE.png");
 
     // Plot comparing the unisim errors to one another
     colors.clear();
@@ -184,7 +184,7 @@ void SysTest(){
     h_FE.clear();
     for(int i_s=0;i_s<kUnisimMAX;i_s++){
       h_FE.push_back((TH1D*)f_in_hist->Get((dir+"/CV/h_"+plot).c_str())->Clone(("h_FE_"+unisims_str.at(i_s)).c_str()));
-      mchm.Restore(h_FE.back());
+      mchm.Restore(h_FE.back(),"All",show_truth);
       TH2D* h = (TH2D*)f_in_hist->Get((dir+"/Cov/"+unisims_str.at(i_s)+"/FCov_"+plot).c_str()); 
       for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
       colors.push_back(i_s+2);
@@ -192,7 +192,7 @@ void SysTest(){
       delete h;
     } 
     
-    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Unisim.png");
+    pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,false,false,plot_dir+"FE_Unisim.png");
 
     // Plot comparing the detvar uncertainties to one another
     if(add_detvars){
@@ -201,14 +201,14 @@ void SysTest(){
       h_FE.clear();
       for(int i_s=0;i_s<kDetvarMAX;i_s++){
         h_FE.push_back((TH1D*)f_in_detvar->Get((dir+"/CV/h_"+plot).c_str())->Clone(("h_FE_"+detvar_str.at(i_s)).c_str()));
-        mchm.Restore(h_FE.back());
+        mchm.Restore(h_FE.back(),"All",show_truth);
         TH2D* h = (TH2D*)f_in_detvar->Get((dir+"/Cov/"+detvar_str.at(i_s)+"/FCov_"+plot).c_str()); 
         for(int i=0;i<h_FE.back()->GetNbinsX()+2;i++) h_FE.back()->SetBinContent(i,sqrt(h->GetBinContent(i,i)));
         colors.push_back(i_s+2);
         legs.push_back(detvar_str.at(i_s));
         delete h;
       }
-      pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,plot_dir+"FE_Detvar.png");
+      pfs::DrawUnstacked(h_FE,colors,legs,draw_overflow,draw_underflow,false,false,plot_dir+"FE_Detvar.png");
     }
  
   }
