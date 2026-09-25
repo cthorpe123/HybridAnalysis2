@@ -76,12 +76,12 @@ void Filter(){
   is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root"; POT = 6.99969e+20; POT_weight = 1.547e+20/6.99969e+20; detvar_univ = -1;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root"; POT = 6.92835e+20; POT_weight = 1.547e+20/6.92835e+20; detvar_univ = syst::kLYAtt;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root"; POT = 6.92666e+20; POT_weight = 1.547e+20/6.92666e+20; detvar_univ = syst::kLYDown;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyr_surprise_reco2_hist_5.root"; POT = 6.96696e+20; POT_weight = 1.547e+20/6.96696e+20; detvar_univ = syst::kLYRayleigh;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_recomb2_surprise_reco2_hist_5.root"; POT = 6.72391e+20; POT_weight = 1.547e+20/6.72391e+20; detvar_univ = syst::kRecomb2;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root"; POT = 6.9293e+20; POT_weight = 1.547e+20/6.9293e+20; detvar_univ = syst::kSCE;
+  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root"; POT = 6.48856e+20; POT_weight = 1.547e+20/6.48856e+20; detvar_univ = syst::kLYDown;
+  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyr_surprise_reco2_hist_5.root"; POT = 5.27218e+20; POT_weight = 1.547e+20/5.27218e+20; detvar_univ = syst::kLYRayleigh;
+  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_recomb2_surprise_reco2_hist_5.root"; POT = 4.50579e+20; POT_weight = 1.547e+20/4.50579e+20; detvar_univ = syst::kRecomb2;
+  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root"; POT = 6.08637e+20; POT_weight = 1.547e+20/6.08637e+20; detvar_univ = syst::kSCE;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root"; POT = 6.63389e+20; POT_weight = 1.547e+20/6.63389e+20; detvar_univ = syst::kWMX;
-  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root"; POT = 6.93401e+20; POT_weight = 1.547e+20/6.93401e+20; detvar_univ = syst::kWMYZ;
+  //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root"; POT = 6.8424e+20; POT_weight = 1.547e+20/6.8424e+20; detvar_univ = syst::kWMYZ;
   //std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root"; POT = 6.88304e+20; POT_weight = 1.547e+20/6.88304e+20; detvar_univ = syst::kWMThXZ;
   std::string file = "Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root"; POT = 6.69678e+20; POT_weight = 1.547e+20/6.69678e+20; detvar_univ = syst::kWMThYZ;
 
