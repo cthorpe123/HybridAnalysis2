@@ -19,8 +19,8 @@ void FFTest_SpecCVRes(){
 
   bool add_detvars = true;
   const bool include_data_stat = true;
-  const bool draw_underflow = false;
-  const bool draw_overflow = false;
+  const bool draw_u = false;
+  const bool draw_o = false;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
@@ -72,7 +72,6 @@ void FFTest_SpecCVRes(){
       fill_colors.push_back(cat_colors[i_c]);
       legs.push_back(categories.at(i_c));
       mchm.Restore(h_v.back());
-      if(dbbw) DivideByBinWidth(h_v.back());
     }
 
     // Calculate the covariance encoding systemaics in the CV prediction
@@ -174,7 +173,7 @@ void FFTest_SpecCVRes(){
         h_EstData_Cov->Add(h_Cov); 
         h_EstData_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_Tot"));
 
-        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp,h_SpecT_CVRes,h_EstData_Cov,draw_overflow,draw_underflow);
+        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp,h_SpecT_CVRes,h_EstData_Cov,draw_o,draw_u);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
 
@@ -185,10 +184,8 @@ void FFTest_SpecCVRes(){
 
         mchm.Restore(h_CV_Reco_tmp);
         mchm.Restore(h_SpecT_CVRes);
-        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp);
-        if(dbbw) DivideByBinWidth(h_SpecT_CVRes);
 
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_SpecT_CVRes,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_SpecT_CVRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
 
         delete h_CV_Reco_tmp;
         delete h_SpecT_CVRes;
