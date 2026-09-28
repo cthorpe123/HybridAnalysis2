@@ -20,8 +20,8 @@ void FFTest_ResComp(){
 
   TCanvas* c = new TCanvas("c","c");
 
-  const bool draw_underflow = true;
-  const bool draw_overflow = true;
+  const bool draw_u = true;
+  const bool draw_o = true;
   const bool dbbw = true;
   bool add_detvars = true;
   const bool include_data_stat = true;
@@ -34,9 +34,9 @@ void FFTest_ResComp(){
 
   weight::SetWeightFuncs();
   std::vector<std::string> special_univs;
-  //for(const auto &item : weight::r_m)
-  //  special_univs.push_back(item.first);
-  special_univs.push_back("ExtraPi");
+  for(const auto &item : weight::r_m)
+    special_univs.push_back(item.first);
+  //special_univs.push_back("ExtraPi");
   if(add_nuwro_fd) special_univs.push_back("NuWro");
 
   int pts = weight::spline_pts;
@@ -154,7 +154,6 @@ void FFTest_ResComp(){
       fill_colors.push_back(cat_colors[i_c]);
       legs.push_back(categories.at(i_c));
       mchm.Restore(h_v.back());
-      if(dbbw) DivideByBinWidth(h_v.back());
     }
 
     // CV fractional MC-stat error on the FF prediction (once per variable).
@@ -221,7 +220,7 @@ void FFTest_ResComp(){
           h_CVT_SpecRes_chi2->SetBinError(j, 1e-10);
         }
 
-        std::pair<double,int> chi2 = Chi2(h_CVT_CVRes_chi2, h_CVT_SpecRes_chi2, h_Stat_Cov, draw_overflow, draw_underflow);
+        std::pair<double,int> chi2 = Chi2(h_CVT_CVRes_chi2, h_CVT_SpecRes_chi2, h_Stat_Cov, draw_o, draw_u);
         spec_chi2.push_back(chi2);
         std::cout << spec << " chi2 = " << chi2.first
                   << "  ndof = " << chi2.second
@@ -229,16 +228,14 @@ void FFTest_ResComp(){
 
         mchm.Restore(h_CVT_CVRes_chi2);
         mchm.Restore(h_CVT_SpecRes_chi2);
-        if(dbbw) DivideByBinWidth(h_CVT_CVRes_chi2);
-        if(dbbw) DivideByBinWidth(h_CVT_SpecRes_chi2);
 
         /*
         pfs::DrawStacked(h_v, fill_colors, legs, h_CVT_CVRes_chi2, h_CVT_SpecRes_chi2,
-                         draw_overflow, draw_underflow,
+                         draw_o, draw_u, dbbw,
                          plot_dir+"/"+s+"/"+spec+"_StackedComp.png", chi2);
        */
         pfs::DrawStackedRatio(h_v, fill_colors, legs, h_CVT_CVRes_chi2, h_CVT_SpecRes_chi2,
-                         draw_overflow, draw_underflow,
+                         draw_o, draw_u, dbbw,
                          plot_dir+"/"+s+"/"+spec+"_StackedComp.png", chi2);
         
         
@@ -252,8 +249,6 @@ void FFTest_ResComp(){
         TH1D* h_CVT_SpecRes_sig = (TH1D*)h_CVT_SpecRes->Clone("h_CVT_SpecRes_sig");
         mchm.Restore(h_CVT_CVRes_sig);
         mchm.Restore(h_CVT_SpecRes_sig);
-        if(dbbw) DivideByBinWidth(h_CVT_CVRes_sig);
-        if(dbbw) DivideByBinWidth(h_CVT_SpecRes_sig);
         h_CVT_CVRes_sig->SetLineStyle(1);
         h_CVT_SpecRes_sig->SetLineStyle(2);
 
@@ -261,8 +256,8 @@ void FFTest_ResComp(){
         std::vector<int>   sig_colors  = {kBlue+1, kRed+1};
         std::vector<std::string> sig_legs = {"CV Truth #times CV Response",
                                              "CV Truth #times "+spec+" Response"};
-        pfs::DrawUnstacked2(h_sig_v, sig_colors, sig_legs,
-                            plot_dir+"/"+s+"/"+spec+"_ResComp.png", false);
+        pfs::DrawUnstacked(h_sig_v, sig_colors, sig_legs,draw_o,draw_u,false,dbbw,
+                            plot_dir+"/"+s+"/"+spec+"_ResComp.png");
         delete h_CVT_CVRes_sig;
         delete h_CVT_SpecRes_sig;
 
@@ -275,8 +270,8 @@ void FFTest_ResComp(){
         std::vector<TH1D*> h_frac_v    = {h_CV_FracStat_tmp, h_Spec_FracStat};
         std::vector<int>   frac_colors  = {kBlue+1, kRed+1};
         std::vector<std::string> frac_legs = {"CV Frac. Stat. Error", spec+" Frac. Stat. Error"};
-        pfs::DrawUnstacked2(h_frac_v, frac_colors, frac_legs,
-                            plot_dir+"/"+s+"/"+spec+"_FracStatErr.png", false);
+        pfs::DrawUnstacked(h_frac_v, frac_colors, frac_legs,draw_o,draw_u,false,dbbw,
+                            plot_dir+"/"+s+"/"+spec+"_FracStatErr.png");
         delete h_CV_FracStat_tmp;
         delete h_Spec_FracStat;
 
@@ -290,8 +285,8 @@ void FFTest_ResComp(){
         std::vector<TH1D*> h_eff_v    = {h_CV_Eff_tmp, h_Spec_Eff};
         std::vector<int>   eff_colors  = {kBlue+1, kRed+1};
         std::vector<std::string> eff_legs = {"CV Efficiency", spec+" Efficiency"};
-        pfs::DrawUnstacked2(h_eff_v, eff_colors, eff_legs,
-                            plot_dir+"/"+s+"/"+spec+"_EffComp.png", true);
+        pfs::DrawUnstacked(h_eff_v, eff_colors, eff_legs,draw_o,draw_u,false,dbbw,
+                            plot_dir+"/"+s+"/"+spec+"_EffComp.png");
         delete h_CV_Eff_tmp;
         delete h_Spec_Eff;
 

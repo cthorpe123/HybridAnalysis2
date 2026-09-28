@@ -19,8 +19,8 @@ void FFTest_Truth(){
 
   bool add_detvars = false;
   const bool include_data_stat = true;
-  const bool draw_underflow = false;
-  const bool draw_overflow = false;
+  const bool draw_u = false;
+  const bool draw_o = false;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
@@ -81,19 +81,17 @@ void FFTest_Truth(){
           std::string ch = channels_t.at(i_ch);
           h_Truth_v.push_back((TH1D*)h_Spec_Truth->Clone(("h_Spec_Truth_"+ch).c_str()));
           mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
           h_Truth_v.back()->SetLineStyle(2);
           colors_ch.push_back(i_ch+1);
           legs_ch.push_back(channels_t.at(i_ch)+" "+spec);
 
           h_Truth_v.push_back((TH1D*)h_CV_Truth->Clone(("h_CV_Truth_"+ch).c_str()));
           mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
           colors_ch.push_back(i_ch+1);
           legs_ch.push_back(channels_t.at(i_ch)+" CV");
 
         }
-        pfs::DrawUnstacked2(h_Truth_v,colors_ch,legs_ch,plot_dir+"/"+s+"/"+spec+"_Truth.png",false);
+        pfs::DrawUnstacked(h_Truth_v,colors_ch,legs_ch,draw_o,draw_u,false,dbbw,plot_dir+"/"+s+"/"+spec+"_Truth.png");
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();
         colors_ch.clear();
