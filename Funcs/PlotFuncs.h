@@ -161,7 +161,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   if(h_data != nullptr){
     h_data_clone = (TH1D*)h_data->Clone("h_data_clone");
     if(dbbw) DivideByBinWidth(h_data_clone);
-    MakeOU(h_data_clone->GetName(),h_data,h_data_U,h_data_O);
+    MakeOU(h_data_clone->GetName(),h_data_clone,h_data_U,h_data_O);
     h_data_clone->SetMarkerStyle(20);
     h_data_clone->SetMarkerSize(0.8);
     h_data_clone->SetLineColor(1);
@@ -229,7 +229,7 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
 
   hs_middle->Draw("HIST");
   h_tot_clone->Draw("same e2");
-  if(h_data_clone != nullptr) h_data->Draw("same e1");
+  if(h_data_clone != nullptr) h_data_clone->Draw("same e1");
   hs_middle->SetMaximum(GetMax(h_tot_clone)*1.15);
   l2->Draw();
   if(chi2.second > 0) l_Chi2->Draw();
@@ -471,7 +471,7 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
 
   hs_middle->Draw("HIST");
   h_tot_clone->Draw("same e2");
-  if(h_data_clone) h_data->Draw("same e1");
+  if(h_data_clone) h_data_clone->Draw("same e1");
   hs_middle->SetMaximum(GetMax(h_tot_clone)*1.15);
   hs_middle->GetXaxis()->SetLabelSize(0);
   hs_middle->GetXaxis()->SetTitleSize(0);

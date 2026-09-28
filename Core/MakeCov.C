@@ -39,8 +39,8 @@ void MakeCov(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  //std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = {"MuonMom"};
+  //std::vector<std::string> vars = var_names;
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
@@ -61,6 +61,7 @@ void MakeCov(){
   h_m.at("Norm").KeepAll();
   h_m.at("Norm").SetTemplates("",1,0,1,1,0,1); 
   h_m.at("Norm").MakeHM();
+  vars.push_back("Norm");
 
   h_m.emplace("Enu",hist::MultiChannelHistogramManager("Enu",true));
   h_m.at("Enu").SetTrueChannelList(channels_t);
@@ -68,8 +69,17 @@ void MakeCov(){
   h_m.at("Enu").KeepAll();
   h_m.at("Enu").LoadTemplates();
   h_m.at("Enu").MakeHM();
-  
+  vars.push_back("Enu");  
 
+  weight::SetWeightFuncs();
+  for(std::string var : vars){
+    for(const auto& wf_label : weight::r_m){ 
+      for(int i=0;i<weight::spline_pts;i++){
+        h_m.at(var).AddSpecialUniv(wf_label.first+"_"+std::to_string(i));
+      }
+    }
+  }
+  
   for(int i_f=0;i_f<files_v.size();i_f++){
 
     std::string file = in_dir + files_v.at(i_f);
@@ -94,6 +104,12 @@ void MakeCov(){
       vars_t->emplace("Norm",0.5);
       vars_h8->emplace("Norm",0.5);
 
+      // Set the spec universe weights if being used
+      std::map<std::string,std::vector<double>> weight_m;
+      for(const auto &w : weight::r_m){ 
+        weight_m[w.first] = w.second();
+      }
+
       // Fill the histograms
       for(const auto &item : h_m){
         std::string var = item.first;
@@ -102,6 +118,13 @@ void MakeCov(){
         const double& t = vars_t->at(var);
         const double& r = vars_h8->at(var);
         h_m.at(var).FillHistograms2D(is_signal_t,sel_h8,t,r,load_syst,channel_t,channel_h8);
+        
+        for(const auto &w : weight_m){ 
+          for(int i=0;i<weight::spline_pts;i++){
+            h_m.at(var).FillSpecialHistograms2D(w.first+"_"+std::to_string(i),is_signal_t,sel_h8,t,r,w.second.at(i),channel_t,channel_h8);
+          }
+        }
+        
       }
 
     }

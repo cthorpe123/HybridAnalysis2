@@ -19,23 +19,25 @@ void FFTest(){
 
   bool add_detvars = false;
   const bool include_data_stat = true;
-  const bool draw_underflow = true;
-  const bool draw_overflow = true;
+  const bool draw_u = true;
+  const bool draw_o = true;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
 
-  //std::vector<std::string> vars = {"MuonMom"};
-  std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = {"MuonMom"};
+  //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
   weight::SetWeightFuncs();
   std::vector<std::string> special_univs;
-  //special_univs.push_back("MuonMomShape_RH_Bias");
-  for(const auto &item : weight::r_m)
+  for(const auto &item : weight::r_m){
+    //if(item.first == "MuonMomShape_LH_Bias")
     special_univs.push_back(item.first);
+    //break;
+  }
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -167,19 +169,19 @@ void FFTest(){
           
           h_Truth_v.push_back((TH1D*)h_Spec_Truth->Clone(("h_Spec_Truth_"+ch).c_str()));
           mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
+          
           h_Truth_v.back()->SetLineStyle(2);
           colors_ch.push_back(i_ch+1);
           legs_ch.push_back(channels_t.at(i_ch)+" "+spec);
 
           h_Truth_v.push_back((TH1D*)h_CV_Truth->Clone(("h_CV_Truth_"+ch).c_str()));
           mchm.Restore(h_Truth_v.back(),ch,true);
-          if(dbbw) DivideByBinWidth(h_Truth_v.back());
+          
           colors_ch.push_back(i_ch+1);
           legs_ch.push_back(channels_t.at(i_ch)+" CV");
 
         }
-        pfs::DrawUnstacked2(h_Truth_v,colors_ch,legs_ch,plot_dir+"/"+s+"/"+spec+"_Truth.png",false);
+        pfs::DrawUnstacked(h_Truth_v,colors_ch,legs_ch,draw_o,draw_u,false,dbbw,plot_dir+"/"+s+"/"+spec+"_Truth.png");
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();
         colors_ch.clear();
@@ -191,9 +193,7 @@ void FFTest(){
         mchm.Restore(h_SpecT_CVRes);
         mchm.Restore(h_CV_Reco_tmp);
         h_SpecT_CVRes->SetLineStyle(2);
-        if(dbbw) DivideByBinWidth(h_SpecT_CVRes);
-        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp);
-        pfs::DrawUnstacked2({h_CV_Reco_tmp,h_SpecT_CVRes},{1,1},{"CV","Spec Folded Through CV Response"},plot_dir+"/"+s+"/"+spec+"_SpecTimesCVRes.png",false);
+        pfs::DrawUnstacked({h_CV_Reco_tmp,h_SpecT_CVRes},{1,1},{"CV","Spec Folded Through CV Response"},draw_o,draw_u,false,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVRes.png");
         delete h_SpecT_CVRes;
  
         // Try folding the CV truth through the spec response, test if the change in model in truth 
@@ -205,13 +205,13 @@ void FFTest(){
         for(TH1D* h : h_v){
            h_v_tmp.push_back((TH1D*)h->Clone((string(h->GetName())+"_tmp").c_str()));
            mchm.Restore(h_v_tmp.back());
-           if(dbbw) DivideByBinWidth(h_v_tmp.back());
         }
 
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
 
         TH1D* h_CVT_SpecRes = Multiply(h_CV_Truth,h_Res_Spec,"h_CVT_SpecRes");
-        h_CVT_SpecRes->Add(h_CV_Reco_AllBG);
+
+        ForceAddTH1D(h_CVT_SpecRes,h_CV_Reco_AllBG);
 
         TH1D* h_SpecT_CVRes_2 = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes_2");
         ForceAddTH1D(h_SpecT_CVRes_2,h_CV_Reco_AllBG);
@@ -236,28 +236,25 @@ void FFTest(){
           h_SpecT_CVRes_2->SetBinError(i,1e-10);
         }
 
-        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp2,h_CVT_SpecRes,h_Stat_Cov,draw_overflow,draw_underflow);
+        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp2,h_CVT_SpecRes,h_Stat_Cov,draw_o,draw_u);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
         
-        std::pair<double,int> chi2_SpecT_CVRes = Chi2(h_CV_Reco_tmp2,h_SpecT_CVRes_2,h_EstData_Cov,draw_overflow,draw_underflow);
+        std::pair<double,int> chi2_SpecT_CVRes = Chi2(h_CV_Reco_tmp2,h_SpecT_CVRes_2,h_EstData_Cov,draw_o,draw_u);
         
         mchm.Restore(h_CV_Reco_tmp2);
         mchm.Restore(h_CVT_SpecRes);
         mchm.Restore(h_SpecT_CVRes_2);
-        if(dbbw) DivideByBinWidth(h_CV_Reco_tmp2);
-        if(dbbw) DivideByBinWidth(h_CVT_SpecRes);
-        if(dbbw) DivideByBinWidth(h_SpecT_CVRes_2);
 
-        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_CVT_SpecRes,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
+        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
 
         for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++){
           double w = h_CV_Reco_tmp2->GetBinWidth(i);
-          if(!dbbw || i == 0 || i == h_CV_Reco->GetNbinsX()+1) w = 1;
-          h_CV_Reco_tmp2->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i))/w);
+          //if(!dbbw || i == 0 || i == h_CV_Reco->GetNbinsX()+1) w = 1;
+          h_CV_Reco_tmp2->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i)));
         }
 
-        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_SpecT_CVRes_2,draw_overflow,draw_underflow,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2_SpecT_CVRes); 
+        pfs::DrawStacked(h_v_tmp,fill_colors,legs,h_CV_Reco_tmp2,h_SpecT_CVRes_2,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2_SpecT_CVRes); 
 
         delete h_CVT_SpecRes;
         delete h_CV_Reco_tmp2;

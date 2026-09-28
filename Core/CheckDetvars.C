@@ -21,9 +21,7 @@ void CheckDetvars(){
   bool draw_hist = true; // Grab the CV from the non-detvar file
   bool draw_o=false,draw_u=false;
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"};
-  for(int i_e=0;i_e<ee::kMAX;i_e++)
-    vars.push_back(ee::estimators_str.at(i_e));
+  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"*/};
 
   for(std::string label : vars){
 
@@ -33,7 +31,7 @@ void CheckDetvars(){
     TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str());
     TFile* f_in_hist = draw_hist ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str()) : nullptr;
  
-    hist::MultiChannelHistogramManager mchm(label);
+    hist::MultiChannelHistogramManager mchm(label,true);
     mchm.LoadTemplates();
 
     std::vector<TH1D*> h_v;
@@ -61,22 +59,25 @@ void CheckDetvars(){
       legs.push_back("CV HIST");
     }
 
-    pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,plot_dir+"Reco.png"); 
+    pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,false,plot_dir+"Reco.png"); 
 
     if(draw_truth){
       h_v.clear();
       h_v.push_back((TH1D*)f_in->Get("Truth/CV/h_Signal"));
+      mchm.Restore(h_v.back(),"All",true);
       for(size_t i_s=0;i_s<detvar_str.size();i_s++){
         std::string var = detvar_str.at(i_s);
         h_v.push_back((TH1D*)f_in->Get(("Truth/Vars/"+var+"/h_Signal").c_str()));
+        mchm.Restore(h_v.back(),"All",true);
       } 
 
       if(draw_hist){
         h_v.push_back((TH1D*)f_in_hist->Get("Truth/CV/h_Signal")->Clone("h_CV_Truth_Signal_Hist"));
         h_v.back()->SetLineStyle(2);
+        mchm.Restore(h_v.back(),"All",true);
       }
 
-      pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,plot_dir+"Truth.png"); 
+      pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,false,plot_dir+"Truth.png"); 
 
       // Draw the efficiency afo truth variable
       h_v.clear();
@@ -84,20 +85,23 @@ void CheckDetvars(){
       TH2D* h_CV_Response_Signal = (TH2D*)f_in->Get("Response/CV/h_Signal");
       int bins = h_CV_Response_Signal->GetNbinsY()+1;
       h_v.push_back(h_CV_Response_Signal->ProjectionX("h_CV_Eff",0,bins)); 
+      mchm.Restore(h_v.back(),"All",true);
 
       for(size_t i_s=0;i_s<detvar_str.size();i_s++){
         std::string var = detvar_str.at(i_s);
         TH2D* h_Var_Response_Signal = (TH2D*)f_in->Get(("Response/Vars/"+var+"/h_Signal").c_str());
         h_v.push_back(h_Var_Response_Signal->ProjectionX(("h_"+var+"_Eff").c_str(),0,bins));
+        mchm.Restore(h_v.back(),"All",true);
       } 
 
       if(draw_hist){
         TH2D* h_CV_Hist_Response_Signal = (TH2D*)f_in_hist->Get("Response/CV/h_Signal");
         h_v.push_back(h_CV_Hist_Response_Signal->ProjectionX("h_CV_Hist_Eff",0,bins));
+        mchm.Restore(h_v.back(),"All",true);
         h_v.back()->SetLineStyle(2);
       }
 
-      pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,plot_dir+"Efficiency.png"); 
+      pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,false,plot_dir+"Efficiency.png"); 
 
     }
 
