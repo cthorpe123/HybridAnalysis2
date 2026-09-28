@@ -16,13 +16,13 @@ using namespace syst;
 void SysTest(){
 
   //std::vector<std::string> vars = var_names;
-  std::vector<std::string> vars = {"MuonMom","Norm","Enu","LeadProtonKE","run"};
+  std::vector<std::string> vars = {"MuonMom"/*,"Norm","Enu","LeadProtonKE"*/};
 
   bool draw_underflow = true;
   bool draw_overflow = true;
   bool add_detvars = true;
   bool blinded = true;
-  bool show_truth = true;
+  bool show_truth = false;
 
   std::string dir = show_truth ? "Truth" : "Reco"; 
   std::string plot = show_truth ? "Signal" : "Tot";

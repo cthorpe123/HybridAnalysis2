@@ -46,7 +46,7 @@ void FFTest_ResComp(){
     std::string label = vars.at(i_f);
     std::cout << label << std::endl;
 
-    std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/FFTest/";
+    std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/FFTest_ResComp/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
     TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
