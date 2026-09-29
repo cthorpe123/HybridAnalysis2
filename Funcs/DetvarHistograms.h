@@ -27,7 +27,7 @@ class DetvarHistogramManager {
     void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,double weight=1.0);
 
     void KeepAll(){ _keep_all = true; }
-    void Write();
+    void Write(std::string filename="Detvars.root");
 
   private:
 
@@ -278,11 +278,11 @@ void DetvarHistogramManager::FillHistograms2D(bool sig,bool sel,double var_t,dou
 ///////////////////////////////////////////////////////////////////////
 // Write the histograms to file
 
-void DetvarHistogramManager::Write()
+void DetvarHistogramManager::Write(std::string filename)
 {
   std::cout << "Writing histograms for " << _label << std::endl;
   gSystem->Exec(("mkdir -p "+AnalysisDir()+"/"+_label+"/rootfiles/").c_str());
-  _f_out = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/Detvars.root").c_str(),"RECREATE");
+  _f_out = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/"+filename).c_str(),"RECREATE");
 
   _WriteReco();
   if(_save_truth){

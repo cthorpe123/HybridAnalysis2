@@ -15,7 +15,7 @@ using namespace binning;
 void MakeGeneratorXSec(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
@@ -36,8 +36,8 @@ void MakeGeneratorXSec(){
     auto* xbins = &bin_edges[0];
     for(const std::string& gen : generators){
       h_m[var][gen] = (TH1D*)h_tmp->Clone(("h_xsec_"+var+"_"+gen).c_str());
-      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";;True Neutrino Energy (GeV)",200,0.0,3.0,bin_edges.size()-1,&bin_edges[0]);
-      h_m_2d[var][gen]->GetXaxis()->SetTitle(h_tmp->GetXaxis()->GetTitle());
+      h_m_2d[var][gen] = new TH2D(("h_xsec_2D_"+var+"_"+gen).c_str(),";True Neutrino Energy (GeV)",200,0.0,3.0,bin_edges.size()-1,&bin_edges[0]);
+      h_m_2d[var][gen]->GetYaxis()->SetTitle(h_tmp->GetXaxis()->GetTitle());
       h_m[var][gen]->SetDirectory(0);
       h_m_2d[var][gen]->SetDirectory(0);
     }
@@ -108,6 +108,7 @@ void MakeGeneratorXSec(){
     for(const std::string& gen : generators){
       h_v.push_back(h_m.at(var).at(gen));
       cols.push_back(ctr+2);
+      if(ctr + 2 == 5) ctr++;
       ctr++;
     }
 

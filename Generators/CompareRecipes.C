@@ -13,13 +13,14 @@ using namespace syst;
 
 void CompareRecipes(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe4","Recipe7"};
-  std::vector<int> styles = {2,3,4,6,7};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
+  std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
+  std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();
   bool add_detvars = false;
   bool draw_o = false;
@@ -78,7 +79,7 @@ void CompareRecipes(){
       for(std::string sys : sys_v){
         std::vector<TH1D*> fe_v = h_fe_m[sys].at(i_g);
         fe_v.at(0)->GetYaxis()->SetTitle("Frac. Unc.");
-        pfs::DrawUnstacked(fe_v,styles,recipes,draw_o,draw_u,false,false,plot_dir_gen+"FE_"+sys+".png");
+        pfs::DrawUnstacked(fe_v,styles,recipe_names,draw_o,draw_u,false,false,plot_dir_gen+"FE_"+sys+".png");
       }
 
       // Compute the total FE from unisims
@@ -91,7 +92,7 @@ void CompareRecipes(){
         h_fe_unisim_v.push_back((TH1D*)h_pred->Clone(("h_fe_unisim_"+recipes.at(i_r)).c_str()));
         MakeFEHist(h_fe_unisim_v.back(),h_pred,h_cov_unisim_v.back()); 
       }
-      pfs::DrawUnstacked(h_fe_unisim_v,styles,recipes,draw_o,draw_u,false,false,plot_dir_gen+"FE_Unisim.png");
+      pfs::DrawUnstacked(h_fe_unisim_v,styles,recipe_names,draw_o,draw_u,false,false,plot_dir_gen+"FE_Unisim.png");
 
 
       // Calculate the chi2 with the asimov data/beam data using each recipe and compare
@@ -150,7 +151,7 @@ void CompareRecipes(){
       std::vector<int> cols;
       for(size_t i_g=0;i_g<generators.size();i_g++){
         std::string gen =  generators.at(i_g);
-        cols.push_back(i_g+2);
+        cols.push_back(styles.at(i_g+1));
         h_pred_v.push_back((TH1D*)f_in_v.at(0)->Get((gen+"/Pred").c_str())->Clone(("h_Pred_"+gen).c_str()));
         legs.push_back(gen+" #chi^{2}/n="+to_string_with_precision(chi2_v.at(i_g).at(i_r).first/chi2_v.at(i_g).at(i_r).second,2));
         const TH2D* h_cov =  h_cov_m["Total"].at(i_g).at(i_r);

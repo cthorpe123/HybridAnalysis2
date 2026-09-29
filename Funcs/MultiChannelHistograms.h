@@ -30,7 +30,10 @@ class MultiChannelHistogramManager {
     void FillRecoHistograms(bool sel,double var_r,bool load_syst,std::string ch="All",double weight=1.0);
     void FillHistograms2D(bool sig,bool sel,double var_t,double var_r,bool load_syst,std::string ch_t="All",std::string ch_r="All",double weight=1.0);
     void KeepAll(){ _keep_all = true; _hm.KeepAll(); _dhm.KeepAll(); }
-    void Write(){ if(!_detvar_mode) _hm.Write(); else _dhm.Write(); }
+    void Write(std::string filename=""){ 
+      if(!_detvar_mode) _hm.Write(filename == "" ? "Histograms.root" : filename); 
+      else _dhm.Write(filename == "" ? "Detvar.root" : filename);
+     }
 
     void AddSpecialUniv(std::string name){ _hm.AddSpecialUniv(name); }
     void FillSpecialTruthHistograms(std::string name,bool sig,double var_t,double weight,std::string ch="All");

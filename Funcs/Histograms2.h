@@ -30,7 +30,7 @@ class HistogramManager {
     void KeepOU(){ _keep_overflow_underflow_ = true; }
     void KeepAll(){ _keep_all = true; }
 
-    void Write();
+    void Write(std::string filename="Histograms.root");
 
     TH1D* GetRecoTemplate(){ return (TH1D*)_h_tp->Clone("reco_template"); }
     TH1D* GetTruthTemplate(){ return (TH1D*)_h_tp_truth->Clone("truth_template"); }
@@ -530,11 +530,11 @@ void HistogramManager::FillSpecialHistograms2D(std::string name,bool sig,bool se
 ///////////////////////////////////////////////////////////////////////
 // Write the histograms to file
 
-void HistogramManager::Write()
+void HistogramManager::Write(std::string filename)
 {
   std::cout << "Writing histograms for " << _label << std::endl;
   gSystem->Exec(("mkdir -p "+AnalysisDir()+"/"+_label+"/rootfiles/").c_str());
-  _f_out = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/Histograms.root").c_str(),"RECREATE");
+  _f_out = TFile::Open((AnalysisDir()+"/"+_label+"/rootfiles/"+filename).c_str(),"RECREATE");
 
   _GetIntegrals();
   _ScaleSpecial();
@@ -567,10 +567,17 @@ void HistogramManager::_GetIntegrals()
 
 void HistogramManager::_ScaleSpecial()
 {
+  // When we use FD we don't fill the CV and don't assume the 
+  // same normalisation for the special universe
+  if(!(_CV_Truth_Signal_Integral > 0)){
+    std::cout << "Not scaling special universe. CV is not filled, assuming you're using a separate FD ntuple" << std::endl;
+    return;
+  }
 
   for(const auto& it : _h_Special_Truth_Signal){
     std::string name = it.first;
     double spec_int = _Special_Truth_Signal_Integral.at(name);
+    std::cout << "_ScaleSpecial " << _label << " " << name << ": CV truth signal integral = " << _CV_Truth_Signal_Integral << ", special truth signal integral = " << spec_int << ", scale factor = " << _CV_Truth_Signal_Integral/spec_int << std::endl;
     _h_Special_Truth_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Joint_Signal.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);
     _h_Special_Joint_Signal_W2X.at(name)->Scale(_CV_Truth_Signal_Integral/spec_int);

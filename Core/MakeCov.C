@@ -13,17 +13,19 @@
 
 void MakeCov(){
 
+  bool make_spec_univ = false;
+
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
   std::vector<std::string> files_v = {
-    "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root",
+    /*"run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root",
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_on_metapatch_retuple_retuple_hist.root",
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
-    "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_off_metapatch_retuple_retuple_hist.root",
+    "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_off_metapatch_retuple_retuple_hist.root",*/
     
     "run4c/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_4c.root",
     "run4c/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_4c.root",
     "run4c/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root",
-    "run4c/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root",
+    "run4c/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4c.root"/*,
 
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_4d.root",
@@ -33,7 +35,7 @@ void MakeCov(){
     "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_on_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
+    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
   };
 
   std::vector<std::string> channels_t = {"All"};
@@ -71,11 +73,13 @@ void MakeCov(){
   h_m.at("Enu").MakeHM();
   vars.push_back("Enu");  
 
-  weight::SetWeightFuncs();
-  for(std::string var : vars){
-    for(const auto& wf_label : weight::r_m){ 
-      for(int i=0;i<weight::spline_pts;i++){
-        h_m.at(var).AddSpecialUniv(wf_label.first+"_"+std::to_string(i));
+  if(make_spec_univ){
+    weight::SetWeightFuncs();
+    for(std::string var : vars){
+      for(const auto& wf_label : weight::r_m){ 
+        for(int i=0;i<weight::spline_pts;i++){
+          h_m.at(var).AddSpecialUniv(wf_label.first+"_"+std::to_string(i));
+        }
       }
     }
   }
@@ -133,7 +137,7 @@ void MakeCov(){
 
   for(const auto &item : h_m){
     std::string var = item.first;
-    h_m.at(var).Write();
+    h_m.at(var).Write("Histograms.root");
   }
 
 }

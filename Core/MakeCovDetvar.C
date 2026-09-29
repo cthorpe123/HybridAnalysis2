@@ -18,7 +18,7 @@ void MakeCovDetvar(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
@@ -35,8 +35,8 @@ void MakeCovDetvar(){
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
-    "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root"/*,
-
+    "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
+    
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_5.root",
@@ -48,7 +48,7 @@ void MakeCovDetvar(){
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
+    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
   };
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
@@ -79,7 +79,6 @@ void MakeCovDetvar(){
   h_m.at("Enu").KeepAll();
   h_m.at("Enu").LoadTemplates();
   h_m.at("Enu").MakeHM();
-  
 
   for(int i_f=0;i_f<files.size();i_f++){
     std::string file = files.at(i_f);
@@ -103,7 +102,7 @@ void MakeCovDetvar(){
 
       vars_t->emplace("Norm",0.5);
       vars_h8->emplace("Norm",0.5);
-
+      
       for(const auto &item : h_m){
         std::string var = item.first;
         if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");
