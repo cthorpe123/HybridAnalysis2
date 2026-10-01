@@ -33,7 +33,7 @@ std::string StripUniverseSuffix(const std::string& name){
 
 void PlotFoldingIngredients(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
   const size_t n_max = 5;
