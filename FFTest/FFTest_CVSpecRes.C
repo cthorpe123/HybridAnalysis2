@@ -164,6 +164,10 @@ void FFTest_CVSpecRes(){
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
 
+        // Check if the dir exists
+        TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
+        if(d == nullptr) break;
+
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
         TH1D* h_CV_Reco_tmp = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp");
 

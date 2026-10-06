@@ -177,7 +177,7 @@ void FFTest_ResComp(){
       gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       std::vector<std::pair<double,int>> spec_chi2;
 
-      for(int i_u=0;i_u<pts;i_u++){
+      for(int i_u=0;i_u<100;i_u++){
 
         std::string spec = s + "_" + std::to_string(i_u);
         std::cout << spec << std::endl;

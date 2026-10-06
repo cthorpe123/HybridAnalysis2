@@ -154,10 +154,14 @@ void FFTest_SpecCVRes(){
       //std::cout << s << std::endl;
       std::vector<std::pair<double,int>> spec_chi2;
 
-      for(int i=0;i<pts;i++){
+      for(int i=0;i<100;i++){
 
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
+
+        // Check if the dir exists
+        TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
+        if(d == nullptr) break;
 
         TH1D* h_CV_Reco_tmp = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp");
 
