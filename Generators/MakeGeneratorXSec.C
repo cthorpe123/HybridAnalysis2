@@ -24,6 +24,7 @@ void MakeGeneratorXSec(){
   bool draw_u = false;
   
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
+  std::vector<int> styles = {1,2,3,4,6,7};
 
   std::map<std::string, std::map<std::string, TH1D*>> h_m;
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
@@ -107,8 +108,7 @@ void MakeGeneratorXSec(){
     int ctr = 0;
     for(const std::string& gen : generators){
       h_v.push_back(h_m.at(var).at(gen));
-      cols.push_back(ctr+2);
-      if(ctr + 2 == 5) ctr++;
+      cols.push_back(styles.at(ctr+1));
       ctr++;
     }
 

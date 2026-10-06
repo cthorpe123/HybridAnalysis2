@@ -25,15 +25,12 @@ void FFTest_Truth(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
-  const bool add_nuwro_fd = false;
+  const bool add_nuwro_fd = true;
 
   std::vector<std::string> vars = {"MuonMom","MuonMom"};
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
-
-  const int pts = weight::spline_pts;
-  //const int pts = 1;
 
   weight::SetWeightFuncs();
   std::vector<std::string> special_univs;
@@ -61,15 +58,21 @@ void FFTest_Truth(){
  
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
 
+    
+
     for(std::string s : special_univs){
 
       gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       std::vector<std::pair<double,int>> spec_chi2;
 
-      for(int i=0;i<pts;i++){
+      for(int i=0;i<100;i++){
 
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
+
+        // Check if the dir exists
+        TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
+        if(d == nullptr) break;
 
         TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
 
@@ -95,8 +98,6 @@ void FFTest_Truth(){
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();
         colors_ch.clear();
-
-      if(s == "NuWro") break;
 
       }
 
