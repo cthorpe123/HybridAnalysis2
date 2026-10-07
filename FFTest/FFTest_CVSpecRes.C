@@ -8,7 +8,7 @@
 
 using namespace syst;
 
-// Try forward folding the CV truth through the response
+// Try forward folding the CV truth through the special response
 // calulated in the CV and special universes, calculate chi2
 // between the CV and each special prediction
 
@@ -25,8 +25,9 @@ void FFTest_CVSpecRes(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
+  const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","ProtonKE","NPi"*/};
+  std::vector<std::string> vars = {"MuonMom"};
 
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
@@ -36,8 +37,7 @@ void FFTest_CVSpecRes(){
   std::vector<std::string> special_univs;
   for(const auto &item : weight::r_m)
     special_univs.push_back(item.first);
-
-  int pts = weight::spline_pts;
+  if(add_nuwro_fd) special_univs.push_back("NuWro");
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -155,7 +155,6 @@ void FFTest_CVSpecRes(){
 
     for(std::string s : special_univs){
 
-      gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       //std::cout << s << std::endl;
       std::vector<std::pair<double,int>> spec_chi2;
 
@@ -191,6 +190,7 @@ void FFTest_CVSpecRes(){
         mchm.Restore(h_CV_Reco_tmp);
         mchm.Restore(h_CVT_SpecRes);
 
+        gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
         pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
 
       }

@@ -35,8 +35,8 @@ void MakeCovNuWro(){
 
   // then analyse the nuwro files
   std::vector<std::string> files_v = {
-    "run4c/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_4c.root"/*,
-    "run5/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_5.root"*/
+    "run4c/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_4c.root",
+    "run5/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_5.root"
   };
 
   for(int i_f=0;i_f<files_v.size();i_f++){
@@ -50,7 +50,7 @@ void MakeCovNuWro(){
 
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
-      if(ievent > 20000) break;
+      //if(ievent > 20000) break;
       if (ievent % 1000 == 0) std::cout << "  " << ievent << " / " << t_in->GetEntries() << "\r" << std::flush;
       t_in->GetEntry(ievent);
       
@@ -77,18 +77,29 @@ void MakeCovNuWro(){
     h_m.at(var).Write("NuWroFD.root");
   }
 
+  // Normalise the NuWro plots to the same as the truth CV from the 
+  // main histograms file
   // Append the result of the NuWro FD to the main Histograms.root file
   for(const auto &item : h_m){
     std::string var = item.first;
     TFile* f_nuwro = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/NuWroFD.root").c_str());
     TFile* f_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str(),"UPDATE");
  
+    // Make new dirs in the main file if needed
     f_hist->cd();
     if(f_hist->GetDirectory("Truth/Special") == nullptr){ 
       f_hist->mkdir("Truth/Special");
       f_hist->mkdir("Reco/Special");
       f_hist->mkdir("Response/Special");
       f_hist->mkdir("Joint/Special");
+
+    }
+
+    if(f_hist->GetDirectory("Truth/Special/NuWro_0") == nullptr){ 
+      f_hist->mkdir("Truth/Special/NuWro_0");
+      f_hist->mkdir("Reco/Special/NuWro_0");
+      f_hist->mkdir("Joint/Special/NuWro_0");
+      f_hist->mkdir("Response/Special/NuWro_0");
     }
     
     TH1D* h_Truth = (TH1D*)f_nuwro->Get("Truth/Special/NuWro_0/h_Signal");
@@ -96,25 +107,37 @@ void MakeCovNuWro(){
     TH2D* h_Joint = (TH2D*)f_nuwro->Get("Joint/Special/NuWro_0/h_Signal");
     TH2D* h_Response = (TH2D*)f_nuwro->Get("Response/Special/NuWro_0/h_Signal");
 
+    // Make clones of them to normalise to the CV truth
+    TH1D* h_Truth_Norm = (TH1D*)h_Truth->Clone("h_Truth_Norm");
+    TH1D* h_Reco_Norm = (TH1D*)h_Reco->Clone("h_Reco_Norm");
+    TH2D* h_Joint_Norm = (TH2D*)h_Joint->Clone("h_Reco_Norm");
+
+    TH1D* h_CV_Truth = (TH1D*)f_hist->Get("Truth/CV/h_Signal");
+    double scale = IntegralWithOU(h_CV_Truth)/IntegralWithOU(h_Truth_Norm);
+    h_Truth_Norm->Scale(scale);
+    h_Reco_Norm->Scale(scale);
+    h_Joint_Norm->Scale(scale);
+
+    // Write everything
     f_hist->cd();
-    f_hist->mkdir("Truth/Special/NuWro_0");
     f_hist->cd("Truth/Special/NuWro_0");
-    h_Truth->Write("h_Signal");
+    h_Truth_Norm->Write("h_Signal",TObject::kOverwrite);
+    h_Truth->Write("h_Signal_NoNorm",TObject::kOverwrite);
 
     f_hist->cd();
-    f_hist->mkdir("Reco/Special/NuWro_0");
     f_hist->cd("Reco/Special/NuWro_0");
-    h_Reco->Write("h_Signal");
+    h_Reco_Norm->Write("h_Signal",TObject::kOverwrite);
+    h_Reco->Write("h_Signal_NoNorm",TObject::kOverwrite);
 
     f_hist->cd();
-    f_hist->mkdir("Joint/Special/NuWro_0");
     f_hist->cd("Joint/Special/NuWro_0");
-    h_Joint->Write("h_Signal");
+    h_Joint_Norm->Write("h_Signal",TObject::kOverwrite);
+    h_Joint->Write("h_Signal_NoNorm",TObject::kOverwrite);
 
     f_hist->cd();
-    f_hist->mkdir("Response/Special/NuWro_0");
     f_hist->cd("Response/Special/NuWro_0");
-    h_Response->Write("h_Signal");
+    h_Response->Write("h_Signal",TObject::kOverwrite);
+    h_Response->Write("h_Signal_NoNorm",TObject::kOverwrite);
 
     f_hist->Close();
     f_nuwro->Close();

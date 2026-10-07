@@ -58,11 +58,8 @@ void FFTest_Truth(){
  
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
 
-    
-
     for(std::string s : special_univs){
-
-      gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
+      
       std::vector<std::pair<double,int>> spec_chi2;
 
       for(int i=0;i<100;i++){
@@ -94,6 +91,7 @@ void FFTest_Truth(){
           legs_ch.push_back(channels_t.at(i_ch)+" CV");
 
         }
+        gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
         pfs::DrawUnstacked(h_Truth_v,colors_ch,legs_ch,draw_o,draw_u,false,dbbw,plot_dir+"/"+s+"/"+spec+"_Truth.png");
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();

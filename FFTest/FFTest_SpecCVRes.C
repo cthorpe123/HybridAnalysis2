@@ -25,6 +25,7 @@ void FFTest_SpecCVRes(){
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
   const bool draw_cov = false;
+  const bool add_nuwro_fd = true;
 
   std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","ProtonKE","NPi"*/};
 
@@ -36,8 +37,8 @@ void FFTest_SpecCVRes(){
   std::vector<std::string> special_univs;
   for(const auto &item : weight::r_m)
     special_univs.push_back(item.first);
+  if(add_nuwro_fd) special_univs.push_back("NuWro");
 
-  int pts = weight::spline_pts;
 
   for(size_t i_f=0;i_f<vars.size();i_f++){
 
@@ -150,7 +151,6 @@ void FFTest_SpecCVRes(){
 
     for(std::string s : special_univs){
 
-      gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
       //std::cout << s << std::endl;
       std::vector<std::pair<double,int>> spec_chi2;
 
@@ -189,6 +189,7 @@ void FFTest_SpecCVRes(){
         mchm.Restore(h_CV_Reco_tmp);
         mchm.Restore(h_SpecT_CVRes);
 
+        gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
         pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_SpecT_CVRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
 
         delete h_CV_Reco_tmp;
