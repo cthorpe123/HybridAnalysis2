@@ -71,7 +71,7 @@ void CVTruthSpecRes(){
       h_v.push_back((TH1D*)f_in->Get(("Reco/CV/h_"+categories.at(i_c)).c_str()));
       fill_colors.push_back(cat_colors[i_c]);
       legs.push_back(categories.at(i_c));
-      mchm.Restore(h_v.back());
+      //mchm.Restore(h_v.back());
     }
 
     // Calculate the covariance encoding systemaics in the CV prediction
@@ -97,7 +97,6 @@ void CVTruthSpecRes(){
 
    // Do the same with the unisims
    for(int i_s=0;i_s<kUnisimMAX;i_s++){
-      std::cout << "Unisim: " << unisims_str.at(i_s) << std::endl;
       std::string name = "h_Signal_FF_"+unisims_str.at(i_s);
       TH1D* h = Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+unisims_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
       ForceAddTH1D(h,(TH1D*)f_in->Get(("Reco/Vars/"+unisims_str.at(i_s)+"/h_AllBG").c_str()));
@@ -135,7 +134,6 @@ void CVTruthSpecRes(){
       }
 
     }
-   
     
     // Add the covariance from the flux
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
@@ -143,7 +141,6 @@ void CVTruthSpecRes(){
       for(int j=0;j<h_Cov_Flux->GetNbinsY()+2;j++)
         if(i != j) h_Cov_Flux->SetBinContent(i,j,0.0);
     h_Cov->Add(h_Cov_Flux);
-    
 
     // Add the MC stat error on the BG to the covariance matrix 
     h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_AllBG"));
@@ -152,8 +149,8 @@ void CVTruthSpecRes(){
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
     
     // Restore the binning of the CV
-    mchm.Restore(h_CV_Reco);
-    mchm.Restore(h_CV_Reco_AllBG);
+    //mchm.Restore(h_CV_Reco);
+    //mchm.Restore(h_CV_Reco_AllBG);
 
     for(std::string s : special_univs){
 
@@ -163,16 +160,16 @@ void CVTruthSpecRes(){
       for(int i=0;i<100;i++){
 
         std::string spec = s + "_" + std::to_string(i); 
-        std::cout << spec << std::endl;
 
         // Check if the dir exists, end the loop if it doesn't
         TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
         if(d == nullptr) break;
 
+        std::cout << spec << std::endl;
+
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
         TH1D* h_CVT_SpecRes = Multiply(h_CV_Truth,h_Res_Spec,"h_CVT_SpecRes");
-        mchm.Restore(h_CVT_SpecRes);
-        h_CVT_SpecRes->Add(h_CV_Reco_AllBG);
+        ForceAddTH1D(h_CVT_SpecRes,h_CV_Reco_AllBG);
 
         // Stat error in the difference between the FF signal in the CV universe and 
         // the FF signal in the alternative universe
@@ -188,12 +185,15 @@ void CVTruthSpecRes(){
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
 
+        // Restore the binnings before drawing
+        for(TH1D*& h : h_v) mchm.Restore(h);
+        mchm.Restore(h_CV_Reco);
+        mchm.Restore(h_CVT_SpecRes);
+
         gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
         pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
-        
 
       }
-
 
       if(draw_chi2_curve && spec_chi2.size()){
 

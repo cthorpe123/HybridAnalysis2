@@ -17,7 +17,7 @@ void SpecTruthCVRes(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = true;
+  bool add_detvars = false;
   const bool include_data_stat = true;
   const bool draw_u = false;
   const bool draw_o = false;
@@ -71,7 +71,6 @@ void SpecTruthCVRes(){
       h_v.push_back((TH1D*)f_in->Get(("Reco/CV/h_"+categories.at(i_c)).c_str()));
       fill_colors.push_back(cat_colors[i_c]);
       legs.push_back(categories.at(i_c));
-      mchm.Restore(h_v.back());
     }
 
     // Calculate the covariance encoding systemaics in the CV prediction
@@ -159,13 +158,14 @@ void SpecTruthCVRes(){
       std::vector<std::pair<double,int>> spec_chi2;
 
       for(int i=0;i<100;i++){
-
+        
         std::string spec = s + "_" + std::to_string(i); 
-        std::cout << spec << std::endl;
 
         // Check if the dir exists, end the loop if it doesn't
         TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
         if(d == nullptr) break;
+
+        std::cout << spec << std::endl;
 
         TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
         TH1D* h_SpecT_CVRes = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes_2");
@@ -189,6 +189,7 @@ void SpecTruthCVRes(){
           h_SpecT_CVRes->SetBinError(i,1e-10);
         }
 
+        for(TH1D*& h : h_v) mchm.Restore(h);
         mchm.Restore(h_CV_Reco);
         mchm.Restore(h_SpecT_CVRes);
 
@@ -200,7 +201,7 @@ void SpecTruthCVRes(){
         
       }
 
-      if(draw_chi2_curve){
+      if(draw_chi2_curve && spec_chi2.size()){
 
         TH1D* h_chi2 = new TH1D("h_chi2",";Universe;#chi^{2}/ndof",spec_chi2.size(),0.5,spec_chi2.size()+0.5);
         std::map<std::string,std::pair<double,int>>::iterator it;
