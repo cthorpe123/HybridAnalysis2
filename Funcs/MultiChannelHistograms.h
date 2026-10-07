@@ -32,7 +32,7 @@ class MultiChannelHistogramManager {
     void KeepAll(){ _keep_all = true; _hm.KeepAll(); _dhm.KeepAll(); }
     void Write(std::string filename=""){ 
       if(!_detvar_mode) _hm.Write(filename == "" ? "Histograms.root" : filename); 
-      else _dhm.Write(filename == "" ? "Detvar.root" : filename);
+      else _dhm.Write(filename == "" ? "Detvars.root" : filename);
      }
 
     void AddSpecialUniv(std::string name){ _hm.AddSpecialUniv(name); }
