@@ -17,7 +17,7 @@ void CVTruthSpecRes(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = true;
+  bool add_detvars = false;
   const bool include_data_stat = true;
   const bool draw_u = false;
   const bool draw_o = false;
@@ -101,8 +101,6 @@ void CVTruthSpecRes(){
       std::string name = "h_Signal_FF_"+unisims_str.at(i_s);
       TH1D* h = Multiply(h_CV_Truth,(TH2D*)f_in->Get(("Response/Vars/"+unisims_str.at(i_s)+"/h_Signal").c_str()),name.c_str());
       ForceAddTH1D(h,(TH1D*)f_in->Get(("Reco/Vars/"+unisims_str.at(i_s)+"/h_AllBG").c_str()));
-      //TH1D* h_CV = Multiply(h_CV_Truth,h_CV_Res,"h_CV");
-      //h_CV->Add(h_CV_Reco_AllBG);
       TH2D *c,*fc; 
       CalcCovUnisim(unisims_str.at(i_s),h_CV_Reco,h,c,fc); 
       h_Cov->Add(c);
@@ -152,6 +150,10 @@ void CVTruthSpecRes(){
 
     // If requested, also add the estimated stat error on the data
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
+    
+    // Restore the binning of the CV
+    mchm.Restore(h_CV_Reco);
+    mchm.Restore(h_CV_Reco_AllBG);
 
     for(std::string s : special_univs){
 
@@ -168,9 +170,8 @@ void CVTruthSpecRes(){
         if(d == nullptr) break;
 
         TH2D* h_Res_Spec = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
-        TH1D* h_CV_Reco_tmp = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp");
-
         TH1D* h_CVT_SpecRes = Multiply(h_CV_Truth,h_Res_Spec,"h_CVT_SpecRes");
+        mchm.Restore(h_CVT_SpecRes);
         h_CVT_SpecRes->Add(h_CV_Reco_AllBG);
 
         // Stat error in the difference between the FF signal in the CV universe and 
@@ -180,22 +181,21 @@ void CVTruthSpecRes(){
  
         for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++){
           h_CVT_SpecRes->SetBinError(i,1e-10);
-          h_CV_Reco_tmp->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
+          h_CV_Reco->SetBinError(i,sqrt(h_Stat_Cov->GetBinContent(i,i)));
         }
 
-        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp,h_CVT_SpecRes,h_Stat_Cov,draw_o,draw_u);
+        std::pair<double,int> chi2 = Chi2(h_CV_Reco,h_CVT_SpecRes,h_Stat_Cov,draw_o,draw_u);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
-              
-        mchm.Restore(h_CV_Reco_tmp);
-        mchm.Restore(h_CVT_SpecRes);
 
         gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
+        
 
       }
 
-      if(draw_chi2_curve){
+
+      if(draw_chi2_curve && spec_chi2.size()){
 
         TH1D* h_chi2 = new TH1D("h_chi2",";Universe;#chi^{2}/ndof",spec_chi2.size(),0.5,spec_chi2.size()+0.5);
         std::map<std::string,std::pair<double,int>>::iterator it;
@@ -210,8 +210,9 @@ void CVTruthSpecRes(){
         delete h_chi2;
 
       }
-
+      
     }
+    
     
     f_in->Close();
 

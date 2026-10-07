@@ -139,6 +139,22 @@ void MakeCovNuWro(){
     h_Response->Write("h_Signal",TObject::kOverwrite);
     h_Response->Write("h_Signal_NoNorm",TObject::kOverwrite);
 
+    // Now create the special MC stat covariance for NuWro FD, which 
+    // is the sum of the MCStat covariances for the NuWro FD and the
+    // CV MC prediction
+    f_hist->cd();
+    if(f_hist->GetDirectory("Reco/Special/NuWro_0/SpecialStatCov") == nullptr)
+      f_hist->mkdir("Reco/Special/NuWro_0/SpecialStatCov");
+
+    TH2D* h_Cov_SpecialStat = (TH2D*)f_hist->Get("Reco/Cov/MCStat/Cov_Signal");
+    for(int i=0;i<h_Reco_Norm->GetNbinsX()+2;i++)
+      h_Cov_SpecialStat->SetBinContent(i,i,h_Cov_SpecialStat->GetBinContent(i,i)+h_Reco_Norm->GetBinError(i)*h_Reco_Norm->GetBinError(i));
+    
+    f_hist->cd("Reco/Special/NuWro_0/SpecialStatCov");
+    h_Cov_SpecialStat->Write("Cov_SpecialStat");
+
+    
+
     f_hist->Close();
     f_nuwro->Close();
 

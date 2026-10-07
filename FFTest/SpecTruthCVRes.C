@@ -148,6 +148,11 @@ void SpecTruthCVRes(){
     // If requested, also add the estimated stat error on the data
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
 
+    // When folding the special universe through the CV response, we assume the 
+    // usual MC stat error from the CV
+    TH2D* h_Cov_MCStat = (TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_Tot");
+    h_Cov->Add(h_Cov_MCStat);
+
     for(std::string s : special_univs){
 
       //std::cout << s << std::endl;
@@ -162,36 +167,34 @@ void SpecTruthCVRes(){
         TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
         if(d == nullptr) break;
 
-        TH1D* h_CV_Reco_tmp = (TH1D*)h_CV_Reco->Clone("h_CV_Reco_tmp");
-
         TH1D* h_Spec_Truth = (TH1D*)f_in->Get(("Truth/Special/"+spec+"/h_Signal").c_str());
         TH1D* h_SpecT_CVRes = Multiply(h_Spec_Truth,h_CV_Res,"h_SpecT_CVRes_2");
         ForceAddTH1D(h_SpecT_CVRes,h_CV_Reco_AllBG);
 
-        // When folding the spec through the CV response, assume the usual stat error and assume the data stat error is 
+        // When folding the spec through the CV response,
+        // assume the usual stat error and assume the data stat error is 
         // equal to sqrt of pred in spec universe 
         TH2D* h_EstData_Cov = (TH2D*)h_Cov->Clone("h_EstData_Cov");
         h_EstData_Cov->Reset();
-        for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++) h_EstData_Cov->SetBinContent(i,i,h_SpecT_CVRes->GetBinContent(i));
+        for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++) 
+          h_EstData_Cov->SetBinContent(i,i,h_SpecT_CVRes->GetBinContent(i));
         h_EstData_Cov->Add(h_Cov); 
-        h_EstData_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_Tot"));
 
-        std::pair<double,int> chi2 = Chi2(h_CV_Reco_tmp,h_SpecT_CVRes,h_EstData_Cov,draw_o,draw_u);
+        std::pair<double,int> chi2 = Chi2(h_CV_Reco,h_SpecT_CVRes,h_EstData_Cov,draw_o,draw_u);
         spec_chi2.push_back(chi2);
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
 
         for(int i=0;i<h_CV_Reco->GetNbinsX()+2;i++){
-          h_CV_Reco_tmp->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i)));
+          h_CV_Reco->SetBinError(i,sqrt(h_EstData_Cov->GetBinContent(i,i)));
           h_SpecT_CVRes->SetBinError(i,1e-10);
         }
 
-        mchm.Restore(h_CV_Reco_tmp);
+        mchm.Restore(h_CV_Reco);
         mchm.Restore(h_SpecT_CVRes);
 
         gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco_tmp,h_SpecT_CVRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
+        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco,h_SpecT_CVRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_SpecTimesCVResStacked.png",chi2); 
 
-        delete h_CV_Reco_tmp;
         delete h_SpecT_CVRes;
         delete h_EstData_Cov;
         
