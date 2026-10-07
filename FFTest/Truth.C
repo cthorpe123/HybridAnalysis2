@@ -8,11 +8,9 @@
 
 using namespace syst;
 
-// Try forward folding the CV truth through the response
-// calulated in the CV and special universes, calculate chi2
-// between the CV and each special prediction
+// Draw the truth predictions from the CV and special universes
 
-void FFTest_Truth(){
+void Truth(){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
