@@ -182,6 +182,10 @@ void FFTest_ResComp(){
         std::string spec = s + "_" + std::to_string(i_u);
         std::cout << spec << std::endl;
 
+        // Check if the dir exists, end the loop if it doesn't
+        TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
+        if(d == nullptr) break;
+
         TH2D* h_Spec_Res = (TH2D*)f_in->Get(("Response/Special/"+spec+"/h_Signal").c_str());
 
         // CV truth forward-folded through special universe response (raw bin space)

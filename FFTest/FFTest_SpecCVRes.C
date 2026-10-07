@@ -159,7 +159,7 @@ void FFTest_SpecCVRes(){
         std::string spec = s + "_" + std::to_string(i); 
         std::cout << spec << std::endl;
 
-        // Check if the dir exists
+        // Check if the dir exists, end the loop if it doesn't
         TDirectory* d = f_in->GetDirectory(("Truth/Special/"+spec).c_str());
         if(d == nullptr) break;
 
