@@ -17,12 +17,12 @@ using namespace syst;
 
 void Recipe4(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
 
@@ -70,6 +70,19 @@ void Recipe4(){
         std::string plot_dir_sys = plot_dir+sys+"/";
         gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
         pfs::Draw2DHist(fc,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+".png");
+      }
+
+      if(add_detvars){
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+          std::string sys = detvar_str.at(i_s);
+          TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen_ref+"/Pred").c_str());
+          TH2D *c,*fc;
+          CalcCovUnisim(gen_ref+"_"+sys,h_pred_ref,h,c,fc);
+          h_fcov_ref[sys] = fc;
+          std::string plot_dir_sys = plot_dir+sys+"/";
+          gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+          pfs::Draw2DHist(fc,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+".png");
+        }
       }
       
 
@@ -129,7 +142,22 @@ void Recipe4(){
         h_cov_tot.back()->Add(c);
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
-      }   
+      }  
+      
+      if(add_detvars){
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+          std::string sys = detvar_str.at(i_s);
+          TH2D* c = (TH2D*)h_fcov_ref.at(sys)->Clone((sys+"_"+gen).c_str());
+          for(int i_b=0;i_b<c->GetNbinsX()+2;i_b++)
+            for(int j_b=0;j_b<c->GetNbinsX()+2;j_b++)
+              c->SetBinContent(i_b,j_b,c->GetBinContent(i_b,j_b)*h_pred->GetBinContent(i_b)*h_pred->GetBinContent(j_b));
+
+          c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BGSData/Cov_BGSData").c_str()));
+          h_cov_tot.back()->Add(c);
+          h_cov_m[sys].push_back(c);
+          h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
+        }  
+      } 
       
 
       // Set the errors on the Pred histogram from the diagonal of the

@@ -18,7 +18,7 @@ void CompareRecipes(){
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1"/*,"Recipe2","Recipe3","Recipe7"*/};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3"/*,"Recipe7"*/};
   std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
   std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();
@@ -94,6 +94,20 @@ void CompareRecipes(){
         MakeFEHist(h_fe_unisim_v.back(),h_pred,h_cov_unisim_v.back()); 
       }
       pfs::DrawUnstacked(h_fe_unisim_v,styles,recipe_names,draw_o,draw_u,false,false,plot_dir_gen+"FE_Unisim.png");
+
+      // Compute the total FE from the detvars
+      if(add_detvars){
+        std::vector<TH2D*> h_cov_detvar_v;
+        std::vector<TH1D*> h_fe_detvar_v;
+        for(size_t i_r=0;i_r<recipes.size();i_r++){
+          h_cov_detvar_v.push_back((TH2D*)h_cov_m["Total"].at(i_g).at(i_r)->Clone(("Detvar_"+recipes.at(i_r)).c_str()));
+          h_cov_detvar_v.back()->Reset();
+          for(std::string u : detvar_str) h_cov_detvar_v.back()->Add(h_cov_m[u].at(i_g).at(i_r));
+          h_fe_detvar_v.push_back((TH1D*)h_pred->Clone(("h_fe_detvar_"+recipes.at(i_r)).c_str()));
+          MakeFEHist(h_fe_detvar_v.back(),h_pred,h_cov_detvar_v.back()); 
+        }
+        pfs::DrawUnstacked(h_fe_detvar_v,styles,recipe_names,draw_o,draw_u,false,false,plot_dir_gen+"FE_Detvar.png");
+      }
 
 
       // Calculate the chi2 with the asimov data/beam data using each recipe and compare
