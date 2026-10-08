@@ -19,7 +19,7 @@ void CheckDetvars(){
   // Label and set the branches defining the selection and systematics
   bool draw_truth = true;
   bool draw_hist = true; // Grab the CV from the non-detvar file
-  bool draw_o=false,draw_u=false;
+  bool draw_o=true,draw_u=true;
 
   std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"*/};
 
@@ -59,7 +59,30 @@ void CheckDetvars(){
       legs.push_back("CV HIST");
     }
 
-    pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,false,plot_dir+"Reco.png"); 
+    pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,true,plot_dir+"Reco.png"); 
+
+    h_v.clear();
+
+    // Draw the shape of the selected background
+    h_v.push_back((TH1D*)f_in->Get("Reco/CV/h_AllBG"));
+    mchm.Restore(h_v.back());
+    h_v.back()->Scale(1.0/IntegralWithOU(h_v.back()));
+
+    for(size_t i_s=0;i_s<detvar_str.size();i_s++){
+      std::string var = detvar_str.at(i_s);
+      h_v.push_back((TH1D*)f_in->Get(("Reco/Vars/"+var+"/h_AllBG").c_str()));
+      mchm.Restore(h_v.back());
+      h_v.back()->Scale(1.0/IntegralWithOU(h_v.back()));
+    }
+
+    if(draw_hist){
+      h_v.push_back((TH1D*)f_in_hist->Get("Reco/CV/h_AllBG")->Clone("h_CV_Reco_AllBG_Hist"));
+      mchm.Restore(h_v.back());
+      h_v.back()->SetLineStyle(2);
+      h_v.back()->Scale(1.0/IntegralWithOU(h_v.back()));
+    }
+
+    pfs::DrawUnstacked(h_v,fill_colors,legs,draw_o,draw_u,false,true,plot_dir+"AllBGShape.png");
 
     if(draw_truth){
       h_v.clear();

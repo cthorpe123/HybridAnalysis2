@@ -26,7 +26,7 @@ void MakeFoldingIngredients(){
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
   bool blinded = true;
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool alt_method = false;
 
   for(const std::string& var : vars){
@@ -43,6 +43,9 @@ void MakeFoldingIngredients(){
     // Open the file containing the histograms
     TFile* f_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
     const double POT = ((TH1D*)f_hist->Get("Meta/POT"))->GetBinContent(1);
+
+    // If requested, get the detvars as well
+    TFile* f_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Detvars.root").c_str()) : nullptr;
 
     // Open the file containing the generator predictions
     TFile* f_gen = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/GeneratorXSec.root").c_str());
@@ -228,6 +231,83 @@ void MakeFoldingIngredients(){
 
     }
 
+    if(add_detvars){
+ 
+      TH1D* h_detvar_bg_cv = (TH1D*)f_detvar->Get("Reco/CV/h_AllBG");
+      mchm.Restore(h_detvar_bg_cv);
+
+      // Ratio to rescale detvars as they're not scaled to same POT
+      // This is the scale (including division by flux and targets) to 
+      // give the detvars the same normalisation as the CV
+      // Note that we still need to compare with the detvar CV to get any uncertainties
+      double scale = IntegralWithOU(h_bg_cv)/IntegralWithOU(h_detvar_bg_cv); 
+      h_detvar_bg_cv->Scale(scale);
+
+      f_out->cd();
+      f_out->mkdir("Vars/DetvarCV/BG");
+      f_out->cd("Vars/DetvarCV/BG");
+      h_detvar_bg_cv->SetTitle("d#sigma (10^{-38} cm^{2})");
+      h_detvar_bg_cv->Write("BG");
+
+      f_out->cd();
+      f_out->mkdir("Vars/DetvarCV/BGSData");
+      f_out->cd("Vars/DetvarCV/BGSData");
+      TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone("BGSData");
+      h_bgs_data_tmp->Add(h_detvar_bg_cv,-1);
+      h_bgs_data_tmp->SetTitle("d#sigma (10^{-38} cm^{2})");
+      h_bgs_data_tmp->Write("BGSData");
+
+      for(int i_s=0;i_s<kDetvarMAX;i_s++){
+        std::string sys = detvar_str.at(i_s);
+        std::cout << sys << std::endl;
+        f_out->cd();
+        f_out->mkdir(("Vars/"+sys+"/BG").c_str());
+        f_out->cd(("Vars/"+sys+"/BG").c_str());
+        TH1D* h = (TH1D*)f_detvar->Get(("Reco/Vars/"+sys+"/h_AllBG").c_str());
+        mchm.Restore(h);
+        h->Scale(scale);
+
+        h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
+        h->Write("BG");
+
+        f_out->cd();
+        f_out->mkdir(("Cov/"+sys+"/BG").c_str());
+        f_out->cd(("Cov/"+sys+"/BG").c_str());
+        TH2D *c,*fc;
+        CalcCovUnisim(sys,h_detvar_bg_cv,h,c,fc);
+        mchm.Restore(c);
+        c->Write("Cov_BG");
+
+        f_out->cd();
+        f_out->mkdir(("Vars/"+sys+"/Data").c_str());
+        f_out->cd(("Vars/"+sys+"/Data").c_str());
+        h_reco_data->Write("Data");
+
+        f_out->cd();
+        f_out->mkdir(("Cov/"+sys+"/Data").c_str());
+        f_out->cd(("Cov/"+sys+"/Data").c_str());
+        TH2D* h_cov_data_tmp = (TH2D*)c->Clone("Cov_Data");
+        h_cov_data_tmp->Reset();
+        h_cov_data_tmp->Write("Cov_Data");
+
+        f_out->cd();
+        f_out->mkdir(("Vars/"+sys+"/BGSData").c_str());
+        f_out->cd(("Vars/"+sys+"/BGSData").c_str());
+        TH1D* h_bgs_data_tmp2 = (TH1D*)h_reco_data->Clone("BGSData");
+        h_bgs_data_tmp2->Add(h,-1);
+        h_bgs_data_tmp2->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
+        h_bgs_data_tmp2->Write("BGSData");   
+        
+        f_out->cd();
+        f_out->mkdir(("Cov/"+sys+"/BGSData").c_str());
+        f_out->cd(("Cov/"+sys+"/BGSData").c_str());
+        TH2D* h_cov_bgs_data_tmp = (TH2D*)c->Clone("Cov_BGSData");
+        h_cov_bgs_data_tmp->Write("Cov_BGSData");
+
+      }
+
+    }
+
     // Calculate the data and BG subtracted data when using different total fluxes
     f_out->cd();
     f_out->mkdir("Vars/Flux/Data");
@@ -337,6 +417,43 @@ void MakeFoldingIngredients(){
         c->Write("Cov_Pred");
       }
 
+      if(add_detvars){
+
+        f_out->cd();
+        f_out->mkdir(("Vars/DetvarCV/"+gen).c_str());
+        f_out->cd(("Vars/DetvarCV/"+gen).c_str());
+        TH1D* h = Multiply(h_gen_truth,(TH2D*)f_detvar->Get("Response/CV/h_Signal"),"Pred");
+        mchm.Restore(h);
+        h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
+        h->Write("Pred");
+
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+
+          std::string sys = detvar_str.at(i_s);
+          f_out->cd();
+          f_out->mkdir(("Vars/"+sys+"/"+gen).c_str());
+          f_out->cd(("Vars/"+sys+"/"+gen).c_str());
+          TH1D* h = Multiply(h_gen_truth,(TH2D*)f_detvar->Get(("Response/Vars/"+sys+"/h_Signal").c_str()),"Pred");
+          mchm.Restore(h);
+          h->GetYaxis()->SetTitle("d#sigma (10^{-38} cm^{2})");
+          h->Write("Pred");
+
+          f_out->cd();
+          f_out->mkdir(("Cov/"+sys+"/"+gen).c_str());
+          f_out->cd(("Cov/"+sys+"/"+gen).c_str());
+          TH2D *c,*fc;
+          CalcCovUnisim(sys,h_gen_ff_cv_v.at(i_g),h,c,fc);
+          mchm.Restore(c);
+          c->Write("Cov_Pred");
+
+        }
+          
+      }
+
+
+
+
+
       // Calculate the generator predictions in each flux universe
       const TH2D* h_gen_truth_2d = (TH2D*)f_gen->Get(("h_xsec_2D_"+var+"_"+gen).c_str());
       f_out->cd();
@@ -370,6 +487,7 @@ void MakeFoldingIngredients(){
 
     f_hist->Close();
     f_gen->Close();
+    f_out->Close();
 
     std::cout << "Finished cleaning up" << std::endl;
   }
