@@ -17,12 +17,12 @@ using namespace syst;
 
 void Recipe1(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
 
@@ -97,8 +97,26 @@ void Recipe1(){
         h_cov_m[sys].push_back(c);
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
         delete h_bgs_data_tmp;
+        delete h;
       }
-      
+
+      // Detvars
+      if(add_detvars){
+        TH1D* h_bgs_data_detvar_cv = (TH1D*)f_in->Get("Vars/DetvarCV/BGSData/BGSData")->Clone("BGSData_DetvarCV_c");
+        h_bgs_data_detvar_cv->Add((TH1D*)f_in->Get(("Vars/DetvarCV/"+gen+"/Pred").c_str()),-1);
+
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+          std::string sys = detvar_str.at(i_s);
+          TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/BGSData/BGSData").c_str())->Clone("BGSData_c");
+          h->Add((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str()),-1);
+          TH2D *c,*fc;
+          CalcCovUnisim(gen+"_"+sys,h_bgs_data_detvar_cv,h,c,fc);
+          h_cov_tot.back()->Add(c);
+          h_cov_m[sys].push_back(c);
+          h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
+          delete h;
+        }
+      }
 
       // Set the errors on the Pred histogram from the diagonal of the
       // total covariance, then write it out

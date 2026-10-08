@@ -18,11 +18,11 @@ void CompareRecipes(){
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
+  std::vector<std::string> recipes = {"Recipe1"/*,"Recipe2","Recipe3","Recipe7"*/};
   std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
   std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
   bool shape_only = false;
@@ -30,6 +30,7 @@ void CompareRecipes(){
   std::vector<std::string> sys_v = {"Total","DataStat","BGMCStat"};
   for(int i_s=0;i_s<kSystMAX;i_s++) sys_v.push_back(sys_str.at(i_s));
   for(int i_s=0;i_s<kUnisimMAX;i_s++) sys_v.push_back(unisims_str.at(i_s));
+  if(add_detvars) for(int i_s=0;i_s<kDetvarMAX;i_s++) sys_v.push_back(detvar_str.at(i_s));
   
 
   for(const std::string& var : vars){
