@@ -16,12 +16,10 @@ using namespace syst;
 
 void Recipe2(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
-  //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
 
@@ -106,7 +104,28 @@ void Recipe2(){
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
         delete h_data_tmp;
       }
-      
+
+      if(add_detvars){
+        TH1D* h_data_detvar_cv = (TH1D*)f_in->Get("Vars/DetvarCV/Data/Data")->Clone("Data_DetvarCV_c");
+        h_data_detvar_cv->Add((TH1D*)f_in->Get(("Vars/DetvarCV/"+gen+"/Pred").c_str()),-1);
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+          std::string sys = detvar_str.at(i_s);
+          TH1D* h = (TH1D*)f_in->Get(("Vars/"+sys+"/Data/Data").c_str())->Clone("BGSData_c");
+          h->Add((TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str()),-1);
+          TH2D *c,*fc;
+          CalcCovUnisim(gen+"_"+sys,h_data_detvar_cv,h,c,fc);
+          std::string plot_dir_sys = plot_dir+sys+"/";
+          gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+          pfs::Draw2DHist(c,plot_dir_sys+"Cov_NoBG_"+sys+"_"+gen+".png");
+          pfs::Draw2DHist((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()),plot_dir_sys+"Cov_BG_"+sys+"_"+gen+".png");
+          c->Add((TH2D*)f_in->Get(("Cov/"+sys+"/BG/Cov_BG").c_str()));
+          h_cov_tot.back()->Add(c);
+          h_cov_m[sys].push_back(c);
+          h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
+        }
+        delete h_data_detvar_cv;
+      }
+
       // Set the errors on the Pred histogram from the diagonal of the
       // total covariance, then write it out
       for(int i=0;i<=h_pred->GetNbinsX()+1;i++)
