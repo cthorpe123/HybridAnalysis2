@@ -250,6 +250,13 @@ void MakeFoldingIngredients(){
       h_detvar_bg_cv->Write("BG");
 
       f_out->cd();
+      f_out->mkdir("Vars/DetvarCV/Data");
+      f_out->cd("Vars/DetvarCV/Data");
+      TH1D* h_data_tmp = (TH1D*)h_reco_data->Clone("Data");
+      h_data_tmp->SetTitle("d#sigma (10^{-38} cm^{2})");
+      h_data_tmp->Write("Data");
+
+      f_out->cd();
       f_out->mkdir("Vars/DetvarCV/BGSData");
       f_out->cd("Vars/DetvarCV/BGSData");
       TH1D* h_bgs_data_tmp = (TH1D*)h_reco_data->Clone("BGSData");

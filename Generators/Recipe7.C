@@ -25,12 +25,12 @@ using namespace syst;
 
 void Recipe7(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
 
@@ -112,9 +112,45 @@ void Recipe7(){
       h_fcov_yx[sys] = fc_yx;
     }
 
+    // Detvars
+    if(add_detvars){
+
+      TH1D* h_bgsdata_detvar_cv = (TH1D*)f_in->Get("Vars/DetvarCV/BGSData/BGSData");
+      TH1D* h_pred_detvar_cv = (TH1D*)f_in->Get(("Vars/DetvarCV/"+gen_ref+"/Pred").c_str());
+
+      for(int i_s=0;i_s<kDetvarMAX;i_s++){
+        std::string sys = detvar_str.at(i_s);
+
+        TH1D* h_bgsdata_var = (TH1D*)f_in->Get(("Vars/"+sys+"/BGSData/BGSData").c_str());
+        TH1D* h_pred_var = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen_ref+"/Pred").c_str());
+
+        TH2D *c_xx,*fc_xx,*c_yy,*fc_yy,*c_xy,*fc_xy,*c_yx,*fc_yx;
+        CalcCovUnisim(gen_ref+"_"+sys+"_BGSData",h_bgsdata_detvar_cv,h_bgsdata_var,c_xx,fc_xx);
+        CalcCovUnisim(gen_ref+"_"+sys+"_Pred",h_pred_detvar_cv,h_pred_var,c_yy,fc_yy);
+        CalcCovUnisimBlock(gen_ref+"_"+sys+"_XY",h_bgsdata_detvar_cv,h_bgsdata_var,h_pred_detvar_cv,h_pred_var,c_xy,fc_xy);
+        CalcCovUnisimBlock(gen_ref+"_"+sys+"_YX",h_pred_detvar_cv,h_pred_var,h_bgsdata_detvar_cv,h_bgsdata_var,c_yx,fc_yx);
+
+        std::string plot_dir_sys = plot_dir+sys+"/";
+        gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+        pfs::Draw2DHist(fc_xx,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+"_xx.png");
+        pfs::Draw2DHist(fc_yy,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+"_yy.png");
+        pfs::Draw2DHist(fc_xy,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+"_xy.png");
+        pfs::Draw2DHist(fc_yx,plot_dir_sys+"FCov_Ref_"+sys+"_"+gen_ref+"_yx.png");
+
+        h_fcov_xx[sys] = fc_xx;
+        h_fcov_yy[sys] = fc_yy;
+        h_fcov_xy[sys] = fc_xy;
+        h_fcov_yx[sys] = fc_yx;
+      }
+
+    }
+
+
+
     std::vector<std::string> all_sys;
     for(int i_s=0;i_s<kSystMAX;i_s++) all_sys.push_back(sys_str.at(i_s));
     for(int i_s=0;i_s<kUnisimMAX;i_s++) all_sys.push_back(unisims_str.at(i_s));
+    for(int i_s=0;i_s<kDetvarMAX;i_s++) all_sys.push_back(detvar_str.at(i_s));
 
     for(std::string gen : generators){
 

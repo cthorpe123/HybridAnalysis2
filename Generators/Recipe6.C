@@ -24,12 +24,9 @@ using namespace syst;
 
 void Recipe6(){
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE"};
-  //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
-  //vars.push_back("Norm");
+  std::vector<std::string> vars = {"MuonMom"};
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  bool add_detvars = false;
+  bool add_detvars = true;
   bool draw_o = false;
   bool draw_u = false;
 
@@ -133,6 +130,44 @@ void Recipe6(){
         h_cov_diff_tot.back()->Add(c);
         h_cov_diff_m[sys].push_back(c);
       }
+
+      if(add_detvars){
+
+        TH1D* h_bgsdata_detvar_cv = (TH1D*)f_in->Get("Vars/DetvarCV/BGSData/BGSData");
+        TH1D* h_pred_detvar_cv = (TH1D*)f_in->Get(("Vars/DetvarCV/"+gen+"/Pred").c_str());
+
+        for(int i_s=0;i_s<kDetvarMAX;i_s++){
+          std::string sys = detvar_str.at(i_s);
+
+          std::string plot_dir_sys = plot_dir+sys+"/";
+          gSystem->Exec(("mkdir -p " + plot_dir_sys).c_str());
+
+          TH1D* h_bgsdata_var = (TH1D*)f_in->Get(("Vars/"+sys+"/BGSData/BGSData").c_str());
+          TH1D* h_pred_var = (TH1D*)f_in->Get(("Vars/"+sys+"/"+gen+"/Pred").c_str());
+
+          TH2D *c_xx,*fc_xx,*c_yy,*fc_yy,*c_xy,*fc_xy,*c_yx,*fc_yx;
+          CalcCovUnisim(gen+"_"+sys+"_BGSData",h_bgsdata_detvar_cv,h_bgsdata_var,c_xx,fc_xx);
+          CalcCovUnisim(gen+"_"+sys+"_Pred",h_pred_detvar_cv,h_pred_var,c_yy,fc_yy);
+          CalcCovUnisimBlock(gen+"_"+sys+"_XY",h_bgsdata_detvar_cv,h_bgsdata_var,h_pred_detvar_cv,h_pred_var,c_xy,fc_xy);
+          CalcCovUnisimBlock(gen+"_"+sys+"_YX",h_pred_detvar_cv,h_pred_var,h_bgsdata_detvar_cv,h_bgsdata_var,c_yx,fc_yx);
+
+          pfs::Draw2DHist(c_xx,plot_dir_sys+"Cov_"+sys+"_"+gen+"_xx.png");
+          pfs::Draw2DHist(c_yy,plot_dir_sys+"Cov_"+sys+"_"+gen+"_yy.png");
+          pfs::Draw2DHist(c_xy,plot_dir_sys+"Cov_"+sys+"_"+gen+"_xy.png");
+          pfs::Draw2DHist(c_yx,plot_dir_sys+"Cov_"+sys+"_"+gen+"_yx.png");
+
+          TH2D* c = Make2DHist("h_Cov_"+sys+"_"+gen,h_bgs_data);
+          for(int i=0;i<h_bgs_data->GetNbinsX()+2;i++)
+            for(int j=0;j<h_bgs_data->GetNbinsX()+2;j++)
+              c->SetBinContent(i,j,c_xx->GetBinContent(i,j) - c_xy->GetBinContent(i,j) - c_yx->GetBinContent(i,j) + c_yy->GetBinContent(i,j));
+
+          pfs::Draw2DHist(c,plot_dir_sys+"Cov_"+sys+"_"+gen+".png");
+          h_cov_diff_tot.back()->Add(c);
+          h_cov_diff_m[sys].push_back(c);
+        }
+
+      }
+
 
       // Set the error on the Pred histogram from the diagonal of the total
       // residual covariance, then write it out alongside BGSData
