@@ -17,7 +17,7 @@ void CVTruthSpecRes(){
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
 
-  bool add_detvars = false;
+  bool add_detvars = true;
   const bool include_data_stat = true;
   const bool draw_u = false;
   const bool draw_o = false;
@@ -27,7 +27,7 @@ void CVTruthSpecRes(){
   const bool draw_cov = false;
   const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
 
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> channels_t = {"All"};
@@ -137,9 +137,6 @@ void CVTruthSpecRes(){
     
     // Add the covariance from the flux
     TH2D* h_Cov_Flux = (TH2D*)f_in->Get("Reco/Cov/Flux/Cov_Tot");
-    for(int i=0;i<h_Cov_Flux->GetNbinsX()+2;i++)
-      for(int j=0;j<h_Cov_Flux->GetNbinsY()+2;j++)
-        if(i != j) h_Cov_Flux->SetBinContent(i,j,0.0);
     h_Cov->Add(h_Cov_Flux);
 
     // Add the MC stat error on the BG to the covariance matrix 
@@ -147,10 +144,6 @@ void CVTruthSpecRes(){
 
     // If requested, also add the estimated stat error on the data
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));
-    
-    // Restore the binning of the CV
-    //mchm.Restore(h_CV_Reco);
-    //mchm.Restore(h_CV_Reco_AllBG);
 
     for(std::string s : special_univs){
 
@@ -191,7 +184,8 @@ void CVTruthSpecRes(){
         mchm.Restore(h_CVT_SpecRes);
 
         gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
-        pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
+        //pfs::DrawStacked(h_v,fill_colors,legs,h_CV_Reco,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
+        pfs::DrawStackedRatio(h_v,fill_colors,legs,h_CV_Reco,h_CVT_SpecRes,draw_o,draw_u,dbbw,plot_dir+"/"+s+"/"+spec+"_CVTimesSpecRes.png",chi2); 
 
       }
 

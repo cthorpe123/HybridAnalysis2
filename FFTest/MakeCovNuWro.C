@@ -15,7 +15,7 @@ void MakeCovNuWro(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
   //std::vector<std::string> vars = var_names;
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
@@ -58,6 +58,12 @@ void MakeCovNuWro(){
       std::string channel_h8 = "All";
 
       weightSplineTimesTune = 1.0;
+
+      vars_t->emplace("Enu",nu_e);
+      vars_h8->emplace("Enu",nu_e);
+
+      vars_t->emplace("Norm",0.5);
+      vars_h8->emplace("Norm",0.5);
 
       // Fill the histograms
       for(const auto &item : h_m){

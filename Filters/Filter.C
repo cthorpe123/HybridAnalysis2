@@ -21,6 +21,15 @@ void Filter(){
   int detvar_univ = -1;
 
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run1/";
+  detvar_univ = -1;
+  std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_1.root"; POT = 1.451e+20; POT_weight = 1.0; is_data = true;  save_syst = false;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_1.root"; POT = 1.451e+20; POT_weight = 1.0; is_data = false;  save_syst = false;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_1.root"; is_data = false;  save_syst = true;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root";  is_data = true;  save_syst = false;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root";             is_data = false;  save_syst = false;
+ 
 
   // Main run4b files TODO - Check Data POT calculation
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run4b/";

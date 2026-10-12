@@ -18,8 +18,7 @@ void MakeCovDetvar(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom"};
-  //std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
@@ -72,14 +71,6 @@ void MakeCovDetvar(){
   h_m.at("Norm").SetTemplates("",1,0,1,1,0,1); 
   h_m.at("Norm").MakeHM();
 
-  h_m.emplace("Enu",hist::MultiChannelHistogramManager("Enu",true));
-  h_m.at("Enu").DetvarMode();
-  h_m.at("Enu").SetTrueChannelList(channels_t);
-  h_m.at("Enu").SetRecoChannelList(channels_r);
-  h_m.at("Enu").KeepAll();
-  h_m.at("Enu").LoadTemplates();
-  h_m.at("Enu").MakeHM();
-
   for(int i_f=0;i_f<files.size();i_f++){
     std::string file = files.at(i_f);
     TFile* f_in = nullptr;
@@ -91,8 +82,6 @@ void MakeCovDetvar(){
       //if(ievent > 10000) break;
       if (ievent % 1000 == 0) std::cout << "  " << ievent << " / " << t_in->GetEntries() << "\r" << std::flush;
       t_in->GetEntry(ievent);
-
-      //if(run > 25400 && run < 25600) continue;
 
       std::string channel_t = "All";
       std::string channel_h8 = "All";

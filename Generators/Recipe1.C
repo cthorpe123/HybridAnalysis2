@@ -83,7 +83,6 @@ void Recipe1(){
         h_cov_m[sys].back()->Write(("Cov_"+sys).c_str());
       }
       
-      
       // Unisims
       for(int i_s=0;i_s<kUnisimMAX;i_s++){
         std::string sys = unisims_str.at(i_s);

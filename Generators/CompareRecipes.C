@@ -18,7 +18,7 @@ void CompareRecipes(){
   //vars.push_back("Enu");
   //vars.push_back("Norm");
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3"/*,"Recipe7"*/};
+  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
   std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
   std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();

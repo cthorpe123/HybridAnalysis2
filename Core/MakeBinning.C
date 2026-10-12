@@ -24,13 +24,13 @@ void MakeBinning(){
   std::map<std::string,TH1D*> h_m;
   std::map<std::string,std::map<std::string,TH1D*>> h_reco_m,h_true_m;
 
-  //h_m["Enu"] = new TH1D("h_Enu",";Neutrino Energy [GeV];Events/GeV",10000, 0,3);
+  h_m["Enu"] = new TH1D("h_Enu",";Neutrino Energy [GeV];Events/GeV",10000, 0,3);
   h_m["MuonMom"]                = new TH1D("h_MuonMom",                ";Muon Momentum [GeV];Events/GeV",              10000, 0,   3);
-  /*h_m["MuonCosTheta"]           = new TH1D("h_MuonCosTheta",           ";Muon cos#theta;Events/Unit",                   10000,-1,   1);
+  h_m["MuonCosTheta"]           = new TH1D("h_MuonCosTheta",           ";Muon cos#theta;Events/Unit",                   10000,-1,   1);
   h_m["LeadProtonKE"]           = new TH1D("h_LeadProtonKE",           ";Leading Proton KE [GeV];Events/GeV",          10000, 0,   1);
   h_m["ProtonKE"]               = new TH1D("h_ProtonKE",               ";Total Proton KE [GeV];Events/GeV",            10000, 0,   2);
   h_m["LeadPionE"]              = new TH1D("h_LeadPionE",              ";Leading Pion Energy [GeV];Events/GeV",        10000, 0,   1.5);
-  h_m["1p1piOpeningAngle"]      = new TH1D("h_1p1piOpeningAngle",      ";1p1#pi Opening Angle [deg];Events/GeV",       10000, 0, 180);
+  /*h_m["1p1piOpeningAngle"]      = new TH1D("h_1p1piOpeningAngle",      ";1p1#pi Opening Angle [deg];Events/GeV",       10000, 0, 180);
   h_m["1p1piAsym"]              = new TH1D("h_1p1piAsym",              ";1p1#pi Asymmetry;Events/Unit",                 10000,-1,   1);
   h_m["MuonProtonOpeningAngle"] = new TH1D("h_MuonProtonOpeningAngle", ";Muon-Proton Opening Angle [deg];Events",  10000, 0, 180);
   h_m["2pOpeningAngle"]         = new TH1D("h_2pOpeningAngle",         ";2p Opening Angle [deg];Events",           10000, 0, 180);
@@ -59,7 +59,7 @@ void MakeBinning(){
     
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root",
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
-    "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_off_metapatch_retuple_retuple_hist.root"/*,
+    "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_off_metapatch_retuple_retuple_hist.root",
 
     "run4c/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_4c.root",
     "run4c/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4c.root",
@@ -71,7 +71,7 @@ void MakeBinning(){
 
     "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
-    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"*/
+    "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
 
   };
 
@@ -122,8 +122,8 @@ void MakeBinning(){
 
   for(const auto &item : h_m){
     std::string var = item.first;
-    MakeMultiChannelTemplate(var,h_reco_m.at(var),false,0.03);
-    MakeMultiChannelTemplate(var,h_true_m.at(var),true,0.03);
+    MakeMultiChannelTemplate(var,h_reco_m.at(var),false,0.04);
+    MakeMultiChannelTemplate(var,h_true_m.at(var),true,0.04);
   }
 
 }
