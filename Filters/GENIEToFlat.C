@@ -6,7 +6,7 @@
 
 void GENIEToFlat(){
 
-  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  GenerateDictionaries();
 
   TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/genie_events_numu_Ar40.root");
   TTree* t_in = static_cast<TTree*>(f_in->Get("gst")) ;

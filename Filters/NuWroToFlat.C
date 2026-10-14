@@ -6,7 +6,7 @@
 
 void NuWroToFlat(){
 
-  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  GenerateDictionaries();
 
   TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/NuWro_CC_Ar_numu_uboone.root");
   TTree* t_in = static_cast<TTree*>(f_in->Get("treeout"));

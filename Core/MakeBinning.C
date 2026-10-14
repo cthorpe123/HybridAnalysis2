@@ -24,28 +24,28 @@ void MakeBinning(){
   std::map<std::string,TH1D*> h_m;
   std::map<std::string,std::map<std::string,TH1D*>> h_reco_m,h_true_m;
 
-  h_m["Enu"] = new TH1D("h_Enu",";Neutrino Energy [GeV];Events/GeV",10000, 0,3);
-  h_m["MuonMom"]                = new TH1D("h_MuonMom",                ";Muon Momentum [GeV];Events/GeV",              10000, 0,   3);
-  h_m["MuonCosTheta"]           = new TH1D("h_MuonCosTheta",           ";Muon cos#theta;Events/Unit",                   10000,-1,   1);
-  h_m["LeadProtonKE"]           = new TH1D("h_LeadProtonKE",           ";Leading Proton KE [GeV];Events/GeV",          10000, 0,   1);
-  h_m["ProtonKE"]               = new TH1D("h_ProtonKE",               ";Total Proton KE [GeV];Events/GeV",            10000, 0,   2);
-  h_m["LeadPionE"]              = new TH1D("h_LeadPionE",              ";Leading Pion Energy [GeV];Events/GeV",        10000, 0,   1.5);
-  /*h_m["1p1piOpeningAngle"]      = new TH1D("h_1p1piOpeningAngle",      ";1p1#pi Opening Angle [deg];Events/GeV",       10000, 0, 180);
-  h_m["1p1piAsym"]              = new TH1D("h_1p1piAsym",              ";1p1#pi Asymmetry;Events/Unit",                 10000,-1,   1);
-  h_m["MuonProtonOpeningAngle"] = new TH1D("h_MuonProtonOpeningAngle", ";Muon-Proton Opening Angle [deg];Events",  10000, 0, 180);
-  h_m["2pOpeningAngle"]         = new TH1D("h_2pOpeningAngle",         ";2p Opening Angle [deg];Events",           10000, 0, 180);
-  h_m["2pAsym"]                 = new TH1D("h_2pAsym",                 ";2p Asymmetry;Events/Unit",                     10000,-1,   1);
-  h_m["2shwOpenAngle"]          = new TH1D("h_2shwOpenAngle",          ";2-Shower Opening Angle [deg];Events/Unit",     10000, 0, 180);
-  h_m["2shwAsym"]               = new TH1D("h_2shwAsym",               ";2-Shower Asymmetry;Events/Unit",               10000,-1,   1);
-  h_m["PionE"]                  = new TH1D("h_PionE",                  ";Total Pion Energy [GeV];Events/GeV",          10000, 0,   1.5);
-  h_m["PiZeroE"]                = new TH1D("h_PiZeroE",                ";Total #pi^{0} Energy [GeV];Events/GeV",       10000, 0,   1.5);
-  h_m["W"]                      = new TH1D("h_W",                      ";W [GeV];Events/GeV",                          10000, 1,   4);
-  h_m["Channel"]                = new TH1D("h_Channel",                ";Channel;Events",                             27, 0,  27);
-  h_m["MuonKin"]                = new TH1D("h_MuonKin",                ";E_{#nu} Muon Kin. [GeV];Events/GeV",          10000, 0,   4);
-  h_m["MuonKinWNP"]             = new TH1D("h_MuonKinWNP",             ";E_{#nu} Muon Kin. + NP [GeV];Events/GeV",     10000, 0,   4);
-  h_m["PeLEELike0Pi"]           = new TH1D("h_PeLEELike0Pi",           ";E_{#nu} PeLEE-Like 0#pi [GeV];Events/GeV",    10000, 0,   4);
-  h_m["TotalEDep"]              = new TH1D("h_TotalEDep",              ";E_{#nu} Total E Dep. [GeV];Events/GeV",       10000, 0,   4);
-  h_m["SFMethod"]               = new TH1D("h_SFMethod",               ";E_{#nu} SF Method [GeV];Events/GeV",          10000, 0,   4);*/
+  //h_m["Enu"] = new TH1D("h_Enu",";Neutrino Energy [GeV];Events/GeV",10000, 0,3);
+  //h_m["MuonMom"]                = new TH1D("h_MuonMom",                ";Muon Momentum [GeV];Events/GeV",              10000, 0,   3);
+  //h_m["MuonCosTheta"]           = new TH1D("h_MuonCosTheta",           ";Muon cos#theta;Events/Unit",                   10000,-1,   1);
+  //h_m["LeadProtonKE"]           = new TH1D("h_LeadProtonKE",           ";Leading Proton KE [GeV];Events/GeV",          10000, 0,   1);
+  //h_m["ProtonKE"]               = new TH1D("h_ProtonKE",               ";Total Proton KE [GeV];Events/GeV",            10000, 0,   2);
+  h_m["LeadPionE"]              = new TH1D("h_LeadPionE",              ";Leading Pion Energy [GeV];Events/GeV",        10000, 0.1,   1.5);
+  //h_m["1p1piOpeningAngle"]      = new TH1D("h_1p1piOpeningAngle",      ";1p1#pi Opening Angle [deg];Events/GeV",       10000, 0, 180);
+  //h_m["1p1piAsym"]              = new TH1D("h_1p1piAsym",              ";1p1#pi Asymmetry;Events/Unit",                 10000,-1,   1);
+  //h_m["MuonProtonOpeningAngle"] = new TH1D("h_MuonProtonOpeningAngle", ";Muon-Proton Opening Angle [deg];Events",  10000, 0, 180);
+  //h_m["2pOpeningAngle"]         = new TH1D("h_2pOpeningAngle",         ";2p Opening Angle [deg];Events",           10000, 0, 180);
+  //h_m["2pAsym"]                 = new TH1D("h_2pAsym",                 ";2p Asymmetry;Events/Unit",                     10000,-1,   1);
+  //h_m["2shwOpenAngle"]          = new TH1D("h_2shwOpenAngle",          ";2-Shower Opening Angle [deg];Events/Unit",     10000, 0, 180);
+  //h_m["2shwAsym"]               = new TH1D("h_2shwAsym",               ";2-Shower Asymmetry;Events/Unit",               10000,-1,   1);
+  h_m["PionE"]                  = new TH1D("h_PionE",                  ";Total Pion Energy [GeV];Events/GeV",          10000, 0.1,   1.5);
+  h_m["PiZeroE"]                = new TH1D("h_PiZeroE",                ";Total #pi^{0} Energy [GeV];Events/GeV",       10000, 0.1,   1.5);
+  //h_m["W"]                      = new TH1D("h_W",                      ";W [GeV];Events/GeV",                          10000, 1,   4);
+  //h_m["Channel"]                = new TH1D("h_Channel",                ";Channel;Events",                             27, 0,  27);
+  //h_m["MuonKin"]                = new TH1D("h_MuonKin",                ";E_{#nu} Muon Kin. [GeV];Events/GeV",          10000, 0,   4);
+  //h_m["MuonKinWNP"]             = new TH1D("h_MuonKinWNP",             ";E_{#nu} Muon Kin. + NP [GeV];Events/GeV",     10000, 0,   4);
+  //h_m["PeLEELike0Pi"]           = new TH1D("h_PeLEELike0Pi",           ";E_{#nu} PeLEE-Like 0#pi [GeV];Events/GeV",    10000, 0,   4);
+  //h_m["TotalEDep"]              = new TH1D("h_TotalEDep",              ";E_{#nu} Total E Dep. [GeV];Events/GeV",       10000, 0,   4);
+  //h_m["SFMethod"]               = new TH1D("h_SFMethod",               ";E_{#nu} SF Method [GeV];Events/GeV",          10000, 0,   4);
 
   for(const auto &item : h_m){
     h_reco_m[item.first] = std::map<std::string,TH1D*>(); 

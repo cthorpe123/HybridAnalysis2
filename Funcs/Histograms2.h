@@ -548,7 +548,10 @@ void HistogramManager::Write(std::string filename)
   _f_out->cd("Meta");
   _h_POT->Write("POT");
 
+  
   _f_out->Close();
+
+  std::cout << "Finished writing histograms for " << _label << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////

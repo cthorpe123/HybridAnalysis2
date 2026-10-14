@@ -20,7 +20,7 @@ void NuisanceToFlat(){
   //double flux_weight = flux_numubar/(flux_numu + flux_numubar); // numubars
   flux_weight = 1.0;
 
-  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  GenerateDictionaries();
 
   //TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/GENIE.flat.root");
   TFile* f_in = TFile::Open(("/exp/uboone/data/users/cthorpe/DIS/Generators/Unprocessed/"+generator+".flat.root").c_str());

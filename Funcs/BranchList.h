@@ -1,6 +1,7 @@
 #ifndef _BranchList_h_
 #define _BranchList_h_
 
+#include "Funcs.h"
 #include "Systematics.h"
 
 int run,subrun,event;
@@ -407,7 +408,7 @@ std::map<std::string,std::vector<double>>* weightsUnisim=0;
 
 void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_overlay,bool &load_syst){
 
-  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  GenerateDictionaries();
 
   std::cout << "Loading " << filename << std::endl;
 
@@ -590,7 +591,7 @@ std::vector<TLorentzVector> *p4=0;
 
 void LoadGeneratorTree(std::string filename, TFile*& f_in, TTree*& t_in) {
 
-  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  GenerateDictionaries();
 
   std::cout << "Loading " << filename << std::endl;
 

@@ -291,6 +291,9 @@ void DetvarHistogramManager::Write(std::string filename)
   }
 
   _f_out->Close();
+
+  std::cout << "Finished writing detvars for " << _label << std::endl;
+
 }
 
 ///////////////////////////////////////////////////////////////////////

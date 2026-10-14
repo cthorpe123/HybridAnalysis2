@@ -19,4 +19,6 @@ setup mrb -o
 export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$PWD/Funcs/
 alias comp_ana="tar cvf Analysis\.tar Analysis\/ --exclude='*.root'"
 export DIS_ANALYSIS_DIR=$PWD/Analysis
+export DIS_DICT_DIR=$PWD/dict
 mkdir -p $DIS_ANALYSIS_DIR
+mkdir -p $DIS_DICT_DIR

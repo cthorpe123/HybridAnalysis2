@@ -25,8 +25,9 @@ void Truth(){
   const bool draw_cov = false;
   const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"MuonMom","MuonMom"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
+  std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 

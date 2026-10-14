@@ -25,9 +25,9 @@ void SpecTruthCVRes(){
   const bool draw_cov = false;
   const bool add_nuwro_fd = true;
 
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
-
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
+  std::vector<std::string> vars = var_names;
+  vars.push_back("Enu");
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
@@ -140,7 +140,7 @@ void SpecTruthCVRes(){
     h_Cov->Add(h_Cov_Flux);
 
     // Add the MC stat error on the BG to the covariance matrix 
-    h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_AllBG"));
+    //h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_AllBG"));
 
     // If requested, also add the estimated stat error on the data
     if(include_data_stat) h_Cov->Add((TH2D*)f_in->Get("Reco/Cov/EstDataStat/Cov_Tot"));

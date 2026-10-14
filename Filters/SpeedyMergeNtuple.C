@@ -8,15 +8,13 @@ void SpeedyMergeNtuple(){
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
 
   // Run 1 Main Samples
-  std::string dir_in = "/exp/uboone/data/users/uboonepro/SURPRISE/run1_full_samples/BNB/";
+  //std::string dir_in = "/exp/uboone/data/users/uboonepro/SURPRISE/run1_full_samples/BNB/";
   //std::string filename = "checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_1.root";             is_data = false;  save_syst = false;
   //std::string filename = "checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_1.root"; is_data = false;  save_syst = true;
   //std::string filename = "checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root";  is_data = true;  save_syst = false;
   //std::string filename = "checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_1.root";         is_data = true;  save_syst = false;
-  std::string filename = "checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root";             is_data = false;  save_syst = false;
-
-  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run1/";
-
+  //std::string filename = "checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root";             is_data = false;  save_syst = false;
+  //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run1/";
 
   // Run 4b Main Samples
   //std::string dir_in = "/exp/uboone/data/users/uboonepro/SURPRISE/run4b_full_samples/BNB/";
@@ -63,6 +61,19 @@ void SpeedyMergeNtuple(){
   //std::string filename = "checkout_MCC9.10_Run4acd5_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist_5.root";     is_data = false;  save_syst = true;
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5/";
 
+  // Run 1 Detvars
+  std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar/BNB/run1/";
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_13a_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lya_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyd_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyr_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_recomb2_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  std::string filename = "checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_sce_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_25_BNB_nu_overlay_WMYZ_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = "checkout_DetVar_Run123_v10_04_07_26_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_1.root"; is_data = false;  save_syst = false;
+  //std::string filename = ""; is_data = false;  save_syst = false;
+  std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run1_detvar/";
+
   // Run 4 Detvars
   //std::string dir_in = "/pnfs/uboone/persistent/users/uboonepro/surprise/detvar/BNB/run4d/";
   //std::string filename = "checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_4d.root";       is_data = false;  save_syst = false;
@@ -92,7 +103,10 @@ void SpeedyMergeNtuple(){
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run5_detvar/";
  
   // Open the two files and setup branches to read the RSE numbers
-  TFile* f_in = new TFile((dir_in + filename).c_str());
+  
+  //std::cout << gSystem->GetFromPipe(("pnfsToXRootD " + dir_in + filename).c_str()) << std::endl;
+  
+  TFile* f_in = TFile::Open((dir_in + filename).c_str());
   TTree* pd_t_in = static_cast<TTree*>(f_in->Get("nuselection/NeutrinoSelectionFilter"));
   TTree* wc_t_in = static_cast<TTree*>(f_in->Get("wcpselection/T_PFeval"));
   TTree* lt_t_in = static_cast<TTree*>(f_in->Get("lantern/EventTree"));
@@ -526,18 +540,19 @@ void SpeedyMergeNtuple(){
   if(!is_data) t_out->Branch("showerTruePID", showerTruePID,"showerTruePID[100]/I");
 
   for(Long64_t ientry=0;ientry<pd_t_in->GetEntries();ientry++){
-    if(ientry % 20000 == 0) std::cout << ientry << "/" << pd_t_in->GetEntries() <<  std::endl;
+        
+    if(ientry % 1000 == 0) std::cout << ientry << "/" << pd_t_in->GetEntries() <<  std::endl;
     pd_t_in->GetEntry(ientry);
     wc_t_in->GetEntry(ientry);
     lt_t_in->GetEntry(ientry);
-
+       
     if(pd_rse[0] != wc_rse[0] || wc_rse[0] != lt_rse[0]) 
       throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
     if(pd_rse[1] != wc_rse[1] || wc_rse[1] != lt_rse[1]) 
       throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
     if(pd_rse[2] != wc_rse[2] || wc_rse[2] != lt_rse[2]) 
       throw std::invalid_argument("Can't use speedy merging - trees don't have events in same order");
-
+        
     t_out->Fill();
 
   }
@@ -546,5 +561,6 @@ void SpeedyMergeNtuple(){
 
   t_out->Write("MergedNtuple");
   f_out->Close();
+       
 } 
 

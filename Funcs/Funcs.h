@@ -5,6 +5,8 @@
 #include <string>
 #include <cstdlib>
 #include <stdexcept>
+#include "TSystem.h"
+#include "TInterpreter.h"
 
 ///////////////////////////////////////////////////////////////////////
 // Top level directory for analysis outputs, set by $DIS_ANALYSIS_DIR
@@ -14,6 +16,22 @@ std::string AnalysisDir(){
   if(dir == nullptr || std::string(dir).empty())
     throw std::runtime_error("AnalysisDir: DIS_ANALYSIS_DIR environment variable is not set");
   return std::string(dir);
+}
+
+///////////////////////////////////////////////////////////////////////
+// Generate the std::vector<TLorentzVector> dictionary. ROOT writes the
+// AutoDict_* files into the working directory, so temporarily move into
+// $DIS_DICT_DIR (if set) to keep them out of the directory scripts are run from
+
+void GenerateDictionaries(){
+  const char* dir = std::getenv("DIS_DICT_DIR");
+  const std::string cwd = gSystem->WorkingDirectory();
+  if(dir != nullptr && !std::string(dir).empty()){
+    gSystem->mkdir(dir,true);
+    gSystem->ChangeDirectory(dir);
+  }
+  gInterpreter->GenerateDictionary("std::vector<TLorentzVector>","vector;TLorentzVector.h");
+  gSystem->ChangeDirectory(cwd.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////
