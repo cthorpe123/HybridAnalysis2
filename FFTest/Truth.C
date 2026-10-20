@@ -25,9 +25,9 @@ void Truth(){
   const bool draw_cov = false;
   const bool add_nuwro_fd = true;
 
-  //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
-  std::vector<std::string> vars = var_names;
-  vars.push_back("Enu");
+  std::vector<std::string> vars = {"MuonMom"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
@@ -92,6 +92,23 @@ void Truth(){
         }
         gSystem->Exec(("mkdir -p "+plot_dir+"/"+s).c_str());
         pfs::DrawUnstacked(h_Truth_v,colors_ch,legs_ch,draw_o,draw_u,false,dbbw,plot_dir+"/"+s+"/"+spec+"_Truth.png");
+
+        // Draw the ratio of the special universe to the CV in each channel
+        std::vector<TH1D*> h_Ratio_v;
+        std::vector<int> colors_ratio;
+        std::vector<std::string> legs_ratio;
+        for(size_t i_ch=0;i_ch<channels_t.size();i_ch++){
+          std::string ch = channels_t.at(i_ch);
+          h_Ratio_v.push_back((TH1D*)h_Truth_v.at(2*i_ch)->Clone(("h_Ratio_Truth_"+ch).c_str()));
+          h_Ratio_v.back()->Divide(h_Truth_v.at(2*i_ch+1));
+          h_Ratio_v.back()->GetYaxis()->SetTitle((spec+"/CV").c_str());
+          h_Ratio_v.back()->SetLineStyle(1);
+          colors_ratio.push_back(i_ch+1);
+          legs_ratio.push_back(ch+" "+spec+"/CV");
+        }
+        pfs::DrawUnstacked(h_Ratio_v,colors_ratio,legs_ratio,draw_o,draw_u,false,false,plot_dir+"/"+s+"/"+spec+"_Truth_Ratio.png");
+        for(TH1D* hh : h_Ratio_v) delete hh;
+
         for(TH1D* hh : h_Truth_v) delete hh;
         legs_ch.clear();
         colors_ch.clear();

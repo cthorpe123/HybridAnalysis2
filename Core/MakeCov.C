@@ -13,10 +13,21 @@
 
 void MakeCov(){
 
-  bool make_spec_univ = true;
+  bool make_spec_univ = false;
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
   std::vector<std::string> files_v = {
+    
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_1.root",
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_1.root",
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_1.root",
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root",
+
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root",
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_3.root",
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_3.root",
+    "Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_3.root",    
+
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_nu_overlay_retuple_retuple_hist.root",
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_20_BNB_beam_on_metapatch_retuple_retuple_hist.root",
     "run4b/Filtered_Merged_checkout_MCC9.10_Run4b_v10_04_07_09_BNB_dirt_surpise_reco2_hist.root",
@@ -41,8 +52,10 @@ void MakeCov(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
+  
+  vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
