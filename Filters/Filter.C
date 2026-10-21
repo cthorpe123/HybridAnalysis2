@@ -30,13 +30,13 @@ void Filter(){
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root"; POT = 49551151.0; POT_weight = 34522546.0/49551151.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root"; POT = 2.84397e+20; POT_weight = 1.545e+20/2.84397e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
-  detvar_univ = -1;
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
+  //detvar_univ = -1;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_3.root"; POT = 2.471e+20; POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_3.root"; POT = 3.62877e+20; POT_weight = 2.471e+20/3.62877e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root"; POT = 8.6286e+20; POT_weight = 2.471e+20/8.6286e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_3.root"; POT = 143426453.0; POT_weight = 58934383.0/143426453.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
-  std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_3_filtered.root"; POT = 3.11421e+20; POT_weight = 2.471e+20/3.11421e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_3_filtered.root"; POT = 3.11421e+20; POT_weight = 2.471e+20/3.11421e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
  
 
   // Main run4b files TODO - Check Data POT calculation
@@ -87,7 +87,20 @@ void Filter(){
  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_25_BNB_nu_overlay_WMYZ_surprise_reco2_hist_1.root"; POT = 6.13509e+20; POT_weight = 1.545e+20/6.13509e+20; detvar_univ = syst::kWMYZ;
  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_26_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_1.root"; POT = 5.8301e+20; POT_weight = 1.545e+20/5.8301e+20; detvar_univ = syst::kWMThXZ;
   //std::string file = ""; POT = 1.26039e+21; POT_weight = 5.019e+19/1.26039e+21; detvar_univ = syst::kWMThYZ;
-  
+
+  // Run 3 Detvars
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3_detvar/";
+  is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_13a_surprise_reco2_hist_3.root"; POT = 6.06427e+19; POT_weight = 2.471e+20/6.06427e+19; detvar_univ = -1;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_1mil_surprise_reco2_hist.root"; POT = 1.29947e+21; POT_weight = 2.471e+20/1.29947e+21; detvar_univ = -1;
+  std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_500k_surprise_reco2_hist.root"; POT = 6.10775e+20; POT_weight = 2.471e+20/6.10775e+20; detvar_univ = -1;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lya_surprise_reco2_hist_3.root"; POT = 1.38559e+21; POT_weight = 2.471e+20/1.38559e+21; detvar_univ = syst::kLYAtt;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyd_surprise_reco2_hist_3.root"; POT = 1.38793e+21; POT_weight = 2.471e+20/1.38793e+21; detvar_univ = syst::kLYDown;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyr_surprise_reco2_hist_3.root"; POT = 1.38339e+21; POT_weight = 2.471e+20/1.38339e+21; detvar_univ = syst::kLYRayleigh;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_recomb2_surprise_reco2_hist_3.root"; POT = 6.99856e+20; POT_weight = 2.471e+20/6.99856e+20; detvar_univ = syst::kRecomb2;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_sce_surprise_reco2_hist_3.root"; POT = 6.94405e+20; POT_weight = 2.471e+20/6.94405e+20; detvar_univ = syst::kSCE;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_25_BNB_nu_overlay_WMYZ_surprise_reco2_hist_3.root"; POT = 1.41201e+21; POT_weight = 2.471e+20/1.41201e+21; detvar_univ = syst::kWMYZ;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_26_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_3.root"; POT = 1.32619e+21; POT_weight = 2.471e+20/1.32619e+21; detvar_univ = syst::kWMThXZ;
 
   // Run 4 Detvars
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run4_detvar/";
@@ -572,6 +585,8 @@ void Filter(){
     // PD Reco
     in_tpc_pd = inActiveTPC(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z);
     nu_vtx_pd = TVector3(reco_nu_vtx_x,reco_nu_vtx_y,reco_nu_vtx_z);
+    muon_mom_pd = TVector3(0,0,0);
+    muon_mom_mcs_pd = TVector3(0,0,0);
     int pd_muon = pd::SimpleMuonSelection(trk_llr_pid_score_v,trk_len_v);
     if(pd_muon != -1){
       muon_mom_pd = TVector3(trk_range_muon_mom_v->at(pd_muon)*trk_dir_x_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_y_v->at(pd_muon),trk_range_muon_mom_v->at(pd_muon)*trk_dir_z_v->at(pd_muon));
@@ -616,6 +631,9 @@ void Filter(){
     // WC Reco
     in_tpc_wc = inActiveTPC(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
     nu_vtx_wc = TVector3(reco_nuvtxX,reco_nuvtxY,reco_nuvtxZ);
+    muon_mom_wc = TVector3(0,0,0);
+    muon_mom_mcs_wc = TVector3(0,0,0);
+    muon_mom_len_wc = TVector3(0,0,0);
     int wc_muon = wc::SimpleMuonSelection(reco_Ntrack,reco_pdg,reco_mother,reco_startMomentum,reco_endXYZT);
     if(wc_muon != -1){
       muon_mom_wc = TVector3(reco_startMomentum[wc_muon][0],reco_startMomentum[wc_muon][1],reco_startMomentum[wc_muon][2]);
@@ -663,6 +681,7 @@ void Filter(){
     // LT Reco
     in_tpc_lt = inActiveTPC(vtxX,vtxY,vtxZ);
     nu_vtx_lt = TVector3(vtxX,vtxY,vtxZ);
+    muon_mom_lt = TVector3(0,0,0);
     int lt_muon = lt::SimpleMuonSelection(nTracks,trackIsSecondary,trackPID);
     if(lt_muon != -1){
       double mom = sqrt(trackRecoE[lt_muon]*trackRecoE[lt_muon]/1e6 + 2*0.106*trackRecoE[lt_muon]/1e3);
@@ -707,6 +726,7 @@ void Filter(){
     // H8 Reco - Lantern for the hadronic system, Pandora Range for contained muons, MCS for uncontained
     in_tpc_h8 = inActiveTPC(vtxX,vtxY,vtxZ);
     nu_vtx_h8 = TVector3(vtxX,vtxY,vtxZ);
+    muon_mom_h8 = TVector3(0,0,0);
     int h8_muon = pd_muon;
     if(h8_muon != -1)
       muon_mom_h8 = muon_contained_pd ? TVector3(muon_mom_pd.X(),muon_mom_pd.Y(),muon_mom_pd.Z()) : TVector3(muon_mom_mcs_pd.X(),muon_mom_mcs_pd.Y(),muon_mom_mcs_pd.Z());
