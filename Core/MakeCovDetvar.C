@@ -18,21 +18,48 @@ void MakeCovDetvar(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
+  std::vector<std::string> vars = {"MuonMom"};
+  //std::vector<std::string> vars = var_names;
+  //vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
   std::vector<std::string> files = {
+    
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_13a_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lya_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyd_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyr_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_recomb2_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_sce_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_25_BNB_nu_overlay_WMYZ_surprise_reco2_hist_1.root",
+    "run1_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_26_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_1.root",
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_1.root",
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root",
+    
+    //"run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_13a_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_1mil_surprise_reco2_hist.root",
+    //"run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_500k_surprise_reco2_hist.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lya_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyd_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyr_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_recomb2_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_24_BNB_nu_overlay_sce_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_25_BNB_nu_overlay_WMYZ_surprise_reco2_hist_3.root",
+    "run3_detvar/Filtered_Merged_checkout_DetVar_Run123_v10_04_07_26_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_3.root",
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_3.root",
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_3.root",
+    
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_cv_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lya_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyd_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyr_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_recomb2_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_4d.root",
-    "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root",
+    //"run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_4d.root",
     "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_4d.root",
-    "run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_4d.root",
+    //"run4_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_4d.root",
     "run4d/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_4d.root",
     
@@ -42,12 +69,13 @@ void MakeCovDetvar(){
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_lyr_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_recomb2_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_sce_surprise_reco2_hist_5.root",
-    "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root",
+    //"run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMX_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMYZ_surprise_reco2_hist_5.root",
     "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaXZ_surprise_reco2_hist_5.root",
-    "run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root",
+    //"run5_detvar/Filtered_Merged_checkout_DetVar_Run45_v10_04_07_19_BNB_nu_overlay_WMthetaYZ_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4a4c4d5_v10_04_07_13_BNB_dirt_overlay_surprise_reco2_hist_5.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run4acd5_v10_04_07_14_BNB_beam_off_surprise_reco2_hist_5.root"
+    
   };
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;

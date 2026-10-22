@@ -255,26 +255,28 @@ void Filter(){
   std::vector<TLorentzVector> *gammas_pd = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_pd;
 
-  t_out->Branch("sel_pd",&sel_pd);
-  t_out->Branch("in_tpc_pd",&in_tpc_pd);
-  t_out->Branch("nu_vtx_pd",&nu_vtx_pd);
-  t_out->Branch("has_muon_pd",&has_muon_pd);
-  t_out->Branch("muon_mom_pd",&muon_mom_pd);
-  t_out->Branch("muon_mom_mcs_pd",&muon_mom_mcs_pd);
-  t_out->Branch("muon_contained_pd",&muon_contained_pd);
-  t_out->Branch("W_pd",&W_pd);
-  t_out->Branch("nprot_pd",&nprot_pd);
-  t_out->Branch("npi_pd",&npi_pd);
-  t_out->Branch("nsh_pd",&nsh_pd);
-  t_out->Branch("ch_str_pd",&ch_str_pd);
-  t_out->Branch("ch_pd",&ch_pd);
-  t_out->Branch("proton_p4_pd",&proton_p4_pd);
-  t_out->Branch("pion_p4_pd",&pion_p4_pd);
-  t_out->Branch("gamma_p4_pd",&gamma_p4_pd);
-  t_out->Branch("est_nu_e_pd",&est_nu_e_pd);
-  t_out->Branch("protons_pd", &protons_pd,32000,0);
-  t_out->Branch("pions_pd", &pions_pd,32000,0);
-  t_out->Branch("gammas_pd", &gammas_pd,32000,0);
+  if(save_pd){
+    t_out->Branch("sel_pd",&sel_pd);
+    t_out->Branch("in_tpc_pd",&in_tpc_pd);
+    t_out->Branch("nu_vtx_pd",&nu_vtx_pd);
+    t_out->Branch("has_muon_pd",&has_muon_pd);
+    t_out->Branch("muon_mom_pd",&muon_mom_pd);
+    t_out->Branch("muon_mom_mcs_pd",&muon_mom_mcs_pd);
+    t_out->Branch("muon_contained_pd",&muon_contained_pd);
+    t_out->Branch("W_pd",&W_pd);
+    t_out->Branch("nprot_pd",&nprot_pd);
+    t_out->Branch("npi_pd",&npi_pd);
+    t_out->Branch("nsh_pd",&nsh_pd);
+    t_out->Branch("ch_str_pd",&ch_str_pd);
+    t_out->Branch("ch_pd",&ch_pd);
+    t_out->Branch("proton_p4_pd",&proton_p4_pd);
+    t_out->Branch("pion_p4_pd",&pion_p4_pd);
+    t_out->Branch("gamma_p4_pd",&gamma_p4_pd);
+    t_out->Branch("est_nu_e_pd",&est_nu_e_pd);
+    t_out->Branch("protons_pd", &protons_pd,32000,0);
+    t_out->Branch("pions_pd", &pions_pd,32000,0);
+    t_out->Branch("gammas_pd", &gammas_pd,32000,0);
+  }
 
   // WC Reco branches
   bool sel_wc;
@@ -299,27 +301,29 @@ void Filter(){
   TLorentzVector gamma_p4_wc; 
   std::vector<double> est_nu_e_wc;
 
-  t_out->Branch("sel_wc",&sel_wc);
-  t_out->Branch("in_tpc_wc",&in_tpc_wc);
-  t_out->Branch("nu_vtx_wc",&nu_vtx_wc);
-  t_out->Branch("has_muon_wc",&has_muon_wc);
-  t_out->Branch("muon_mom_wc",&muon_mom_wc);
-  t_out->Branch("muon_contained_wc",&muon_contained_wc);
-  t_out->Branch("W_wc",&W_wc);
-  t_out->Branch("nprot_wc",&nprot_wc);
-  t_out->Branch("npi_wc",&npi_wc);
-  t_out->Branch("nsh_wc",&nsh_wc);
-  t_out->Branch("ch_str_wc",&ch_str_wc);
-  t_out->Branch("ch_wc",&ch_wc);
-  t_out->Branch("proton_p4_wc",&proton_p4_wc);
-  t_out->Branch("pion_p4_wc",&pion_p4_wc);
-  t_out->Branch("gamma_p4_wc",&gamma_p4_wc);
-  t_out->Branch("protons_wc", &protons_wc,32000,0);
-  t_out->Branch("pions_wc", &pions_wc,32000,0);
-  t_out->Branch("gammas_wc", &gammas_wc,32000,0);
-  t_out->Branch("est_nu_e_wc",&est_nu_e_wc);
-  t_out->Branch("muon_mom_len_wc",&muon_mom_len_wc);
-  t_out->Branch("muon_mom_mcs_wc",&muon_mom_mcs_wc);
+  if(save_wc){
+    t_out->Branch("sel_wc",&sel_wc);
+    t_out->Branch("in_tpc_wc",&in_tpc_wc);
+    t_out->Branch("nu_vtx_wc",&nu_vtx_wc);
+    t_out->Branch("has_muon_wc",&has_muon_wc);
+    t_out->Branch("muon_mom_wc",&muon_mom_wc);
+    t_out->Branch("muon_contained_wc",&muon_contained_wc);
+    t_out->Branch("W_wc",&W_wc);
+    t_out->Branch("nprot_wc",&nprot_wc);
+    t_out->Branch("npi_wc",&npi_wc);
+    t_out->Branch("nsh_wc",&nsh_wc);
+    t_out->Branch("ch_str_wc",&ch_str_wc);
+    t_out->Branch("ch_wc",&ch_wc);
+    t_out->Branch("proton_p4_wc",&proton_p4_wc);
+    t_out->Branch("pion_p4_wc",&pion_p4_wc);
+    t_out->Branch("gamma_p4_wc",&gamma_p4_wc);
+    t_out->Branch("protons_wc", &protons_wc,32000,0);
+    t_out->Branch("pions_wc", &pions_wc,32000,0);
+    t_out->Branch("gammas_wc", &gammas_wc,32000,0);
+    t_out->Branch("est_nu_e_wc",&est_nu_e_wc);
+    t_out->Branch("muon_mom_len_wc",&muon_mom_len_wc);
+    t_out->Branch("muon_mom_mcs_wc",&muon_mom_mcs_wc);
+  }
 
   // LT Reco branches
   bool sel_lt;
@@ -342,25 +346,27 @@ void Filter(){
   std::vector<TLorentzVector> *gammas_lt = new std::vector<TLorentzVector>();
   std::vector<double> est_nu_e_lt;
 
-  t_out->Branch("sel_lt",&sel_lt);
-  t_out->Branch("in_tpc_lt",&in_tpc_lt);
-  t_out->Branch("nu_vtx_lt",&nu_vtx_lt);
-  t_out->Branch("has_muon_lt",&has_muon_lt);
-  t_out->Branch("muon_mom_lt",&muon_mom_lt);
-  t_out->Branch("muon_contained_lt",&muon_contained_lt);
-  t_out->Branch("W_lt",&W_lt);
-  t_out->Branch("nprot_lt",&nprot_lt);
-  t_out->Branch("npi_lt",&npi_lt);
-  t_out->Branch("nsh_lt",&nsh_lt);
-  t_out->Branch("ch_str_lt",&ch_str_lt);
-  t_out->Branch("ch_lt",&ch_lt);
-  t_out->Branch("proton_p4_lt",&proton_p4_lt);
-  t_out->Branch("pion_p4_lt",&pion_p4_lt);
-  t_out->Branch("gamma_p4_lt",&gamma_p4_lt);
-  t_out->Branch("protons_lt", &protons_lt,32000,0);
-  t_out->Branch("pions_lt", &pions_lt,32000,0);
-  t_out->Branch("gammas_lt", &gammas_lt,32000,0);
-  t_out->Branch("est_nu_e_lt",&est_nu_e_lt);
+  if(save_lt){
+    t_out->Branch("sel_lt",&sel_lt);
+    t_out->Branch("in_tpc_lt",&in_tpc_lt);
+    t_out->Branch("nu_vtx_lt",&nu_vtx_lt);
+    t_out->Branch("has_muon_lt",&has_muon_lt);
+    t_out->Branch("muon_mom_lt",&muon_mom_lt);
+    t_out->Branch("muon_contained_lt",&muon_contained_lt);
+    t_out->Branch("W_lt",&W_lt);
+    t_out->Branch("nprot_lt",&nprot_lt);
+    t_out->Branch("npi_lt",&npi_lt);
+    t_out->Branch("nsh_lt",&nsh_lt);
+    t_out->Branch("ch_str_lt",&ch_str_lt);
+    t_out->Branch("ch_lt",&ch_lt);
+    t_out->Branch("proton_p4_lt",&proton_p4_lt);
+    t_out->Branch("pion_p4_lt",&pion_p4_lt);
+    t_out->Branch("gamma_p4_lt",&gamma_p4_lt);
+    t_out->Branch("protons_lt", &protons_lt,32000,0);
+    t_out->Branch("pions_lt", &pions_lt,32000,0);
+    t_out->Branch("gammas_lt", &gammas_lt,32000,0);
+    t_out->Branch("est_nu_e_lt",&est_nu_e_lt);
+  }
 
   // Hybrid methods 
   bool sel_h8;
@@ -384,26 +390,28 @@ void Filter(){
   std::vector<double> est_nu_e_h8;
   std::map<std::string,double> vars_h8_map;
 
-  t_out->Branch("sel_h8",&sel_h8);
-  t_out->Branch("in_tpc_h8",&in_tpc_h8);
-  t_out->Branch("nu_vtx_h8",&nu_vtx_h8);
-  t_out->Branch("has_muon_h8",&has_muon_h8);
-  t_out->Branch("muon_mom_h8",&muon_mom_h8);
-  t_out->Branch("muon_contained_h8",&muon_contained_h8);
-  t_out->Branch("W_h8",&W_h8);
-  t_out->Branch("nprot_h8",&nprot_h8);
-  t_out->Branch("npi_h8",&npi_h8);
-  t_out->Branch("nsh_h8",&nsh_h8);
-  t_out->Branch("ch_str_h8",&ch_str_h8);
-  t_out->Branch("ch_h8",&ch_h8);
-  t_out->Branch("proton_p4_h8",&proton_p4_h8);
-  t_out->Branch("pion_p4_h8",&pion_p4_h8);
-  t_out->Branch("gamma_p4_h8",&gamma_p4_h8);
-  t_out->Branch("protons_h8", &protons_h8,32000,0);
-  t_out->Branch("pions_h8", &pions_h8,32000,0);
-  t_out->Branch("gammas_h8", &gammas_h8,32000,0);
-  t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
-  t_out->Branch("vars_h8",&vars_h8_map);
+  if(save_h8){
+    t_out->Branch("sel_h8",&sel_h8);
+    t_out->Branch("in_tpc_h8",&in_tpc_h8);
+    t_out->Branch("nu_vtx_h8",&nu_vtx_h8);
+    t_out->Branch("has_muon_h8",&has_muon_h8);
+    t_out->Branch("muon_mom_h8",&muon_mom_h8);
+    t_out->Branch("muon_contained_h8",&muon_contained_h8);
+    t_out->Branch("W_h8",&W_h8);
+    t_out->Branch("nprot_h8",&nprot_h8);
+    t_out->Branch("npi_h8",&npi_h8);
+    t_out->Branch("nsh_h8",&nsh_h8);
+    t_out->Branch("ch_str_h8",&ch_str_h8);
+    t_out->Branch("ch_h8",&ch_h8);
+    t_out->Branch("proton_p4_h8",&proton_p4_h8);
+    t_out->Branch("pion_p4_h8",&pion_p4_h8);
+    t_out->Branch("gamma_p4_h8",&gamma_p4_h8);
+    t_out->Branch("protons_h8", &protons_h8,32000,0);
+    t_out->Branch("pions_h8", &pions_h8,32000,0);
+    t_out->Branch("gammas_h8", &gammas_h8,32000,0);
+    t_out->Branch("est_nu_e_h8",&est_nu_e_h8);
+    t_out->Branch("vars_h8",&vars_h8_map);
+  }
 
   // Systematics and tune 
   if(!is_data && !is_ext){
@@ -543,7 +551,10 @@ void Filter(){
        {"PionE",pion_p4_t.E()},
        {"PiZeroE",gamma_p4_t.E()},
        {"W",W_t},
-       {"Channel",(double)ch_t}
+       {"Channel",(double)ch_t},
+       {"SFPt2",-1000},
+       {"SFPL",-1000},
+       {"SFProtPz",-1000}
      };
      for(int i_e=0;i_e<ee::kMAX;i_e++) vars_t_map[ee::estimators_str.at(i_e)] = est_nu_e_t.at(i_e);
      if(is_signal_t){
@@ -558,6 +569,10 @@ void Filter(){
          vars_t_map.at("2shwAsym") = weight::Asymmetry3({gammas_t->at(0)},{gammas_t->at(1)});
        }
        if(npi_t > 0) vars_t_map.at("LeadPionE") = pions_t->at(0).E();
+       if(nprot_t == 1 && npi_t == 0 && npi0_t == 0){
+         TLorentzVector plepton_t(muon_mom_t.X(),muon_mom_t.Y(),muon_mom_t.Z(),sqrt(muon_mom_t.Mag2()+ml*ml));
+         ee::sfmethodVars(plepton_t,proton_p4_t,vars_t_map.at("SFPt2"),vars_t_map.at("SFPL"),vars_t_map.at("SFProtPz"));
+       }
        if(nprot_t == 1 && npi_t == 1){
          vars_t_map.at("1p1piOpeningAngle") = 180/3.142*protons_t->at(0).Vect().Angle(pions_t->at(0).Vect());
          vars_t_map.at("1p1piAsym") = weight::Asymmetry3({protons_t->at(0)},{pions_t->at(0)});
@@ -783,7 +798,10 @@ void Filter(){
       {"PionE",pion_p4_h8.E()},
       {"PiZeroE",gamma_p4_h8.E()},
       {"W",W_h8},
-      {"Channel",(double)ch_h8}
+      {"Channel",(double)ch_h8},
+      {"SFPt2",-1000},
+      {"SFPL",-1000},
+      {"SFProtPz",-1000}
     };
     for(int i_e=0;i_e<ee::kMAX;i_e++) vars_h8_map[ee::estimators_str.at(i_e)] = est_nu_e_h8.at(i_e);
     if(sel_h8){
@@ -798,6 +816,9 @@ void Filter(){
         vars_h8_map.at("2shwAsym") = weight::Asymmetry3({gammas_h8->at(0)},{gammas_h8->at(1)});
       }
       if(npi_h8 > 0) vars_h8_map.at("LeadPionE") = pions_h8->at(0).E();
+      if(nprot_h8 == 1 && npi_h8 == 0 && nsh_h8 == 0){
+        ee::sfmethodVars(plepton_h8,proton_p4_h8,vars_h8_map.at("SFPt2"),vars_h8_map.at("SFPL"),vars_h8_map.at("SFProtPz"));
+      }
       if(nprot_h8 == 1 && npi_h8 == 1){
         vars_h8_map.at("1p1piOpeningAngle") = 180/3.142*protons_h8->at(0).Vect().Angle(pions_h8->at(0).Vect());
         vars_h8_map.at("1p1piAsym") = weight::Asymmetry3({protons_h8->at(0)},{pions_h8->at(0)});

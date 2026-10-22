@@ -30,12 +30,19 @@ double totaledepEnergy(const TLorentzVector plepton,const TLorentzVector pproton
   return plepton.E() + pproton.E() - Eb*nprot - Mp*nprot + ppi.E() + ppi0.E();
 }
 
-double sfmethodEnergy(const TLorentzVector plepton,const TLorentzVector pproton){
+// Intermediate quantities used by the SF method, pz is the proton z momentum
+void sfmethodVars(const TLorentzVector plepton,const TLorentzVector pproton,double& pt2,double& pL,double& pz){
   const TVector3& prot = pproton.Vect();
   const double Ep = pproton.E(); 
-  double pt2 = (prot + plepton.Vect()).Perp2();
-  double pL = (pow((MA + plepton.Pz() + prot.Z() - plepton.E() - Ep),2) - pt2 - MA1*MA1)/2/(MA + plepton.Pz() + prot.Z() - plepton.E() - Ep); 
-  return plepton.Pz() + prot.Z() - pL;
+  pt2 = (prot + plepton.Vect()).Perp2();
+  pL = (pow((MA + plepton.Pz() + prot.Z() - plepton.E() - Ep),2) - pt2 - MA1*MA1)/2/(MA + plepton.Pz() + prot.Z() - plepton.E() - Ep); 
+  pz = prot.Z();
+}
+
+double sfmethodEnergy(const TLorentzVector plepton,const TLorentzVector pproton){
+  double pt2,pL,pz;
+  sfmethodVars(plepton,pproton,pt2,pL,pz);
+  return plepton.Pz() + pz - pL;
 
 }
 

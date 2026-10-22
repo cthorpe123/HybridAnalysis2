@@ -4,6 +4,10 @@
 #include "Funcs.h"
 #include "Systematics.h"
 
+// Switches for the reco branches of each framework - controls which are written by
+// Filter.C and which are read by LoadTreeFiltered
+bool save_pd = false, save_wc = false, save_lt = false, save_h8 = true;
+
 int run,subrun,event;
 
 // Pandora branches 
@@ -436,9 +440,14 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   // Check if tree has truth variables
   is_overlay = false;
   load_syst = false;
+  bool has_pd = false, has_wc = false, has_lt = false, has_h8 = false;
   for(auto branch : *t_in->GetListOfBranches()){
     if(strcmp(branch->GetName(),"mc_pdg") == 0) is_overlay = true;
     if(strcmp(branch->GetName(),"weightsGenie") == 0) load_syst = true;
+    if(strcmp(branch->GetName(),"sel_pd") == 0) has_pd = true;
+    if(strcmp(branch->GetName(),"sel_wc") == 0) has_wc = true;
+    if(strcmp(branch->GetName(),"sel_lt") == 0) has_lt = true;
+    if(strcmp(branch->GetName(),"sel_h8") == 0) has_h8 = true;
   }
 
   if(is_overlay){
@@ -494,89 +503,101 @@ void LoadTreeFiltered(std::string filename,TFile*& f_in,TTree*& t_in,bool &is_ov
   }
   
 
-  t_in->SetBranchAddress("sel_pd", &sel_pd);
-  t_in->SetBranchAddress("in_tpc_pd", &in_tpc_pd);
-  t_in->SetBranchAddress("nu_vtx_pd",&nu_vtx_pd);
-  t_in->SetBranchAddress("has_muon_pd", &has_muon_pd);
-  t_in->SetBranchAddress("muon_mom_pd", &muon_mom_pd);
-  t_in->SetBranchAddress("muon_mom_mcs_pd", &muon_mom_mcs_pd);
-  t_in->SetBranchAddress("muon_contained_pd", &muon_contained_pd);
-  t_in->SetBranchAddress("W_pd", &W_pd);
-  t_in->SetBranchAddress("nprot_pd", &nprot_pd);
-  t_in->SetBranchAddress("npi_pd", &npi_pd);
-  t_in->SetBranchAddress("nsh_pd", &nsh_pd);
-  t_in->SetBranchAddress("ch_str_pd",&ch_str_pd);
-  t_in->SetBranchAddress("ch_pd",&ch_pd);
-  t_in->SetBranchAddress("proton_p4_pd", &proton_p4_pd);
-  t_in->SetBranchAddress("pion_p4_pd", &pion_p4_pd);
-  t_in->SetBranchAddress("gamma_p4_pd", &gamma_p4_pd);
-  t_in->SetBranchAddress("protons_pd",&protons_pd);    
-  t_in->SetBranchAddress("pions_pd",&pions_pd);    
-  t_in->SetBranchAddress("gammas_pd",&gammas_pd);    
-  t_in->SetBranchAddress("est_nu_e_pd",&est_nu_e_pd);
+  if(save_pd && !has_pd) throw std::invalid_argument("LoadTreeFiltered: pd branches missing from " + filename + ", set save_pd = false in BranchList.h");
+  if(save_pd){
+    t_in->SetBranchAddress("sel_pd", &sel_pd);
+    t_in->SetBranchAddress("in_tpc_pd", &in_tpc_pd);
+    t_in->SetBranchAddress("nu_vtx_pd",&nu_vtx_pd);
+    t_in->SetBranchAddress("has_muon_pd", &has_muon_pd);
+    t_in->SetBranchAddress("muon_mom_pd", &muon_mom_pd);
+    t_in->SetBranchAddress("muon_mom_mcs_pd", &muon_mom_mcs_pd);
+    t_in->SetBranchAddress("muon_contained_pd", &muon_contained_pd);
+    t_in->SetBranchAddress("W_pd", &W_pd);
+    t_in->SetBranchAddress("nprot_pd", &nprot_pd);
+    t_in->SetBranchAddress("npi_pd", &npi_pd);
+    t_in->SetBranchAddress("nsh_pd", &nsh_pd);
+    t_in->SetBranchAddress("ch_str_pd",&ch_str_pd);
+    t_in->SetBranchAddress("ch_pd",&ch_pd);
+    t_in->SetBranchAddress("proton_p4_pd", &proton_p4_pd);
+    t_in->SetBranchAddress("pion_p4_pd", &pion_p4_pd);
+    t_in->SetBranchAddress("gamma_p4_pd", &gamma_p4_pd);
+    t_in->SetBranchAddress("protons_pd",&protons_pd);    
+    t_in->SetBranchAddress("pions_pd",&pions_pd);    
+    t_in->SetBranchAddress("gammas_pd",&gammas_pd);    
+    t_in->SetBranchAddress("est_nu_e_pd",&est_nu_e_pd);
+  }
 
-  t_in->SetBranchAddress("sel_wc", &sel_wc);
-  t_in->SetBranchAddress("in_tpc_wc", &in_tpc_wc);
-  t_in->SetBranchAddress("nu_vtx_wc",&nu_vtx_wc);
-  t_in->SetBranchAddress("has_muon_wc", &has_muon_wc);
-  t_in->SetBranchAddress("muon_mom_wc", &muon_mom_wc);
-  t_in->SetBranchAddress("muon_mom_mcs_wc", &muon_mom_mcs_wc);
-  t_in->SetBranchAddress("muon_mom_len_wc", &muon_mom_len_wc);
-  t_in->SetBranchAddress("muon_contained_wc", &muon_contained_wc);
-  t_in->SetBranchAddress("W_wc", &W_wc);
-  t_in->SetBranchAddress("nprot_wc", &nprot_wc);
-  t_in->SetBranchAddress("npi_wc", &npi_wc);
-  t_in->SetBranchAddress("nsh_wc", &nsh_wc);
-  t_in->SetBranchAddress("ch_str_wc",&ch_str_wc);
-  t_in->SetBranchAddress("ch_wc",&ch_wc);
-  t_in->SetBranchAddress("proton_p4_wc", &proton_p4_wc);
-  t_in->SetBranchAddress("pion_p4_wc", &pion_p4_wc);
-  t_in->SetBranchAddress("gamma_p4_wc", &gamma_p4_wc);
-  t_in->SetBranchAddress("protons_wc",&protons_wc);    
-  t_in->SetBranchAddress("pions_wc",&pions_wc);    
-  t_in->SetBranchAddress("gammas_wc",&gammas_wc);    
-  t_in->SetBranchAddress("est_nu_e_wc",&est_nu_e_wc);
+  if(save_wc && !has_wc) throw std::invalid_argument("LoadTreeFiltered: wc branches missing from " + filename + ", set save_wc = false in BranchList.h");
+  if(save_wc){
+    t_in->SetBranchAddress("sel_wc", &sel_wc);
+    t_in->SetBranchAddress("in_tpc_wc", &in_tpc_wc);
+    t_in->SetBranchAddress("nu_vtx_wc",&nu_vtx_wc);
+    t_in->SetBranchAddress("has_muon_wc", &has_muon_wc);
+    t_in->SetBranchAddress("muon_mom_wc", &muon_mom_wc);
+    t_in->SetBranchAddress("muon_mom_mcs_wc", &muon_mom_mcs_wc);
+    t_in->SetBranchAddress("muon_mom_len_wc", &muon_mom_len_wc);
+    t_in->SetBranchAddress("muon_contained_wc", &muon_contained_wc);
+    t_in->SetBranchAddress("W_wc", &W_wc);
+    t_in->SetBranchAddress("nprot_wc", &nprot_wc);
+    t_in->SetBranchAddress("npi_wc", &npi_wc);
+    t_in->SetBranchAddress("nsh_wc", &nsh_wc);
+    t_in->SetBranchAddress("ch_str_wc",&ch_str_wc);
+    t_in->SetBranchAddress("ch_wc",&ch_wc);
+    t_in->SetBranchAddress("proton_p4_wc", &proton_p4_wc);
+    t_in->SetBranchAddress("pion_p4_wc", &pion_p4_wc);
+    t_in->SetBranchAddress("gamma_p4_wc", &gamma_p4_wc);
+    t_in->SetBranchAddress("protons_wc",&protons_wc);    
+    t_in->SetBranchAddress("pions_wc",&pions_wc);    
+    t_in->SetBranchAddress("gammas_wc",&gammas_wc);    
+    t_in->SetBranchAddress("est_nu_e_wc",&est_nu_e_wc);
+  }
 
-  t_in->SetBranchAddress("sel_lt", &sel_lt);
-  t_in->SetBranchAddress("in_tpc_lt", &in_tpc_lt);
-  t_in->SetBranchAddress("nu_vtx_lt",&nu_vtx_lt);
-  t_in->SetBranchAddress("has_muon_lt", &has_muon_lt);
-  t_in->SetBranchAddress("muon_mom_lt", &muon_mom_lt);
-  t_in->SetBranchAddress("muon_contained_lt", &muon_contained_lt);
-  t_in->SetBranchAddress("W_lt", &W_lt);
-  t_in->SetBranchAddress("nprot_lt", &nprot_lt);
-  t_in->SetBranchAddress("npi_lt", &npi_lt);
-  t_in->SetBranchAddress("nsh_lt", &nsh_lt);
-  t_in->SetBranchAddress("ch_str_lt",&ch_str_lt);
-  t_in->SetBranchAddress("ch_lt",&ch_lt);
-  t_in->SetBranchAddress("proton_p4_lt", &proton_p4_lt);
-  t_in->SetBranchAddress("pion_p4_lt", &pion_p4_lt);
-  t_in->SetBranchAddress("gamma_p4_lt", &gamma_p4_lt);
-  t_in->SetBranchAddress("protons_lt",&protons_lt);    
-  t_in->SetBranchAddress("pions_lt",&pions_lt);    
-  t_in->SetBranchAddress("gammas_lt",&gammas_lt);    
-  t_in->SetBranchAddress("est_nu_e_lt",&est_nu_e_lt);
+  if(save_lt && !has_lt) throw std::invalid_argument("LoadTreeFiltered: lt branches missing from " + filename + ", set save_lt = false in BranchList.h");
+  if(save_lt){
+    t_in->SetBranchAddress("sel_lt", &sel_lt);
+    t_in->SetBranchAddress("in_tpc_lt", &in_tpc_lt);
+    t_in->SetBranchAddress("nu_vtx_lt",&nu_vtx_lt);
+    t_in->SetBranchAddress("has_muon_lt", &has_muon_lt);
+    t_in->SetBranchAddress("muon_mom_lt", &muon_mom_lt);
+    t_in->SetBranchAddress("muon_contained_lt", &muon_contained_lt);
+    t_in->SetBranchAddress("W_lt", &W_lt);
+    t_in->SetBranchAddress("nprot_lt", &nprot_lt);
+    t_in->SetBranchAddress("npi_lt", &npi_lt);
+    t_in->SetBranchAddress("nsh_lt", &nsh_lt);
+    t_in->SetBranchAddress("ch_str_lt",&ch_str_lt);
+    t_in->SetBranchAddress("ch_lt",&ch_lt);
+    t_in->SetBranchAddress("proton_p4_lt", &proton_p4_lt);
+    t_in->SetBranchAddress("pion_p4_lt", &pion_p4_lt);
+    t_in->SetBranchAddress("gamma_p4_lt", &gamma_p4_lt);
+    t_in->SetBranchAddress("protons_lt",&protons_lt);    
+    t_in->SetBranchAddress("pions_lt",&pions_lt);    
+    t_in->SetBranchAddress("gammas_lt",&gammas_lt);    
+    t_in->SetBranchAddress("est_nu_e_lt",&est_nu_e_lt);
+  }
 
-  t_in->SetBranchAddress("sel_h8", &sel_h8);
-  t_in->SetBranchAddress("in_tpc_h8", &in_tpc_h8);
-  t_in->SetBranchAddress("nu_vtx_h8",&nu_vtx_h8);
-  t_in->SetBranchAddress("has_muon_h8", &has_muon_h8);
-  t_in->SetBranchAddress("muon_mom_h8", &muon_mom_h8);
-  t_in->SetBranchAddress("muon_contained_h8", &muon_contained_h8);
-  t_in->SetBranchAddress("W_h8", &W_h8);
-  t_in->SetBranchAddress("nprot_h8", &nprot_h8);
-  t_in->SetBranchAddress("npi_h8", &npi_h8);
-  t_in->SetBranchAddress("nsh_h8", &nsh_h8);
-  t_in->SetBranchAddress("ch_str_h8",&ch_str_h8);
-  t_in->SetBranchAddress("ch_h8",&ch_h8);
-  t_in->SetBranchAddress("proton_p4_h8", &proton_p4_h8);
-  t_in->SetBranchAddress("pion_p4_h8", &pion_p4_h8);
-  t_in->SetBranchAddress("gamma_p4_h8", &gamma_p4_h8);
-  t_in->SetBranchAddress("protons_h8",&protons_h8);    
-  t_in->SetBranchAddress("pions_h8",&pions_h8);    
-  t_in->SetBranchAddress("gammas_h8",&gammas_h8);    
-  t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
-  t_in->SetBranchAddress("vars_h8",&vars_h8);
+  if(save_h8 && !has_h8) throw std::invalid_argument("LoadTreeFiltered: h8 branches missing from " + filename + ", set save_h8 = false in BranchList.h");
+  if(save_h8){
+    t_in->SetBranchAddress("sel_h8", &sel_h8);
+    t_in->SetBranchAddress("in_tpc_h8", &in_tpc_h8);
+    t_in->SetBranchAddress("nu_vtx_h8",&nu_vtx_h8);
+    t_in->SetBranchAddress("has_muon_h8", &has_muon_h8);
+    t_in->SetBranchAddress("muon_mom_h8", &muon_mom_h8);
+    t_in->SetBranchAddress("muon_contained_h8", &muon_contained_h8);
+    t_in->SetBranchAddress("W_h8", &W_h8);
+    t_in->SetBranchAddress("nprot_h8", &nprot_h8);
+    t_in->SetBranchAddress("npi_h8", &npi_h8);
+    t_in->SetBranchAddress("nsh_h8", &nsh_h8);
+    t_in->SetBranchAddress("ch_str_h8",&ch_str_h8);
+    t_in->SetBranchAddress("ch_h8",&ch_h8);
+    t_in->SetBranchAddress("proton_p4_h8", &proton_p4_h8);
+    t_in->SetBranchAddress("pion_p4_h8", &pion_p4_h8);
+    t_in->SetBranchAddress("gamma_p4_h8", &gamma_p4_h8);
+    t_in->SetBranchAddress("protons_h8",&protons_h8);    
+    t_in->SetBranchAddress("pions_h8",&pions_h8);    
+    t_in->SetBranchAddress("gammas_h8",&gammas_h8);    
+    t_in->SetBranchAddress("est_nu_e_h8",&est_nu_e_h8);
+    t_in->SetBranchAddress("vars_h8",&vars_h8);
+  }
 
 }
 

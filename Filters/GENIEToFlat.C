@@ -208,7 +208,10 @@ void GENIEToFlat(){
       {"PionE",pion_p4_t.E()},
       {"PiZeroE",gamma_p4_t.E()},
       {"W",W_t},
-      {"Channel",(double)ch_t}
+      {"Channel",(double)ch_t},
+      {"SFPt2",-1000},
+      {"SFPL",-1000},
+      {"SFProtPz",-1000}
     };
     for(int i_e=0;i_e<ee::kMAX;i_e++) vars_t_map[ee::estimators_str.at(i_e)] = est_nu_e_t.at(i_e);
 
@@ -224,6 +227,10 @@ void GENIEToFlat(){
         vars_t_map.at("2shwAsym") = weight::Asymmetry3({gammas_t.at(0)},{gammas_t.at(1)});
       }
       if(npi_t > 0) vars_t_map.at("LeadPionE") = pions_t.at(0).E();
+      if(nprot_t == 1 && npi_t == 0 && npi0_t == 0){
+        TLorentzVector plepton_t(muon_mom_t.X(),muon_mom_t.Y(),muon_mom_t.Z(),sqrt(muon_mom_t.Mag2()+ml*ml));
+        ee::sfmethodVars(plepton_t,proton_p4_t,vars_t_map.at("SFPt2"),vars_t_map.at("SFPL"),vars_t_map.at("SFProtPz"));
+      }
       if(nprot_t == 1 && npi_t == 1){
         vars_t_map.at("1p1piOpeningAngle") = 180/3.142*protons_t.at(0).Vect().Angle(pions_t.at(0).Vect());
         vars_t_map.at("1p1piAsym") = weight::Asymmetry3({protons_t.at(0)},{pions_t.at(0)});
