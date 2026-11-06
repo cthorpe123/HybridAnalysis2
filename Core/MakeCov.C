@@ -63,7 +63,7 @@ void MakeCov(){
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
     if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
-    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
+    else if(var == "Norm") h_m.at(var).SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5); 
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
@@ -79,6 +79,10 @@ void MakeCov(){
       }
     }
   }
+
+  // Spec universe weights used for samples without stored weight functions - all set to 1
+  std::map<std::string,std::vector<double>> unit_weight_m;
+  for(const auto& w : weight::r_m) unit_weight_m[w.first] = std::vector<double>(weight::spline_pts,1.0);
   
   for(int i_f=0;i_f<files_v.size();i_f++){
 
@@ -89,6 +93,15 @@ void MakeCov(){
     bool is_overlay,load_syst;
     LoadTreeFiltered(file,f_in,t_in,is_overlay,load_syst);
 
+    // Use the weight functions stored in the ntuple (CV overlays only), otherwise set them all to 1
+    const bool has_weight_funcs = t_in->GetBranch("weight_funcs") != nullptr;
+    if(make_spec_univ && has_weight_funcs){
+      t_in->GetEntry(0);
+      for(const auto& w : unit_weight_m)
+        if(weight_funcs->find(w.first) == weight_funcs->end()) 
+          throw std::invalid_argument("Weight function " + w.first + " missing from " + file + ", rerun Filter.C");
+    }
+
     for(int ievent=0;ievent<t_in->GetEntries();ievent++){
 
       //if(ievent > 20000) break;
@@ -97,12 +110,6 @@ void MakeCov(){
       
       std::string channel_t = "All";
       std::string channel_h8 = "All";
-
-      // Set the spec universe weights if being used
-      std::map<std::string,std::vector<double>> weight_m;
-      for(const auto &w : weight::r_m){ 
-        weight_m[w.first] = w.second();
-      }
 
       // Fill the histograms
       for(const auto &item : h_m){
@@ -113,9 +120,10 @@ void MakeCov(){
         const double& r = vars_h8->at(var);
         h_m.at(var).FillHistograms2D(is_signal_t,sel_h8,t,r,load_syst,channel_t,channel_h8);
         
-        for(const auto &w : weight_m){ 
+        for(const auto &w : unit_weight_m){ 
+          const std::vector<double>& wv = has_weight_funcs ? weight_funcs->at(w.first) : w.second;
           for(int i=0;i<weight::spline_pts;i++){
-            h_m.at(var).FillSpecialHistograms2D(w.first+"_"+std::to_string(i),is_signal_t,sel_h8,t,r,w.second.at(i),channel_t,channel_h8);
+            h_m.at(var).FillSpecialHistograms2D(w.first+"_"+std::to_string(i),is_signal_t,sel_h8,t,r,wv.at(i),channel_t,channel_h8);
           }
         }
         

@@ -16,6 +16,9 @@ void Filter(){
 
   GenerateDictionaries();
 
+  // Calculate the special universe weights from WeightFuncs.h and save them in the ntuple (MC only)
+  const bool save_weight_funcs = true;
+
   bool is_data,is_ext,is_dirt,load_syst;
   double POT_weight,POT;
   int detvar_univ = -1;
@@ -30,11 +33,11 @@ void Filter(){
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root"; POT = 49551151.0; POT_weight = 34522546.0/49551151.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root"; POT = 2.84397e+20; POT_weight = 1.545e+20/2.84397e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   
-  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
-  //detvar_univ = -1;
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
+  detvar_univ = -1;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_3.root"; POT = 2.471e+20; POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_3.root"; POT = 3.62877e+20; POT_weight = 2.471e+20/3.62877e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false;
-  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root"; POT = 8.6286e+20; POT_weight = 2.471e+20/8.6286e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
+  std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root"; POT = 8.6286e+20; POT_weight = 2.471e+20/8.6286e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_3.root"; POT = 143426453.0; POT_weight = 58934383.0/143426453.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_3_filtered.root"; POT = 3.11421e+20; POT_weight = 2.471e+20/3.11421e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
  
@@ -89,11 +92,11 @@ void Filter(){
   //std::string file = ""; POT = 1.26039e+21; POT_weight = 5.019e+19/1.26039e+21; detvar_univ = syst::kWMThYZ;
 
   // Run 3 Detvars
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3_detvar/";
-  is_data = false; is_ext = false; is_dirt = false; load_syst = false;
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3_detvar/";
+  //is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_13a_surprise_reco2_hist_3.root"; POT = 6.06427e+19; POT_weight = 2.471e+20/6.06427e+19; detvar_univ = -1;
   //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_1mil_surprise_reco2_hist.root"; POT = 1.29947e+21; POT_weight = 2.471e+20/1.29947e+21; detvar_univ = -1;
-  std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_500k_surprise_reco2_hist.root"; POT = 6.10775e+20; POT_weight = 2.471e+20/6.10775e+20; detvar_univ = -1;
+  //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_cv_3b_500k_surprise_reco2_hist.root"; POT = 6.10775e+20; POT_weight = 2.471e+20/6.10775e+20; detvar_univ = -1;
   //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lya_surprise_reco2_hist_3.root"; POT = 1.38559e+21; POT_weight = 2.471e+20/1.38559e+21; detvar_univ = syst::kLYAtt;
   //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyd_surprise_reco2_hist_3.root"; POT = 1.38793e+21; POT_weight = 2.471e+20/1.38793e+21; detvar_univ = syst::kLYDown;
   //std::string file = "Merged_checkout_DetVar_Run123_v10_04_07_23_BNB_nu_overlay_lyr_surprise_reco2_hist_3.root"; POT = 1.38339e+21; POT_weight = 2.471e+20/1.38339e+21; detvar_univ = syst::kLYRayleigh;
@@ -138,6 +141,9 @@ void Filter(){
   TFile* f_in = nullptr;
   TTree* t_in = nullptr;
   LoadTree(in_dir+file,f_in,t_in,(is_data || is_ext),load_syst);
+
+  // Weight functions are only needed for the CV overlay samples (the only ones with load_syst)
+  const bool calc_weight_funcs = save_weight_funcs && load_syst && detvar_univ == -1;
   Long64_t entries = t_in->GetEntries();
   Double_t POT_per_event = POT/entries;
 
@@ -204,7 +210,7 @@ void Filter(){
   int ch_t;
   std::vector<double> est_nu_e_t;
   std::map<std::string,double> vars_t_map;
-  //std::map<std::string,std::vector<double>> weight_funcs_m;
+  std::map<std::string,std::vector<double>> weight_funcs_m;
 
   if(!is_data && !is_ext && !is_dirt){
     t_out->Branch("is_signal_t",&is_signal_t);
@@ -230,7 +236,7 @@ void Filter(){
     t_out->Branch("ch_t",&ch_t);
     t_out->Branch("est_nu_e_t",&est_nu_e_t);
     t_out->Branch("vars_t",&vars_t_map);
-    //t_out->Branch("weight_funcs",&weight_funcs_m);
+    if(calc_weight_funcs) t_out->Branch("weight_funcs",&weight_funcs_m);
   }
 
   // PD Reco branches
@@ -426,7 +432,7 @@ void Filter(){
     }
   }
 
-  //weight::SetWeightFuncs();
+  if(calc_weight_funcs) weight::SetWeightFuncs();
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
     
@@ -581,21 +587,21 @@ void Filter(){
        }
      }
 
-    /*
-     // Sync BranchList globals so weight function lambdas see the correct values
-     ::is_signal_t = is_signal_t;
-     ::nprot_t = nprot_t;
-     ::npi_t = npi_t;
-     ::nsh_t = nsh_t;
-     ::muon_mom_t = &muon_mom_t;
-     ::protons_t = protons_t;
-     ::pions_t = pions_t;
-     ::gammas_t = gammas_t;
-     for(const auto &item : weight::r_m){
-       //std::cout << item.first << std::endl;
-       weight_funcs_m[item.first] = item.second();
+     if(calc_weight_funcs){
+       // Sync BranchList globals so weight function lambdas see the correct values
+       ::is_signal_t = is_signal_t;
+       ::nprot_t = nprot_t;
+       ::npi_t = npi_t;
+       ::npi0_t = npi0_t;
+       ::nsh_t = nsh_t;
+       ::muon_mom_t = &muon_mom_t;
+       ::protons_t = protons_t;
+       ::pions_t = pions_t;
+       ::gammas_t = gammas_t;
+       ::vars_t = &vars_t_map;
+       for(const auto &item : weight::r_m)
+         weight_funcs_m[item.first] = item.second();
      }
-    */
     }
 
     // Muon ID with each framework

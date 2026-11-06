@@ -20,7 +20,6 @@ void MakeCovDetvar(){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
