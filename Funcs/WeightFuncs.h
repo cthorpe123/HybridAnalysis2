@@ -149,8 +149,37 @@ double Cone(const std::vector<TVector3>& p_v)
 const int spline_pts = 10; // Number of points to use in the spline reweighting
 
 // Function pointers for the various reweighters 
-std::map<std::string,std::vector<double>(*)()> r_m;
-const std::vector<std::string> weight_func_labels = {"1p1piOpeningAngle_Center_Gather","1p1piOpeningAngle_Center_Spread","1p1piOpeningAngle_LH_Bias","1p1piOpeningAngle_RH_Bias","2pAsym_Center_Gather","2pAsym_Center_Spread","2pAsym_LH_Bias","2pAsym_RH_Bias","2pOpeningAngle_Center_Gather","2pOpeningAngle_Center_Spread","2pOpeningAngle_LH_Bias","2pOpeningAngle_RH_Bias","2shwAsym_Center_Gather","2shwAsym_Center_Spread","2shwAsym_LH_Bias","2shwAsym_RH_Bias","2shwOpenAngle_Center_Gather","2shwOpenAngle_Center_Spread","2shwOpenAngle_LH_Bias","2shwOpenAngle_RH_Bias","Extra1P","Extra2G","Extra2P","Extra2Pi","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi","LeadPionE_Center_Gather","LeadPionE_Center_Spread","LeadPionE_LH_Bias","LeadPionE_RH_Bias","LeadProtonKEShape_Center_Gather","LeadProtonKEShape_Center_Spread","LeadProtonKEShape_LH_Bias","LeadProtonKEShape_RH_Bias","MuonAngleShape_Center_Gather","MuonAngleShape_Center_Spread","MuonAngleShape_LH_Bias","MuonAngleShape_RH_Bias","MuonMomShape_Center_Gather","MuonMomShape_Center_Spread","MuonMomShape_LH_Bias","MuonMomShape_RH_Bias","MuonProtonOpeningAngle_Center_Gather","MuonProtonOpeningAngle_Center_Spread","MuonProtonOpeningAngle_LH_Bias","MuonProtonOpeningAngle_RH_Bias"};
+std::map<std::string,std::function<std::vector<double>()>> r_m;
+const std::vector<std::string> weight_func_labels = {"1p1piAsym_Center_Gather","1p1piAsym_Center_Spread","1p1piAsym_LH_Bias","1p1piAsym_RH_Bias","1p1piOpeningAngle_Center_Gather","1p1piOpeningAngle_Center_Spread","1p1piOpeningAngle_LH_Bias","1p1piOpeningAngle_RH_Bias","2pAsym_Center_Gather","2pAsym_Center_Spread","2pAsym_LH_Bias","2pAsym_RH_Bias","2pOpeningAngle_Center_Gather","2pOpeningAngle_Center_Spread","2pOpeningAngle_LH_Bias","2pOpeningAngle_RH_Bias","2shwAsym_Center_Gather","2shwAsym_Center_Spread","2shwAsym_LH_Bias","2shwAsym_RH_Bias","2shwOpenAngle_Center_Gather","2shwOpenAngle_Center_Spread","2shwOpenAngle_LH_Bias","2shwOpenAngle_RH_Bias","Extra1P","Extra2G","Extra2P","Extra2Pi","Extra2Pi0","Extra3P","ExtraG","ExtraNP","ExtraP","ExtraPi","ExtraPi0","LeadPionE_Center_Gather","LeadPionE_Center_Spread","LeadPionE_LH_Bias","LeadPionE_RH_Bias","LeadProtonKEShape_Center_Gather","LeadProtonKEShape_Center_Spread","LeadProtonKEShape_LH_Bias","LeadProtonKEShape_RH_Bias","MuonAngleShape_Center_Gather","MuonAngleShape_Center_Spread","MuonAngleShape_LH_Bias","MuonAngleShape_RH_Bias","MuonKinWNP_Center_Gather","MuonKinWNP_Center_Spread","MuonKinWNP_LH_Bias","MuonKinWNP_RH_Bias","MuonKin_Center_Gather","MuonKin_Center_Spread","MuonKin_LH_Bias","MuonKin_RH_Bias","MuonMomShape_Center_Gather","MuonMomShape_Center_Spread","MuonMomShape_LH_Bias","MuonMomShape_RH_Bias","MuonProtonOpeningAngle_Center_Gather","MuonProtonOpeningAngle_Center_Spread","MuonProtonOpeningAngle_LH_Bias","MuonProtonOpeningAngle_RH_Bias","PeLEELike0Pi_Center_Gather","PeLEELike0Pi_Center_Spread","PeLEELike0Pi_LH_Bias","PeLEELike0Pi_RH_Bias","PiZeroE_Center_Gather","PiZeroE_Center_Spread","PiZeroE_LH_Bias","PiZeroE_RH_Bias","PionE_Center_Gather","PionE_Center_Spread","PionE_LH_Bias","PionE_RH_Bias","ProtonKE_Center_Gather","ProtonKE_Center_Spread","ProtonKE_LH_Bias","ProtonKE_RH_Bias","SFMethod_Center_Gather","SFMethod_Center_Spread","SFMethod_LH_Bias","SFMethod_RH_Bias","SFPL_Center_Gather","SFPL_Center_Spread","SFPL_LH_Bias","SFPL_RH_Bias","SFProtPz_Center_Gather","SFProtPz_Center_Spread","SFProtPz_LH_Bias","SFProtPz_RH_Bias","SFPt2_Center_Gather","SFPt2_Center_Spread","SFPt2_LH_Bias","SFPt2_RH_Bias","TotalEDep_Center_Gather","TotalEDep_Center_Spread","TotalEDep_LH_Bias","TotalEDep_RH_Bias","W_Center_Gather","W_Center_Spread","W_LH_Bias","W_RH_Bias"};
+
+// Ranges used to map variables in vars_t onto [0,1] for the generic shape reweighters
+// Taken from truth binning templates (MakeBinning.C, run4b-5, FE = 0.04), SFPL/SFProtPz lower edges from 0.5% quantile
+const std::map<std::string,std::pair<double,double>> var_shape_ranges = {
+  {"ProtonKE",{0.0,1.3}},
+  {"PionE",{0.1,1.5}},
+  {"PiZeroE",{0.0,1.2}},
+  {"W",{0.9,4.5}},
+  {"MuonKin",{0.1,4.5}},
+  {"MuonKinWNP",{0.1,4.4}},
+  {"PeLEELike0Pi",{0.1,5.3}},
+  {"TotalEDep",{0.1,4.7}},
+  {"SFMethod",{0.1,3.8}},
+  {"SFPt2",{-0.05,0.65}},
+  {"SFPL",{-0.7,0.4}},
+  {"SFProtPz",{-0.4,1.5}}
+};
+
+// Beta function shape reweighter for a variable stored in vars_t
+std::vector<double> VarShapeWeight(const std::string& var,const double lo,const double hi,const std::vector<double>& alphas,const std::vector<double>& betas)
+{
+  std::vector<double> x(spline_pts,1.0);
+  if(!is_signal_t) return x;
+  double val = (vars_t->at(var) - lo)/(hi - lo); // Map from [lo,hi] to [0,1]
+  if(val <= 0 || val >= 1) return x;
+  for(int i=0;i<spline_pts;i++)
+    x.at(i) *= ROOT::Math::beta_pdf(val,alphas.at(i),betas.at(i));
+  return x;
+}
 
 void SetWeightFuncs()
 {
@@ -190,6 +219,12 @@ void SetWeightFuncs()
 
   auto f_Extra2G = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(nsh_t > 1 ? i*10.0/spline_pts : 1.0); return x; };
   r_m.emplace("Extra2G",f_Extra2G); 
+
+  auto f_ExtraPi0 = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi0_t > 0 ? i*10.0/spline_pts : 1.0); return x; };
+  r_m.emplace("ExtraPi0",f_ExtraPi0); 
+
+  auto f_Extra2Pi0 = [](){ std::vector<double> x; for(int i=0;i<spline_pts;i++) x.push_back(npi0_t > 1 ? i*10.0/spline_pts : 1.0); return x; };
+  r_m.emplace("Extra2Pi0",f_Extra2Pi0); 
 
   auto f_MuonAngleShape_LH_Bias = [](){ 
     double val = (muon_mom_t->CosTheta() + 1)/2.0; // Map from [-1,1] to [0,1]
@@ -642,6 +677,17 @@ void SetWeightFuncs()
     return x;
   };
   r_m.emplace("MuonProtonOpeningAngle_Center_Spread",f_MuonProtonOpeningAngle_Center_Spread);
+
+  // Generic shape reweighters for the remaining variables in vars_t
+  for(const auto& item : var_shape_ranges){
+    const std::string var = item.first;
+    const double lo = item.second.first;
+    const double hi = item.second.second;
+    r_m.emplace(var+"_LH_Bias",[=](){ return VarShapeWeight(var,lo,hi,alphas_LH_Bias,betas_LH_Bias); });
+    r_m.emplace(var+"_RH_Bias",[=](){ return VarShapeWeight(var,lo,hi,alphas_RH_Bias,betas_RH_Bias); });
+    r_m.emplace(var+"_Center_Gather",[=](){ return VarShapeWeight(var,lo,hi,alphas_Center_Gather,betas_Center_Gather); });
+    r_m.emplace(var+"_Center_Spread",[=](){ return VarShapeWeight(var,lo,hi,alphas_Center_Spread,betas_Center_Spread); });
+  }
   
 
 }

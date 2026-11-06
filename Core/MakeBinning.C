@@ -46,6 +46,9 @@ void MakeBinning(){
   //h_m["PeLEELike0Pi"]           = new TH1D("h_PeLEELike0Pi",           ";E_{#nu} PeLEE-Like 0#pi [GeV];Events/GeV",    10000, 0,   4);
   //h_m["TotalEDep"]              = new TH1D("h_TotalEDep",              ";E_{#nu} Total E Dep. [GeV];Events/GeV",       10000, 0,   4);
   //h_m["SFMethod"]               = new TH1D("h_SFMethod",               ";E_{#nu} SF Method [GeV];Events/GeV",          10000, 0,   4);
+  h_m["SFPt2"]                  = new TH1D("h_SFPt2",                  ";SF p_{T}^{2} [GeV^{2}];Events/GeV^{2}",       10000, 0,   1);
+  h_m["SFPL"]                   = new TH1D("h_SFPL",                   ";SF p_{L} [GeV];Events/GeV",                   10000,-0.7, 0.5);
+  h_m["SFProtPz"]               = new TH1D("h_SFProtPz",               ";SF Proton p_{z} [GeV];Events/GeV",            10000,-0.4, 1.6);
 
   for(const auto &item : h_m){
     h_reco_m[item.first] = std::map<std::string,TH1D*>(); 

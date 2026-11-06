@@ -15,7 +15,7 @@ void MakeCovNuWro(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"LeadPionE","PionE","PiZeroE"};
+  std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
@@ -37,6 +37,8 @@ void MakeCovNuWro(){
 
   // then analyse the nuwro files
   std::vector<std::string> files_v = {
+    "run1/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root",
+    "run3/Filtered_Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_3_filtered.root",
     "run4c/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_4c.root",
     "run5/Filtered_Merged_checkout_MCC9.10_Run45_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_5.root"
   };
@@ -160,8 +162,6 @@ void MakeCovNuWro(){
     
     f_hist->cd("Reco/Special/NuWro_0/SpecialStatCov");
     h_Cov_SpecialStat->Write("Cov_SpecialStat");
-
-    
 
     f_hist->Close();
     f_nuwro->Close();
