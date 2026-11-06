@@ -17,7 +17,6 @@ void MakeCovNuWro(){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
@@ -26,7 +25,8 @@ void MakeCovNuWro(){
     h_m.at(var).SetTrueChannelList(channels_t);
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
-    if(!in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5);
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
@@ -62,12 +62,6 @@ void MakeCovNuWro(){
       std::string channel_h8 = "All";
 
       weightSplineTimesTune = 1.0;
-
-      vars_t->emplace("Enu",nu_e);
-      vars_h8->emplace("Enu",nu_e);
-
-      vars_t->emplace("Norm",0.5);
-      vars_h8->emplace("Norm",0.5);
 
       // Fill the histograms
       for(const auto &item : h_m){

@@ -54,8 +54,6 @@ void MakeCov(){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
-  
-  vars.push_back("Enu");
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
@@ -64,19 +62,12 @@ void MakeCov(){
     h_m.at(var).SetTrueChannelList(channels_t);
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
-    if(!in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5); 
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
   } 
-
-  h_m.emplace("Norm",hist::MultiChannelHistogramManager("Norm",true));
-  h_m.at("Norm").SetTrueChannelList(channels_t);
-  h_m.at("Norm").SetRecoChannelList(channels_r);
-  h_m.at("Norm").KeepAll();
-  h_m.at("Norm").SetTemplates("",1,0,1,1,0,1); 
-  h_m.at("Norm").MakeHM();
-  vars.push_back("Norm");
 
   if(make_spec_univ){
     weight::SetWeightFuncs();
@@ -106,12 +97,6 @@ void MakeCov(){
       
       std::string channel_t = "All";
       std::string channel_h8 = "All";
-
-      vars_t->emplace("Enu",nu_e);
-      vars_h8->emplace("Enu",nu_e);
-
-      vars_t->emplace("Norm",0.5);
-      vars_h8->emplace("Norm",0.5);
 
       // Set the spec universe weights if being used
       std::map<std::string,std::vector<double>> weight_m;

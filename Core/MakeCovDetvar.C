@@ -85,19 +85,12 @@ void MakeCovDetvar(){
     h_m.at(var).SetTrueChannelList(channels_t);
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
-    if(!in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
+    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5); 
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
   } 
-  
-  h_m.emplace("Norm",hist::MultiChannelHistogramManager("Norm",true));
-  h_m.at("Norm").DetvarMode();
-  h_m.at("Norm").SetTrueChannelList(channels_t);
-  h_m.at("Norm").SetRecoChannelList(channels_r);
-  h_m.at("Norm").KeepAll();
-  h_m.at("Norm").SetTemplates("",1,0,1,1,0,1); 
-  h_m.at("Norm").MakeHM();
 
   for(int i_f=0;i_f<files.size();i_f++){
     std::string file = files.at(i_f);
@@ -114,12 +107,6 @@ void MakeCovDetvar(){
       std::string channel_t = "All";
       std::string channel_h8 = "All";
 
-      vars_t->emplace("Enu",nu_e);
-      vars_h8->emplace("Enu",nu_e);
-
-      vars_t->emplace("Norm",0.5);
-      vars_h8->emplace("Norm",0.5);
-      
       for(const auto &item : h_m){
         std::string var = item.first;
         if(vars_t->find(var) == vars_t->end()) throw std::invalid_argument("Variable " + var + " missing from true var map");

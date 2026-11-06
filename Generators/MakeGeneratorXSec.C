@@ -15,7 +15,7 @@ using namespace binning;
 void MakeGeneratorXSec(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
@@ -67,9 +67,6 @@ void MakeGeneratorXSec(){
 
       if (ievent % 1000 == 0) std::cout << "  " << ievent << " / " << t_in->GetEntries() << "\r" << std::flush;
       t_in->GetEntry(ievent);
-
-      vars_t->emplace("Norm",0.5);
-      vars_t->emplace("Enu",nu_e);
 
       if(generators.at(i_f) == "Untunedv3.0.6") gen_weight = 1.0;
 

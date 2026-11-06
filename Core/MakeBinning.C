@@ -96,9 +96,6 @@ void MakeBinning(){
       std::string channel_t = "All";
       std::string channel_h8 = "All";
 
-      vars_t->emplace("Enu",nu_e);
-      vars_h8->emplace("Enu",nu_e);
-
       if(std::isnan(weightSplineTimesTune) || std::isinf(weightSplineTimesTune)) continue;
 
       if(is_signal_t){

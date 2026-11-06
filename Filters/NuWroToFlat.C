@@ -210,7 +210,9 @@ void NuWroToFlat(){
       {"Channel",(double)ch_t},
       {"SFPt2",-1000},
       {"SFPL",-1000},
-      {"SFProtPz",-1000}
+      {"SFProtPz",-1000},
+      {"Enu",nu_e},
+      {"Norm",0.5}
     };
     for(int i_e=0;i_e<ee::kMAX;i_e++) vars_t_map[ee::estimators_str.at(i_e)] = est_nu_e_t.at(i_e);
 
