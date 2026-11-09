@@ -437,7 +437,7 @@ void Filter(){
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
     
     //if(ievent > 10000) break;
-    if(ievent % 50000 == 0) std::cout << ievent << "/" << t_in->GetEntries() << std::endl;
+    if(ievent % 100 == 0) std::cout << ievent << "/" << t_in->GetEntries() << "\r" << std::flush;
     t_in->GetEntry(ievent);
 
     category = -1;
@@ -862,5 +862,7 @@ void Filter(){
 
   f_out->Close();
   f_in->Close();
+
+  std::cout << "Complete!" << std::endl;
 
 }

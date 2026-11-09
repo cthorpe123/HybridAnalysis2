@@ -5,6 +5,9 @@ void SpeedyMergeNtuple(){
 
   bool is_data,save_syst;
 
+  // Switches for the reco branches of each framework (truth info is always saved)
+  const bool save_pd = true, save_wc = true, save_lt = true;
+
   //std::string dir_out = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
 
   // Run 1 Main Samples
@@ -228,28 +231,30 @@ void SpeedyMergeNtuple(){
 
   }
 
-  pd_t_in->SetBranchAddress("trk_len_v",&trk_len_v);
-  pd_t_in->SetBranchAddress("trk_range_muon_mom_v",&trk_range_muon_mom_v);
-  pd_t_in->SetBranchAddress("trk_mcs_muon_mom_v",&trk_mcs_muon_mom_v);
-  pd_t_in->SetBranchAddress("trk_dir_x_v",&trk_dir_x_v);
-  pd_t_in->SetBranchAddress("trk_dir_y_v",&trk_dir_y_v);
-  pd_t_in->SetBranchAddress("trk_dir_z_v",&trk_dir_z_v);
-  pd_t_in->SetBranchAddress("trk_start_x_v",&trk_start_x_v);
-  pd_t_in->SetBranchAddress("trk_start_y_v",&trk_start_y_v);
-  pd_t_in->SetBranchAddress("trk_start_z_v",&trk_start_z_v);
-  pd_t_in->SetBranchAddress("trk_end_x_v",&trk_end_x_v);
-  pd_t_in->SetBranchAddress("trk_end_y_v",&trk_end_y_v);
-  pd_t_in->SetBranchAddress("trk_end_z_v",&trk_end_z_v);
-  pd_t_in->SetBranchAddress("trk_llr_pid_score_v",&trk_llr_pid_score_v);
-  pd_t_in->SetBranchAddress("reco_nu_vtx_x",&reco_nu_vtx_x);
-  pd_t_in->SetBranchAddress("reco_nu_vtx_y",&reco_nu_vtx_y);
-  pd_t_in->SetBranchAddress("reco_nu_vtx_z",&reco_nu_vtx_z);
-  pd_t_in->SetBranchAddress("shr_px_v",&shr_px_v);
-  pd_t_in->SetBranchAddress("shr_py_v",&shr_py_v);
-  pd_t_in->SetBranchAddress("shr_pz_v",&shr_pz_v);
-  pd_t_in->SetBranchAddress("shr_energy_y_v",&shr_energy_y_v);
-  if(!is_data) pd_t_in->SetBranchAddress("backtracked_pdg",&backtracked_pdg);
-  pd_t_in->SetBranchAddress("pfng2semlabel",&pfng2semlabel);
+  if(save_pd){
+    pd_t_in->SetBranchAddress("trk_len_v",&trk_len_v);
+    pd_t_in->SetBranchAddress("trk_range_muon_mom_v",&trk_range_muon_mom_v);
+    pd_t_in->SetBranchAddress("trk_mcs_muon_mom_v",&trk_mcs_muon_mom_v);
+    pd_t_in->SetBranchAddress("trk_dir_x_v",&trk_dir_x_v);
+    pd_t_in->SetBranchAddress("trk_dir_y_v",&trk_dir_y_v);
+    pd_t_in->SetBranchAddress("trk_dir_z_v",&trk_dir_z_v);
+    pd_t_in->SetBranchAddress("trk_start_x_v",&trk_start_x_v);
+    pd_t_in->SetBranchAddress("trk_start_y_v",&trk_start_y_v);
+    pd_t_in->SetBranchAddress("trk_start_z_v",&trk_start_z_v);
+    pd_t_in->SetBranchAddress("trk_end_x_v",&trk_end_x_v);
+    pd_t_in->SetBranchAddress("trk_end_y_v",&trk_end_y_v);
+    pd_t_in->SetBranchAddress("trk_end_z_v",&trk_end_z_v);
+    pd_t_in->SetBranchAddress("trk_llr_pid_score_v",&trk_llr_pid_score_v);
+    pd_t_in->SetBranchAddress("reco_nu_vtx_x",&reco_nu_vtx_x);
+    pd_t_in->SetBranchAddress("reco_nu_vtx_y",&reco_nu_vtx_y);
+    pd_t_in->SetBranchAddress("reco_nu_vtx_z",&reco_nu_vtx_z);
+    pd_t_in->SetBranchAddress("shr_px_v",&shr_px_v);
+    pd_t_in->SetBranchAddress("shr_py_v",&shr_py_v);
+    pd_t_in->SetBranchAddress("shr_pz_v",&shr_pz_v);
+    pd_t_in->SetBranchAddress("shr_energy_y_v",&shr_energy_y_v);
+    if(!is_data) pd_t_in->SetBranchAddress("backtracked_pdg",&backtracked_pdg);
+    pd_t_in->SetBranchAddress("pfng2semlabel",&pfng2semlabel);
+  }
 
   // Wirecell branches
   Int_t mc_nu_pdg;
@@ -297,24 +302,26 @@ void SpeedyMergeNtuple(){
     wc_t_in->SetBranchAddress("truth_id",&truth_id);
   }
 
-  wc_t_in->SetBranchAddress("reco_nuvtxX",&reco_nuvtxX); 
-  wc_t_in->SetBranchAddress("reco_nuvtxY",&reco_nuvtxY); 
-  wc_t_in->SetBranchAddress("reco_nuvtxZ",&reco_nuvtxZ); 
-  wc_t_in->SetBranchAddress("reco_Ntrack",&reco_Ntrack); 
-  wc_t_in->SetBranchAddress("reco_pdg",reco_pdg); 
-  wc_t_in->SetBranchAddress("reco_mother",reco_mother); 
-  wc_t_in->SetBranchAddress("reco_startMomentum",reco_startMomentum); 
-  wc_t_in->SetBranchAddress("reco_endMomentum",reco_endMomentum); 
-  wc_t_in->SetBranchAddress("reco_endXYZT",reco_endXYZT); 
-  wc_t_in->SetBranchAddress("reco_id",reco_id);
-  if(!is_data){
-    wc_t_in->SetBranchAddress("reco_truthMatch_pdg",reco_truthMatch_pdg);
-    wc_t_in->SetBranchAddress("reco_truthMatch_id",reco_truthMatch_id);
+  if(save_wc){
+    wc_t_in->SetBranchAddress("reco_nuvtxX",&reco_nuvtxX);
+    wc_t_in->SetBranchAddress("reco_nuvtxY",&reco_nuvtxY);
+    wc_t_in->SetBranchAddress("reco_nuvtxZ",&reco_nuvtxZ);
+    wc_t_in->SetBranchAddress("reco_Ntrack",&reco_Ntrack);
+    wc_t_in->SetBranchAddress("reco_pdg",reco_pdg);
+    wc_t_in->SetBranchAddress("reco_mother",reco_mother);
+    wc_t_in->SetBranchAddress("reco_startMomentum",reco_startMomentum);
+    wc_t_in->SetBranchAddress("reco_endMomentum",reco_endMomentum);
+    wc_t_in->SetBranchAddress("reco_endXYZT",reco_endXYZT);
+    wc_t_in->SetBranchAddress("reco_id",reco_id);
+    if(!is_data){
+      wc_t_in->SetBranchAddress("reco_truthMatch_pdg",reco_truthMatch_pdg);
+      wc_t_in->SetBranchAddress("reco_truthMatch_id",reco_truthMatch_id);
+    }
+    wc_t_in->SetBranchAddress("mcs_mu_tracklen", &mcs_mu_tracklen);
+    wc_t_in->SetBranchAddress("mcs_emu_tracklen", &mcs_emu_tracklen);
+    wc_t_in->SetBranchAddress("mcs_emu_MCS", &mcs_emu_MCS);
+    wc_t_in->SetBranchAddress("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
   }
-  wc_t_in->SetBranchAddress("mcs_mu_tracklen", &mcs_mu_tracklen);
-  wc_t_in->SetBranchAddress("mcs_emu_tracklen", &mcs_emu_tracklen);
-  wc_t_in->SetBranchAddress("mcs_emu_MCS", &mcs_emu_MCS);
-  wc_t_in->SetBranchAddress("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
 
   // Lantern branches
   Float_t         trueNuE;
@@ -380,41 +387,43 @@ void SpeedyMergeNtuple(){
     lt_t_in->SetBranchAddress("trueVtxZ", &trueVtxZ);
   }
 
-  lt_t_in->SetBranchAddress("foundVertex", &foundVertex);
-  lt_t_in->SetBranchAddress("vtxX", &vtxX);
-  lt_t_in->SetBranchAddress("vtxY", &vtxY);
-  lt_t_in->SetBranchAddress("vtxZ", &vtxZ);
+  if(save_lt){
+    lt_t_in->SetBranchAddress("foundVertex", &foundVertex);
+    lt_t_in->SetBranchAddress("vtxX", &vtxX);
+    lt_t_in->SetBranchAddress("vtxY", &vtxY);
+    lt_t_in->SetBranchAddress("vtxZ", &vtxZ);
 
-  lt_t_in->SetBranchAddress("nTracks", &nTracks);
-  lt_t_in->SetBranchAddress("trackIsSecondary", trackIsSecondary);
-  lt_t_in->SetBranchAddress("trackStartPosX", trackStartPosX);
-  lt_t_in->SetBranchAddress("trackStartPosY", trackStartPosY);
-  lt_t_in->SetBranchAddress("trackStartPosZ", trackStartPosZ);
-  lt_t_in->SetBranchAddress("trackStartDirX", trackStartDirX);
-  lt_t_in->SetBranchAddress("trackStartDirY", trackStartDirY);
-  lt_t_in->SetBranchAddress("trackStartDirZ", trackStartDirZ);
-  lt_t_in->SetBranchAddress("trackEndPosX", trackEndPosX);
-  lt_t_in->SetBranchAddress("trackEndPosY", trackEndPosY);
-  lt_t_in->SetBranchAddress("trackEndPosZ", trackEndPosZ);
-  lt_t_in->SetBranchAddress("trackClassified", trackClassified);
-  lt_t_in->SetBranchAddress("trackNPlanesAbove", trackNPlanesAbove);
-  lt_t_in->SetBranchAddress("trackPID", trackPID);
-  lt_t_in->SetBranchAddress("trackRecoE", trackRecoE);
-  if(!is_data) lt_t_in->SetBranchAddress("trackTruePID", trackTruePID);
+    lt_t_in->SetBranchAddress("nTracks", &nTracks);
+    lt_t_in->SetBranchAddress("trackIsSecondary", trackIsSecondary);
+    lt_t_in->SetBranchAddress("trackStartPosX", trackStartPosX);
+    lt_t_in->SetBranchAddress("trackStartPosY", trackStartPosY);
+    lt_t_in->SetBranchAddress("trackStartPosZ", trackStartPosZ);
+    lt_t_in->SetBranchAddress("trackStartDirX", trackStartDirX);
+    lt_t_in->SetBranchAddress("trackStartDirY", trackStartDirY);
+    lt_t_in->SetBranchAddress("trackStartDirZ", trackStartDirZ);
+    lt_t_in->SetBranchAddress("trackEndPosX", trackEndPosX);
+    lt_t_in->SetBranchAddress("trackEndPosY", trackEndPosY);
+    lt_t_in->SetBranchAddress("trackEndPosZ", trackEndPosZ);
+    lt_t_in->SetBranchAddress("trackClassified", trackClassified);
+    lt_t_in->SetBranchAddress("trackNPlanesAbove", trackNPlanesAbove);
+    lt_t_in->SetBranchAddress("trackPID", trackPID);
+    lt_t_in->SetBranchAddress("trackRecoE", trackRecoE);
+    if(!is_data) lt_t_in->SetBranchAddress("trackTruePID", trackTruePID);
 
-  lt_t_in->SetBranchAddress("nShowers", &nShowers);
-  lt_t_in->SetBranchAddress("showerIsSecondary", showerIsSecondary);
-  lt_t_in->SetBranchAddress("showerStartPosX", showerStartPosX);
-  lt_t_in->SetBranchAddress("showerStartPosY", showerStartPosY);
-  lt_t_in->SetBranchAddress("showerStartPosZ", showerStartPosZ);
-  lt_t_in->SetBranchAddress("showerStartDirX", showerStartDirX);
-  lt_t_in->SetBranchAddress("showerStartDirY", showerStartDirY);
-  lt_t_in->SetBranchAddress("showerStartDirZ", showerStartDirZ);
-  lt_t_in->SetBranchAddress("showerClassified", showerClassified);
-  lt_t_in->SetBranchAddress("showerNPlanesAbove", showerNPlanesAbove);
-  lt_t_in->SetBranchAddress("showerPID", showerPID);
-  lt_t_in->SetBranchAddress("showerRecoE", showerRecoE);
-  if(!is_data) lt_t_in->SetBranchAddress("showerTruePID", showerTruePID);
+    lt_t_in->SetBranchAddress("nShowers", &nShowers);
+    lt_t_in->SetBranchAddress("showerIsSecondary", showerIsSecondary);
+    lt_t_in->SetBranchAddress("showerStartPosX", showerStartPosX);
+    lt_t_in->SetBranchAddress("showerStartPosY", showerStartPosY);
+    lt_t_in->SetBranchAddress("showerStartPosZ", showerStartPosZ);
+    lt_t_in->SetBranchAddress("showerStartDirX", showerStartDirX);
+    lt_t_in->SetBranchAddress("showerStartDirY", showerStartDirY);
+    lt_t_in->SetBranchAddress("showerStartDirZ", showerStartDirZ);
+    lt_t_in->SetBranchAddress("showerClassified", showerClassified);
+    lt_t_in->SetBranchAddress("showerNPlanesAbove", showerNPlanesAbove);
+    lt_t_in->SetBranchAddress("showerPID", showerPID);
+    lt_t_in->SetBranchAddress("showerRecoE", showerRecoE);
+    if(!is_data) lt_t_in->SetBranchAddress("showerTruePID", showerTruePID);
+  }
 
   // Setup the tree storing the data
   gSystem->Exec(("mkdir -p "+dir_out).c_str());
@@ -453,29 +462,31 @@ void SpeedyMergeNtuple(){
     t_out->Branch("weightSplineTimesTune",&weightSplineTimesTune);
   }
 
-  t_out->Branch("trk_len_v",&trk_len_v);
-  t_out->Branch("trk_range_muon_mom_v",&trk_range_muon_mom_v);
-  t_out->Branch("trk_mcs_muon_mom_v",&trk_mcs_muon_mom_v);
-  t_out->Branch("trk_dir_x_v",&trk_dir_x_v);
-  t_out->Branch("trk_dir_y_v",&trk_dir_y_v);
-  t_out->Branch("trk_dir_z_v",&trk_dir_z_v);
-  t_out->Branch("trk_start_x_v",&trk_start_x_v);
-  t_out->Branch("trk_start_y_v",&trk_start_y_v);
-  t_out->Branch("trk_start_z_v",&trk_start_z_v);
-  t_out->Branch("trk_end_x_v",&trk_end_x_v);
-  t_out->Branch("trk_end_y_v",&trk_end_y_v);
-  t_out->Branch("trk_end_z_v",&trk_end_z_v);
-  t_out->Branch("trk_llr_pid_score_v",&trk_llr_pid_score_v);
-  t_out->Branch("reco_nu_vtx_x",&reco_nu_vtx_x);
-  t_out->Branch("reco_nu_vtx_y",&reco_nu_vtx_y);
-  t_out->Branch("reco_nu_vtx_z",&reco_nu_vtx_z);
-  if(!is_data) t_out->Branch("backtracked_pdg",&backtracked_pdg);
-  t_out->Branch("pfng2semlabel",&pfng2semlabel);
+  if(save_pd){
+    t_out->Branch("trk_len_v",&trk_len_v);
+    t_out->Branch("trk_range_muon_mom_v",&trk_range_muon_mom_v);
+    t_out->Branch("trk_mcs_muon_mom_v",&trk_mcs_muon_mom_v);
+    t_out->Branch("trk_dir_x_v",&trk_dir_x_v);
+    t_out->Branch("trk_dir_y_v",&trk_dir_y_v);
+    t_out->Branch("trk_dir_z_v",&trk_dir_z_v);
+    t_out->Branch("trk_start_x_v",&trk_start_x_v);
+    t_out->Branch("trk_start_y_v",&trk_start_y_v);
+    t_out->Branch("trk_start_z_v",&trk_start_z_v);
+    t_out->Branch("trk_end_x_v",&trk_end_x_v);
+    t_out->Branch("trk_end_y_v",&trk_end_y_v);
+    t_out->Branch("trk_end_z_v",&trk_end_z_v);
+    t_out->Branch("trk_llr_pid_score_v",&trk_llr_pid_score_v);
+    t_out->Branch("reco_nu_vtx_x",&reco_nu_vtx_x);
+    t_out->Branch("reco_nu_vtx_y",&reco_nu_vtx_y);
+    t_out->Branch("reco_nu_vtx_z",&reco_nu_vtx_z);
+    if(!is_data) t_out->Branch("backtracked_pdg",&backtracked_pdg);
+    t_out->Branch("pfng2semlabel",&pfng2semlabel);
 
-  t_out->Branch("shr_px_v",&shr_px_v);
-  t_out->Branch("shr_py_v",&shr_py_v);
-  t_out->Branch("shr_pz_v",&shr_pz_v);
-  t_out->Branch("shr_energy_y_v",&shr_energy_y_v);
+    t_out->Branch("shr_px_v",&shr_px_v);
+    t_out->Branch("shr_py_v",&shr_py_v);
+    t_out->Branch("shr_pz_v",&shr_pz_v);
+    t_out->Branch("shr_energy_y_v",&shr_energy_y_v);
+  }
 
   // Wirecell Branches
   if(!is_data){
@@ -493,24 +504,26 @@ void SpeedyMergeNtuple(){
     t_out->Branch("truth_id",&truth_id,"truth_id[2000]/I");
   }
 
-  t_out->Branch("reco_nuvtxX",&reco_nuvtxX); 
-  t_out->Branch("reco_nuvtxY",&reco_nuvtxY); 
-  t_out->Branch("reco_nuvtxZ",&reco_nuvtxZ); 
-  t_out->Branch("reco_Ntrack",&reco_Ntrack); 
-  t_out->Branch("reco_pdg",reco_pdg,"reco_pdg[1000]/I"); 
-  t_out->Branch("reco_mother",reco_mother,"reco_mother[1000]/I"); 
-  t_out->Branch("reco_startMomentum",reco_startMomentum,"reco_startMomentum[1000][4]/F"); 
-  t_out->Branch("reco_endMomentum",reco_endMomentum,"reco_endMomentum[1000][4]/F"); 
-  t_out->Branch("reco_endXYZT",reco_endXYZT,"reco_endXYZT[1000][4]/F"); 
-  t_out->Branch("reco_id",reco_id,"reco_id[1000]/I");
-  if(!is_data){
-    t_out->Branch("reco_truthMatch_pdg",reco_truthMatch_pdg,"reco_truthMatch_pdg[1000]/I");
-    t_out->Branch("reco_truthMatch_id",reco_truthMatch_id,"reco_truthMatch_id[1000]/I");
+  if(save_wc){
+    t_out->Branch("reco_nuvtxX",&reco_nuvtxX);
+    t_out->Branch("reco_nuvtxY",&reco_nuvtxY);
+    t_out->Branch("reco_nuvtxZ",&reco_nuvtxZ);
+    t_out->Branch("reco_Ntrack",&reco_Ntrack);
+    t_out->Branch("reco_pdg",reco_pdg,"reco_pdg[1000]/I");
+    t_out->Branch("reco_mother",reco_mother,"reco_mother[1000]/I");
+    t_out->Branch("reco_startMomentum",reco_startMomentum,"reco_startMomentum[1000][4]/F");
+    t_out->Branch("reco_endMomentum",reco_endMomentum,"reco_endMomentum[1000][4]/F");
+    t_out->Branch("reco_endXYZT",reco_endXYZT,"reco_endXYZT[1000][4]/F");
+    t_out->Branch("reco_id",reco_id,"reco_id[1000]/I");
+    if(!is_data){
+      t_out->Branch("reco_truthMatch_pdg",reco_truthMatch_pdg,"reco_truthMatch_pdg[1000]/I");
+      t_out->Branch("reco_truthMatch_id",reco_truthMatch_id,"reco_truthMatch_id[1000]/I");
+    }
+    t_out->Branch("mcs_mu_tracklen", &mcs_mu_tracklen);
+    t_out->Branch("mcs_emu_tracklen", &mcs_emu_tracklen);
+    t_out->Branch("mcs_emu_MCS", &mcs_emu_MCS);
+    t_out->Branch("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
   }
-  t_out->Branch("mcs_mu_tracklen", &mcs_mu_tracklen);
-  t_out->Branch("mcs_emu_tracklen", &mcs_emu_tracklen);
-  t_out->Branch("mcs_emu_MCS", &mcs_emu_MCS);
-  t_out->Branch("mcs_ambiguity_MCS", &mcs_ambiguity_MCS);
 
   // Lantern branches
   if(!is_data){
@@ -528,41 +541,43 @@ void SpeedyMergeNtuple(){
     t_out->Branch("trueVtxZ", &trueVtxZ);
   }
 
-  t_out->Branch("foundVertex", &foundVertex);
-  t_out->Branch("vtxX", &vtxX);
-  t_out->Branch("vtxY", &vtxY);
-  t_out->Branch("vtxZ", &vtxZ);
+  if(save_lt){
+    t_out->Branch("foundVertex", &foundVertex);
+    t_out->Branch("vtxX", &vtxX);
+    t_out->Branch("vtxY", &vtxY);
+    t_out->Branch("vtxZ", &vtxZ);
 
-  t_out->Branch("nTracks", &nTracks);
-  t_out->Branch("trackIsSecondary", trackIsSecondary,"trackIsSecondary[100]/I");
-  t_out->Branch("trackStartPosX", trackStartPosX,"trackStartPosX[100]/F");
-  t_out->Branch("trackStartPosY", trackStartPosY,"trackStartPosY[100]/F");
-  t_out->Branch("trackStartPosZ", trackStartPosZ,"trackStartPosZ[100]/F");
-  t_out->Branch("trackStartDirX", trackStartDirX,"trackStartDirX[100]/F");
-  t_out->Branch("trackStartDirY", trackStartDirY,"trackStartDirY[100]/F");
-  t_out->Branch("trackStartDirZ", trackStartDirZ,"trackStartDirZ[100]/F");
-  t_out->Branch("trackEndPosX", trackEndPosX,"trackEndPosX[100]/F");
-  t_out->Branch("trackEndPosY", trackEndPosY,"trackEndPosY[100]/F");
-  t_out->Branch("trackEndPosZ", trackEndPosZ,"trackEndPosZ[100]/F");
-  t_out->Branch("trackClassified", trackClassified,"trackClassified[100]/I");
-  t_out->Branch("trackNPlanesAbove", trackNPlanesAbove,"trackNPlanesAbove[100]/I");
-  t_out->Branch("trackPID", trackPID,"trackPID[100]/I");
-  t_out->Branch("trackRecoE", trackRecoE,"trackRecoE[100]/F");
-  if(!is_data) t_out->Branch("trackTruePID", trackTruePID,"trackTruePID[100]/I");
+    t_out->Branch("nTracks", &nTracks);
+    t_out->Branch("trackIsSecondary", trackIsSecondary,"trackIsSecondary[100]/I");
+    t_out->Branch("trackStartPosX", trackStartPosX,"trackStartPosX[100]/F");
+    t_out->Branch("trackStartPosY", trackStartPosY,"trackStartPosY[100]/F");
+    t_out->Branch("trackStartPosZ", trackStartPosZ,"trackStartPosZ[100]/F");
+    t_out->Branch("trackStartDirX", trackStartDirX,"trackStartDirX[100]/F");
+    t_out->Branch("trackStartDirY", trackStartDirY,"trackStartDirY[100]/F");
+    t_out->Branch("trackStartDirZ", trackStartDirZ,"trackStartDirZ[100]/F");
+    t_out->Branch("trackEndPosX", trackEndPosX,"trackEndPosX[100]/F");
+    t_out->Branch("trackEndPosY", trackEndPosY,"trackEndPosY[100]/F");
+    t_out->Branch("trackEndPosZ", trackEndPosZ,"trackEndPosZ[100]/F");
+    t_out->Branch("trackClassified", trackClassified,"trackClassified[100]/I");
+    t_out->Branch("trackNPlanesAbove", trackNPlanesAbove,"trackNPlanesAbove[100]/I");
+    t_out->Branch("trackPID", trackPID,"trackPID[100]/I");
+    t_out->Branch("trackRecoE", trackRecoE,"trackRecoE[100]/F");
+    if(!is_data) t_out->Branch("trackTruePID", trackTruePID,"trackTruePID[100]/I");
 
-  t_out->Branch("nShowers", &nShowers);
-  t_out->Branch("showerIsSecondary", showerIsSecondary,"showerIsSecondary[100]/I");
-  t_out->Branch("showerStartPosX", showerStartPosX,"showerStartPosX[100]/F");
-  t_out->Branch("showerStartPosY", showerStartPosY,"showerStartPosY[100]/F");
-  t_out->Branch("showerStartPosZ", showerStartPosZ,"showerStartPosZ[100]/F");
-  t_out->Branch("showerStartDirX", showerStartDirX,"showerStartDirX[100]/F");
-  t_out->Branch("showerStartDirY", showerStartDirY,"showerStartDirY[100]/F");
-  t_out->Branch("showerStartDirZ", showerStartDirZ,"showerStartDirZ[100]/F");
-  t_out->Branch("showerClassified", showerClassified,"showerClassified[100]/I");
-  t_out->Branch("showerNPlanesAbove", showerNPlanesAbove,"showerNPlanesAbove[100]/I");
-  t_out->Branch("showerPID", showerPID,"showerPID[100]/I");
-  t_out->Branch("showerRecoE", showerRecoE,"showerRecoE[100]/F");
-  if(!is_data) t_out->Branch("showerTruePID", showerTruePID,"showerTruePID[100]/I");
+    t_out->Branch("nShowers", &nShowers);
+    t_out->Branch("showerIsSecondary", showerIsSecondary,"showerIsSecondary[100]/I");
+    t_out->Branch("showerStartPosX", showerStartPosX,"showerStartPosX[100]/F");
+    t_out->Branch("showerStartPosY", showerStartPosY,"showerStartPosY[100]/F");
+    t_out->Branch("showerStartPosZ", showerStartPosZ,"showerStartPosZ[100]/F");
+    t_out->Branch("showerStartDirX", showerStartDirX,"showerStartDirX[100]/F");
+    t_out->Branch("showerStartDirY", showerStartDirY,"showerStartDirY[100]/F");
+    t_out->Branch("showerStartDirZ", showerStartDirZ,"showerStartDirZ[100]/F");
+    t_out->Branch("showerClassified", showerClassified,"showerClassified[100]/I");
+    t_out->Branch("showerNPlanesAbove", showerNPlanesAbove,"showerNPlanesAbove[100]/I");
+    t_out->Branch("showerPID", showerPID,"showerPID[100]/I");
+    t_out->Branch("showerRecoE", showerRecoE,"showerRecoE[100]/F");
+    if(!is_data) t_out->Branch("showerTruePID", showerTruePID,"showerTruePID[100]/I");
+  }
 
   for(Long64_t ientry=0;ientry<pd_t_in->GetEntries();ientry++){
         
