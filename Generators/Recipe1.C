@@ -29,6 +29,9 @@ void Recipe1(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
+    // Skip variables whose folding ingredients haven't been generated (run MakeFoldingIngredients.C)
+    if(!FilesExist({AnalysisDir()+"/"+var+"/rootfiles/FFGenerators.root"},var)) continue;
+
     std::string plot_dir = AnalysisDir()+"/"+var+"/Plots/Recipe1/";
     gSystem->Exec(("mkdir -p " + plot_dir).c_str());
 

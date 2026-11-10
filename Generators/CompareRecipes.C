@@ -13,10 +13,7 @@ using namespace syst;
 
 void CompareRecipes(){
 
-  std::vector<std::string> vars = {"MuonMom"};
-  //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
-  //vars.push_back("Norm");
+  std::vector<std::string> vars = var_names;
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
   std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
@@ -35,6 +32,12 @@ void CompareRecipes(){
 
   for(const std::string& var : vars){
     std::cout << var << std::endl;
+
+    // Skip variables where any of the recipe outputs haven't been generated
+    std::vector<std::string> required;
+    for(std::string r : recipes)
+      required.push_back(AnalysisDir()+"/"+var+"/rootfiles/"+r+(shape_only ? "_ShapeOnly" : "")+".root");
+    if(!FilesExist(required,var)) continue;
 
     std::string plot_dir = !shape_only ? AnalysisDir()+"/"+var+"/Plots/CompareRecipes/" 
                                        : AnalysisDir()+"/"+var+"/Plots/CompareRecipesShape/";

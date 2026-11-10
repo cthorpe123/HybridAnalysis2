@@ -15,16 +15,28 @@ using namespace binning;
 void MakeGeneratorXSec(){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
-  //std::vector<std::string> vars = var_names;
-  //vars.push_back("Enu");
-  //vars.push_back("Norm");
+  std::vector<std::string> vars = var_names;
   bool dbbw = true;
   bool draw_o = false;
   bool draw_u = false;
   
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
   std::vector<int> styles = {1,2,3,4,6,7};
+
+  // Skip variables whose binning templates / histograms haven't been generated.
+  // Done up front so we don't loop over the generator files for nothing.
+  std::vector<std::string> vars_found;
+  for(const std::string& var : vars){
+    const std::string rootfiles = AnalysisDir()+"/"+var+"/rootfiles/";
+    std::vector<std::string> required = {rootfiles+"TruthBinningTemplate.root"};
+    if(load_asimov) required.push_back(rootfiles+"Histograms.root");
+    if(FilesExist(required,var)) vars_found.push_back(var);
+  }
+  vars = vars_found;
+  if(vars.empty()){
+    std::cout << "MakeGeneratorXSec: none of the variables have the required files, nothing to do" << std::endl;
+    return;
+  }
 
   std::map<std::string, std::map<std::string, TH1D*>> h_m;
   std::map<std::string,std::map<std::string,TH2D*>> h_m_2d;
@@ -110,10 +122,8 @@ void MakeGeneratorXSec(){
     }
 
     TH1D* h_asimov = nullptr;
-    // The Asimov overlay needs Histograms.root - drop it (but still plot the generators) if it's missing
-    const std::string hist_file = AnalysisDir()+"/"+var+"/rootfiles/Histograms.root";
-    if(load_asimov && FilesExist({hist_file})){
-      TFile* f_in_hist = TFile::Open(hist_file.c_str());
+    if(load_asimov){
+      TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
       const double POT = ((TH1D*)f_in_hist->Get("Meta/POT"))->GetBinContent(1);
       hist::MultiChannelHistogramManager mchm(var,true);
       mchm.LoadTemplates();

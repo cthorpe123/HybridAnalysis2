@@ -30,6 +30,12 @@ void MakeFoldingIngredients(){
   for(const std::string& var : vars){
     std::cout << var << std::endl;
 
+    // Skip variables whose histograms / generator predictions haven't been generated
+    const std::string rootfiles = AnalysisDir()+"/"+var+"/rootfiles/";
+    std::vector<std::string> required = {rootfiles+"Histograms.root",rootfiles+"GeneratorXSec.root"};
+    if(add_detvars) required.push_back(rootfiles+"Detvars.root");
+    if(!FilesExist(required,var)) continue;
+
     hist::MultiChannelHistogramManager mchm(var,true);
     mchm.LoadTemplates();    
 
