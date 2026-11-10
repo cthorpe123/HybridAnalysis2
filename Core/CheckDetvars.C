@@ -14,7 +14,7 @@
 
 using namespace syst;
 
-void CheckDetvars(){
+void CheckDetvars(std::string var_list=""){
 
   // Label and set the branches defining the selection and systematics
   bool draw_truth = true;
@@ -23,6 +23,8 @@ void CheckDetvars(){
 
   //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE","Norm"};
   std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
 
   for(std::string label : vars){
 

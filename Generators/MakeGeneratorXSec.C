@@ -12,10 +12,12 @@
 using namespace syst;
 using namespace binning;
 
-void MakeGeneratorXSec(){
+void MakeGeneratorXSec(std::string var_list=""){
 
   bool load_asimov = true;
   std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   bool dbbw = true;
   bool draw_o = false;
   bool draw_u = false;

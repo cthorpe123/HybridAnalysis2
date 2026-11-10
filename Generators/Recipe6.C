@@ -22,9 +22,11 @@ using namespace syst;
 // CalcCovMultisim for the auto blocks and the new CalcCovMultisimBlock for
 // the cross blocks.
 
-void Recipe6(){
+void Recipe6(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = true;
   bool draw_o = false;

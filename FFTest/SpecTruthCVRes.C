@@ -10,7 +10,7 @@ using namespace syst;
 
 // Try forward folding the special truth through the CV response
 
-void SpecTruthCVRes(){
+void SpecTruthCVRes(std::string var_list=""){
 
   TLegend* l = new TLegend(0.75,0.75,0.98,0.98);
   TCanvas* c = new TCanvas("c","c");
@@ -27,6 +27,8 @@ void SpecTruthCVRes(){
 
   //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
   std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 

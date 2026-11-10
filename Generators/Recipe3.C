@@ -15,10 +15,12 @@ using namespace syst;
 // background from the response, and the total flux from the flux shape (if original
 // method is used)
 
-void Recipe3(){
+void Recipe3(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = true;
   bool draw_o = false;

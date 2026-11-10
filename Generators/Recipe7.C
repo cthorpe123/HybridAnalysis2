@@ -23,12 +23,14 @@ using namespace syst;
 // to get their residual covariance matrices. Assume the FCov blocks from
 // the first generator are valid for the others.
 
-void Recipe7(){
+void Recipe7(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
   bool add_detvars = true;
   bool draw_o = false;

@@ -15,12 +15,14 @@ using namespace syst;
 // background from the response, and the total flux from the flux shape (if original
 // method is used). Assume the FCov from the first generator is valid for the others
 
-void Recipe4(){
+void Recipe4(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
   //vars.push_back("Enu");
   //vars.push_back("Norm");
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"v3.0.6","Untunedv3.0.6","NuWro","GiBUU"};
   bool add_detvars = true;
   bool draw_o = false;

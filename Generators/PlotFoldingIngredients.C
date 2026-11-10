@@ -31,9 +31,11 @@ std::string StripUniverseSuffix(const std::string& name){
 // for each systematic, the response matrix in every universe (read from
 // Histograms.root, since MakeFoldingIngredients.C doesn't copy those in).
 
-void PlotFoldingIngredients(){
+void PlotFoldingIngredients(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
 
   const size_t n_max = 5;

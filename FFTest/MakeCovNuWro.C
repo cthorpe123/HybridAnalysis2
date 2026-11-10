@@ -8,7 +8,7 @@
 #include "MultiChannelHistograms.h"
 #include "WeightFuncs.h"
 
-void MakeCovNuWro(){
+void MakeCovNuWro(std::string var_list=""){
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
 
@@ -17,6 +17,8 @@ void MakeCovNuWro(){
 
   //std::vector<std::string> vars = {"MuonMom"};
   std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   // The NuWro results are appended to each variable's Histograms.root, so only

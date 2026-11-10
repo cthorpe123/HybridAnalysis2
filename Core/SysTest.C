@@ -13,9 +13,11 @@
 
 using namespace syst;
 
-void SysTest(){
+void SysTest(std::string var_list=""){
 
   std::vector<std::string> vars = var_names;
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
 
   bool draw_underflow = true;
   bool draw_overflow = true;

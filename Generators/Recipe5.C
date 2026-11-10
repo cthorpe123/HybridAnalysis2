@@ -44,9 +44,11 @@ TH1D* StitchHistograms(TH1D* h1,TH1D* h2,std::string name){
 // method, use the full set of responses in calculating every systematic
 // Combine the background predictions with the generators
 
-void Recipe5(){
+void Recipe5(std::string var_list=""){
 
   std::vector<std::string> vars = {"MuonMom"};
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
   bool add_detvars = true;
   bool draw_o = false;

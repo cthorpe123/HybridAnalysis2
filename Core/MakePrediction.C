@@ -13,7 +13,7 @@
 
 using namespace syst;
 
-void MakePrediction(){
+void MakePrediction(std::string var_list=""){
 
   bool add_detvars = true;
   bool blinded = true;
@@ -27,6 +27,8 @@ void MakePrediction(){
   //std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
   //vars.push_back("Norm");  
+  // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
+  if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
