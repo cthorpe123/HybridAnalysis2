@@ -44,11 +44,17 @@ void CVTruthSpecRes(){
     std::string label = vars.at(i_f);
     std::cout << label << std::endl;
 
+    // Skip variables whose histograms haven't been generated
+    const std::string rootfiles = AnalysisDir()+"/"+label+"/rootfiles/";
+    std::vector<std::string> required = {rootfiles+"Histograms.root"};
+    if(add_detvars) required.push_back(rootfiles+"Detvars.root");
+    if(!FilesExist(required,label)) continue;
+
     std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/FFTest_CVTruthSpecRes/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
-    TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
+    TFile* f_in = TFile::Open((rootfiles+"Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open((rootfiles+"Detvars.root").c_str()) : nullptr;
 
     // Load binning templates
     hist::MultiChannelHistogramManager mchm(label,true);

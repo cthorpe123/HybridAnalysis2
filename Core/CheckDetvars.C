@@ -18,18 +18,25 @@ void CheckDetvars(){
 
   // Label and set the branches defining the selection and systematics
   bool draw_truth = true;
-  bool draw_hist = true; // Grab the CV from the non-detvar file
+  bool draw_hist = false; // Grab the CV from the non-detvar file
   bool draw_o=true,draw_u=true;
 
-  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","NProt","NPi","NSh","ProtonKE","PionE","PiZeroE","W"*/};
+  //std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE","Norm"};
+  std::vector<std::string> vars = var_names;
 
   for(std::string label : vars){
+
+    // Skip variables whose histograms haven't been generated
+    const std::string rootfiles = AnalysisDir()+"/"+label+"/rootfiles/";
+    std::vector<std::string> required = {rootfiles+"Detvars.root"};
+    if(draw_hist) required.push_back(rootfiles+"Histograms.root");
+    if(!FilesExist(required,label)) continue;
 
     std::string plot_dir = AnalysisDir()+"/"+label+"/Plots/CheckDetvars/";
     gSystem->Exec(("mkdir -p "+plot_dir).c_str());
 
-    TFile* f_in = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str());
-    TFile* f_in_hist = draw_hist ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str()) : nullptr;
+    TFile* f_in = TFile::Open((rootfiles+"Detvars.root").c_str());
+    TFile* f_in_hist = draw_hist ? TFile::Open((rootfiles+"Histograms.root").c_str()) : nullptr;
  
     hist::MultiChannelHistogramManager mchm(label,true);
     mchm.LoadTemplates();

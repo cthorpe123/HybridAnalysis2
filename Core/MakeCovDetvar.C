@@ -13,13 +13,17 @@
 
 using namespace syst;
 
-void MakeCovDetvar(){
+// var_list: comma separated list of variables to process, e.g. "MuonMom,W"
+// "all" processes everything in var_names, empty uses the default list below
+void MakeCovDetvar(std::string var_list=""){
 
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
+  if(var_list == "all") vars = var_names;
+  else if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
@@ -85,7 +89,7 @@ void MakeCovDetvar(){
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
     if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
-    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
+    else if(var == "Norm") h_m.at(var).SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5); 
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();

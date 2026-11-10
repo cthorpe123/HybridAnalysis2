@@ -11,9 +11,11 @@
 #include "MultiChannelHistograms.h"
 #include "WeightFuncs.h"
 
-void MakeCov(){
+// var_list: comma separated list of variables to process, e.g. "MuonMom,W"
+// "all" processes everything in var_names, empty uses the default list below
+void MakeCov(std::string var_list=""){
 
-  bool make_spec_univ = false;
+  bool make_spec_univ = true;
 
   std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/";
   std::vector<std::string> files_v = {
@@ -54,6 +56,8 @@ void MakeCov(){
 
   std::vector<std::string> vars = {"MuonMom"};
   //std::vector<std::string> vars = var_names;
+  if(var_list == "all") vars = var_names;
+  else if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;

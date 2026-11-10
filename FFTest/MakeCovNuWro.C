@@ -15,9 +15,20 @@ void MakeCovNuWro(){
   std::vector<std::string> channels_t = {"All"};
   std::vector<std::string> channels_r = {"All"};
 
-  std::vector<std::string> vars = {"MuonMom"};
-  //std::vector<std::string> vars = var_names;
+  //std::vector<std::string> vars = {"MuonMom"};
+  std::vector<std::string> vars = var_names;
   std::vector<std::string> int_vars = {"NProt","NPi","NSh","NPi0"};
+
+  // The NuWro results are appended to each variable's Histograms.root, so only
+  // process variables where that file has already been generated
+  std::vector<std::string> vars_found;
+  for(const std::string& var : vars)
+    if(FilesExist({AnalysisDir()+"/"+var+"/rootfiles/Histograms.root"},var)) vars_found.push_back(var);
+  vars = vars_found;
+  if(vars.empty()){
+    std::cout << "MakeCovNuWro: no variables have a Histograms.root, nothing to do" << std::endl;
+    return;
+  }
 
   std::map<std::string,hist::MultiChannelHistogramManager> h_m;
   for(std::string var : vars){
@@ -26,7 +37,7 @@ void MakeCovNuWro(){
     h_m.at(var).SetRecoChannelList(channels_r);
     h_m.at(var).KeepAll();
     if(var != "Norm" && !in_vec(int_vars,var)) h_m.at(var).LoadTemplates();
-    else if(var == "Norm") h_m.SetTemplates("",1,0,1,1,0,1);
+    else if(var == "Norm") h_m.at(var).SetTemplates("",1,0,1,1,0,1);
     else if(var != "NProt") h_m.at(var).SetTemplates("",3,-0.5,2.5,3,-0.5,2.5);
     else h_m.at(var).SetTemplates("",3,0.5,3.5,3,0.5,3.5); 
     h_m.at(var).MakeHM();
@@ -85,7 +96,10 @@ void MakeCovNuWro(){
   // main histograms file
   // Append the result of the NuWro FD to the main Histograms.root file
   for(const auto &item : h_m){
+
     std::string var = item.first;
+    std::cout << "Adding NuWro plots to Histograms.root for " << var << std::endl;
+
     TFile* f_nuwro = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/NuWroFD.root").c_str());
     TFile* f_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str(),"UPDATE");
  

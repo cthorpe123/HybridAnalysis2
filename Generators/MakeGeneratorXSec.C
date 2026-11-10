@@ -110,8 +110,10 @@ void MakeGeneratorXSec(){
     }
 
     TH1D* h_asimov = nullptr;
-    if(load_asimov){
-      TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+var+"/rootfiles/Histograms.root").c_str());
+    // The Asimov overlay needs Histograms.root - drop it (but still plot the generators) if it's missing
+    const std::string hist_file = AnalysisDir()+"/"+var+"/rootfiles/Histograms.root";
+    if(load_asimov && FilesExist({hist_file})){
+      TFile* f_in_hist = TFile::Open(hist_file.c_str());
       const double POT = ((TH1D*)f_in_hist->Get("Meta/POT"))->GetBinContent(1);
       hist::MultiChannelHistogramManager mchm(var,true);
       mchm.LoadTemplates();

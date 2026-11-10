@@ -36,6 +36,21 @@ std::vector<std::string> SplitString(const std::string& s,char delim=','){
   return out;
 }
 
+// Check that every file in paths exists, printing any that are missing.
+// Used by the plotting scripts to skip variables whose histograms haven't been made yet.
+bool FilesExist(const std::vector<std::string>& paths,const std::string& label=""){
+  bool ok = true;
+  for(const std::string& p : paths){
+    // AccessPathName returns true if the file can NOT be accessed
+    if(gSystem->AccessPathName(p.c_str())){
+      std::cout << "Missing " << p << std::endl;
+      ok = false;
+    }
+  }
+  if(!ok && label != "") std::cout << "Skipping " << label << std::endl;
+  return ok;
+}
+
 void GenerateDictionaries(){
   const char* dir = std::getenv("DIS_DICT_DIR");
   const std::string cwd = gSystem->WorkingDirectory();

@@ -20,9 +20,9 @@ void MakePrediction(){
   bool draw_underflow = true;
   bool draw_overflow = true;
   bool dbbw = true;
-  bool draw_truth = false;
+  bool draw_truth = true;
 
-  std::vector<std::string> vars = {"MuonMom","MuonCosTheta","LeadProtonKE"};
+  std::vector<std::string> vars = {"MuonMom"/*,"MuonCosTheta","LeadProtonKE"*/};
   //std::vector<std::string> vars = {"NPi"};
   //std::vector<std::string> vars = var_names;
   vars.push_back("Enu");
@@ -33,8 +33,14 @@ void MakePrediction(){
   for(size_t i_f=0;i_f<vars.size();i_f++){
     std::string label = vars.at(i_f);
 
-    TFile* f_in_hist = TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Histograms.root").c_str());
-    TFile* f_in_detvar = add_detvars ? TFile::Open((AnalysisDir()+"/"+label+"/rootfiles/Detvars.root").c_str()) : nullptr;
+    // Skip variables whose histograms haven't been generated
+    const std::string rootfiles = AnalysisDir()+"/"+label+"/rootfiles/";
+    std::vector<std::string> required = {rootfiles+"Histograms.root"};
+    if(add_detvars) required.push_back(rootfiles+"Detvars.root");
+    if(!FilesExist(required,label)) continue;
+
+    TFile* f_in_hist = TFile::Open((rootfiles+"Histograms.root").c_str());
+    TFile* f_in_detvar = add_detvars ? TFile::Open((rootfiles+"Detvars.root").c_str()) : nullptr;
 
     std::string dir = draw_truth ? "Truth" : "Reco"; 
 
