@@ -23,6 +23,19 @@ std::string AnalysisDir(){
 // AutoDict_* files into the working directory, so temporarily move into
 // $DIS_DICT_DIR (if set) to keep them out of the directory scripts are run from
 
+// Split a delimited string ("a,b,c") into its non-empty pieces
+std::vector<std::string> SplitString(const std::string& s,char delim=','){
+  std::vector<std::string> out;
+  size_t start = 0;
+  while(start <= s.size()){
+    size_t end = s.find(delim,start);
+    if(end == std::string::npos) end = s.size();
+    if(end > start) out.push_back(s.substr(start,end-start));
+    start = end + 1;
+  }
+  return out;
+}
+
 void GenerateDictionaries(){
   const char* dir = std::getenv("DIS_DICT_DIR");
   const std::string cwd = gSystem->WorkingDirectory();
