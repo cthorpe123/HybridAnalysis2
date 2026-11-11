@@ -19,8 +19,7 @@ using namespace binning;
 void MakeFoldingIngredients(std::string var_list=""){
 
   bool load_asimov = true;
-  std::vector<std::string> vars = {"Enu","MuonMom","MuonCosTheta","LeadProtonKE","ProtonKE","LeadPionE"};
-  //std::vector<std::string> vars = var_names;
+  std::vector<std::string> vars = var_names;
   // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
   if(var_list != "") vars = SplitString(var_list);
   std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
