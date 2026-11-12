@@ -300,8 +300,13 @@ TLorentzVector SumTLorentzVector(std::vector<TLorentzVector> p_v){
 
 void MakeOU(std::string label,TH1D* h,TH1D*& h_underflow,TH1D*& h_overflow,std::string u_label="Underflow",std::string o_label="Overflow",TH2D* h_cov=nullptr){
 
+  // Don't register these in the current directory - the caller owns them and must delete them.
+  // Otherwise, whenever two have the same name, ROOT warns and orphans the old one
+  const bool add_dir = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(false);
   h_underflow = new TH1D(("h_underflow_"+label).c_str(),"",1,0.0,1.0);
   h_overflow = new TH1D(("h_overflow_"+label).c_str(),"",1,0.0,1.0);
+  TH1::AddDirectory(add_dir);
 
   h_underflow->SetBinContent(1,h->GetBinContent(0));
   h_overflow->SetBinContent(1,h->GetBinContent(h->GetNbinsX()+1));

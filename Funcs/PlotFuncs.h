@@ -14,7 +14,7 @@ void Draw2DHist(TH2D* h,std::string name){
   h->SetStats(0);
   c->SetRightMargin(0.2);
   c->Print(name.c_str());
-  c->Close();
+  delete c; // Close() alone leaves the canvas object allocated
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -106,7 +106,16 @@ void DrawUnstacked(const std::vector<TH1D*> h_v,std::vector<int> colors,std::vec
   c2->Print(name.c_str());
   delete c2;
 
-  for(TH1D* hh : h_v_clone) delete hh;
+  // The canvas doesn't own the stacks, legend or histograms drawn on it
+  delete hs_middle;
+  delete hs_U;
+  delete hs_O;
+  delete l2;
+  for(size_t i_s=0;i_s<h_v_clone.size();i_s++){
+    delete h_U.at(i_s);
+    delete h_O.at(i_s);
+    delete h_v_clone.at(i_s);
+  }
 
 }
 
@@ -237,8 +246,12 @@ void DrawStacked(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std:
   c2->Print(name.c_str());
   delete c2;
 
+  // The canvas doesn't own the stacks, legends or histograms drawn on it
+  delete hs_middle;
   delete hs_U;
   delete hs_O;
+  delete l2;
+  delete l_Chi2;
   delete h_tot_U;
   delete h_tot_O;
 
@@ -391,7 +404,9 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   // Helper: draw reference line at 1 on the current pad
   auto DrawRatioLine = [](TH1D* h){
     double xlo = h->GetXaxis()->GetXmin(), xhi = h->GetXaxis()->GetXmax();
-    TLine* l1 = new TLine(xlo, 1, xhi, 1); l1->SetLineWidth(2); l1->Draw();
+    TLine* l1 = new TLine(xlo, 1, xhi, 1); l1->SetLineWidth(2);
+    l1->SetBit(kCanDelete); // let the pad delete the line when the canvas is deleted
+    l1->Draw();
   };
 
   // Underflow column
@@ -512,7 +527,9 @@ void DrawStackedRatio(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector
   c2->Print(name.c_str());
   delete c2;
 
-  delete hs_U; delete hs_O;
+  // The canvas doesn't own the stacks, legends or histograms drawn on it
+  delete hs_middle; delete hs_U; delete hs_O;
+  delete l2; delete l_Chi2;
   delete h_tot_U; delete h_tot_O;
   if(h_data_clone){ delete h_data_U; delete h_data_O; delete h_data_clone; }
   if(h_ratio)   delete h_ratio;
@@ -584,6 +601,9 @@ void DrawUnstacked2(std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<s
   c2->cd();
   c2->Print(name.c_str());
   delete c2;
+  // The canvas doesn't own the stack, legend or histograms drawn on it
+  delete hs_middle;
+  delete l2;
   delete h;
   for(TH1D* hh : h_v_clone) delete hh;
 
