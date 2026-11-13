@@ -157,6 +157,9 @@ void SpecTruthCVRes(std::string var_list=""){
     TH2D* h_Cov_MCStat = (TH2D*)f_in->Get("Reco/Cov/MCStat/Cov_Tot");
     h_Cov->Add(h_Cov_MCStat);
 
+    // Largest chi2 produced by each weight generator, used to pick out the worst ones
+    std::vector<std::pair<double,std::string>> gen_max_chi2;
+
     for(std::string s : special_univs){
 
       //std::cout << s << std::endl;
@@ -207,6 +210,12 @@ void SpecTruthCVRes(std::string var_list=""){
         
       }
 
+      if(s != "NuWro" && spec_chi2.size()){
+        double max_chi2 = 0.0;
+        for(const auto &c2 : spec_chi2) max_chi2 = std::max(max_chi2,c2.first);
+        gen_max_chi2.push_back(std::make_pair(max_chi2,s));
+      }
+
       if(draw_chi2_curve && spec_chi2.size()){
 
         TH1D* h_chi2 = new TH1D("h_chi2",";Universe;#chi^{2}/ndof",spec_chi2.size(),0.5,spec_chi2.size()+0.5);
@@ -224,7 +233,31 @@ void SpecTruthCVRes(std::string var_list=""){
       }
 
     }
-    
+
+    // Move the plots for the five weight generators with the largest chi2 into a separate folder
+    std::sort(gen_max_chi2.rbegin(),gen_max_chi2.rend());
+    const std::string top_dir = plot_dir+"Top5/";
+    gSystem->Exec(("rm -rf "+top_dir+" && mkdir -p "+top_dir).c_str());
+    std::ofstream f_top(top_dir+"Ranking.txt");
+    for(size_t i=0;i<gen_max_chi2.size() && i<5;i++){
+      const std::string gen = gen_max_chi2.at(i).second;
+      const std::string dest = top_dir+std::to_string(i+1)+"_"+gen;
+      std::cout << "Top " << i+1 << ": " << gen << " max chi2 = " << gen_max_chi2.at(i).first << std::endl;
+      f_top << i+1 << " " << gen << " " << gen_max_chi2.at(i).first << std::endl;
+      gSystem->Exec(("mv "+plot_dir+gen+" "+dest).c_str());
+      if(draw_chi2_curve) gSystem->Exec(("mv "+plot_dir+gen+"_chi2_2.png "+dest+"/").c_str());
+    }
+    f_top.close();
+
+    // Move the results of the remaining weight generators into their own folder
+    const std::string others_dir = plot_dir+"Others/";
+    gSystem->Exec(("rm -rf "+others_dir+" && mkdir -p "+others_dir).c_str());
+    for(size_t i=5;i<gen_max_chi2.size();i++){
+      const std::string gen = gen_max_chi2.at(i).second;
+      gSystem->Exec(("mv "+plot_dir+gen+" "+others_dir).c_str());
+      if(draw_chi2_curve) gSystem->Exec(("mv "+plot_dir+gen+"_chi2_2.png "+others_dir).c_str());
+    }
+
     f_in->Close();
 
   }

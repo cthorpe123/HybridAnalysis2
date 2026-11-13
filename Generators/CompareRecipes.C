@@ -16,9 +16,15 @@ void CompareRecipes(std::string var_list=""){
   std::vector<std::string> vars = var_names;
   // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
   if(var_list != "") vars = SplitString(var_list);
-  std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
-  std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
+  
+  //std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
+  //std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
+  //std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
+  
+  std::vector<std::string> generators = {"v3.0.6"};
+  std::vector<std::string> recipes = {"Recipe1"};
+  std::vector<std::string> recipe_names = {"Full Release"};
+  
   std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();
   bool add_detvars = true;
@@ -135,30 +141,9 @@ void CompareRecipes(std::string var_list=""){
         
         std::pair<double,int> chi2_diag = Chi2(h_pred,h_data,h_cov,draw_o,draw_u,true);
         std::cout << "Recipe " << i_r+1 << " "  << var << " " << gen << ", chi2/ndof = " << chi2_diag.first << "/" << chi2_diag.second << " = " << chi2_diag.first/chi2_diag.second << std::endl;
-        /*
-        for(int i=0;i<h_data->GetNbinsX()+2;i++){
-          h_data->SetBinError(i,sqrt(h_cov_data->GetBinContent(i,i)));
-          h_pred->SetBinError(i,sqrt(h_cov_pred->GetBinContent(i,i)));
-        }
-        */
+        
         std::string leg = gen + ", chi2/ndof = " + to_string_with_precision(chi2.first/chi2.second,2);
         pfs::DrawUnstacked({h_data,h_pred},{1,(int)i_g+2},{"Data",leg},draw_o,draw_u,true,true,plot_dir_gen+"Test_"+recipes.at(i_r)+".png");
-
-        /*
-        for(int i=0;i<h_data->GetNbinsX()+2;i++){
-          h_data->SetBinError(i,0);
-          h_pred->SetBinError(i,sqrt(h_cov->GetBinContent(i,i)));
-        }
-
-        pfs::DrawUnstacked({h_data,h_pred},{1,(int)i_g+2},{"Data",leg},draw_o,draw_u,true,true,plot_dir_gen+"Test_Alt_"+recipes.at(i_r)+".png");
-
-        leg = gen + ", chi2/ndof = " + to_string_with_precision(chi2_diag.first/chi2_diag.second,2);
-        pfs::DrawUnstacked({h_data,h_pred},{1,(int)i_g+2},{"Data",leg},draw_o,draw_u,true,true,plot_dir_gen+"Test_DiagOnly_"+recipes.at(i_r)+".png");
-        */
-
-        /*
-        delete h_cov_pred;
-        */
 
       }
 
