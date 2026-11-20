@@ -17,13 +17,9 @@ void CompareRecipes(std::string var_list=""){
   // Override the variable list from the command line, e.g. root 'Macro.C("MuonMom,W")'
   if(var_list != "") vars = SplitString(var_list);
   
-  //std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
-  //std::vector<std::string> recipes = {"Recipe1","Recipe2","Recipe3","Recipe7"};
-  //std::vector<std::string> recipe_names = {"Full Release","Sep. Background","Decouple Data/BG","Big Matrix Method"};
-  
-  std::vector<std::string> generators = {"v3.0.6"};
-  std::vector<std::string> recipes = {"Recipe1"};
-  std::vector<std::string> recipe_names = {"Full Release"};
+  std::vector<std::string> generators = {"Untunedv3.0.6","v3.0.6","NuWro","GiBUU"};
+  std::vector<std::string> recipes = {"Recipe1","Recipe7"};
+  std::vector<std::string> recipe_names = {"Full Release","Big Matrix Method"};
   
   std::vector<int> styles = {1,2,3,4,6,7};
   int n_r=recipes.size();

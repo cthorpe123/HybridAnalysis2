@@ -17,8 +17,8 @@ void SpecTruthCVRes(std::string var_list=""){
 
   bool add_detvars = true;
   const bool include_data_stat = true;
-  const bool draw_u = false;
-  const bool draw_o = false;
+  const bool draw_u = true;
+  const bool draw_o = true;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;

@@ -5,11 +5,11 @@ namespace syst {
 
 // For speed while developing
 const int nuniv_Genie = 100;
-const int nuniv_Flux = 100;
+//const int nuniv_Flux = 100;
 const int nuniv_Reint = 100;
 
 //const int nuniv_Genie = 500;
-//const int nuniv_Flux = 1000;
+const int nuniv_Flux = 1000;
 //const int nuniv_Reint = 1000;
 
 // Multisims
@@ -297,6 +297,7 @@ std::pair<double,int> Chi2(const TH1D* h1,const TH1D* h2,const TH2D* h_Cov,bool 
   double chi2 = 0;
   for(int i=min_bin;i<max_bin;i++){
     for(int j=min_bin;j<max_bin;j++){
+      if(diag_only && i != j) continue;
       chi2 += (h1->GetBinContent(i) - h2->GetBinContent(i))*m[i-min_bin][j-min_bin]*(h1->GetBinContent(j) - h2->GetBinContent(j));
     }
   }

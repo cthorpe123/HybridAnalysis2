@@ -19,8 +19,8 @@ void CVTruthSpecRes(std::string var_list=""){
 
   bool add_detvars = true;
   const bool include_data_stat = true;
-  const bool draw_u = false;
-  const bool draw_o = false;
+  const bool draw_u = true;
+  const bool draw_o = true;
   const bool dbbw = true;
   const bool draw_chi2_curve = true;
   const bool diag_only = false;
@@ -71,7 +71,7 @@ void CVTruthSpecRes(std::string var_list=""){
     TH1D* h_CV_Truth = (TH1D*)f_in->Get("Truth/CV/h_Signal");
     TH1D* h_CV_Reco = (TH1D*)f_in->Get("Reco/CV/h_Tot");
     TH2D* h_CV_Res = (TH2D*)f_in->Get("Response/CV/h_Signal");
-  
+
     // Get the CV background prediction
     TH1D* h_CV_Reco_AllBG = (TH1D*)f_in->Get("Reco/CV/h_AllBG");
 

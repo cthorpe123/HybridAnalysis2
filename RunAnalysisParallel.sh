@@ -31,19 +31,11 @@ ALL_STAGES=(
   Core/MakeCov
   Core/MakeCovDetvar
   FFTest/MakeCovNuWro           # appends NuWro fake data to Histograms.root
-  # Generator predictions and forward folding
+# Generator predictions and forward folding
   Generators/MakeGeneratorXSec
   Generators/MakeFoldingIngredients
   Generators/Recipe1
-  Generators/Recipe2
-  Generators/Recipe3
-  Generators/Recipe4
-  Generators/Recipe5
-  Generators/Recipe6
   Generators/Recipe7
-  Generators/ShapeOnly/Recipe1_ShapeOnly
-  Generators/ShapeOnly/Recipe2_ShapeOnly
-  Generators/ShapeOnly/Recipe3_ShapeOnly
   Generators/CompareRecipes
   # Plots
   Core/MakePrediction
@@ -53,11 +45,11 @@ ALL_STAGES=(
   FFTest/SpecTruthCVRes
   FFTest/CVTruthSpecRes
   FFTest/CheckEff
+  FFTest/CombineFFTestPlots 
   Generators/MakePrediction
   Generators/GetEff
   Generators/GetPurity
   Generators/PlotFoldingIngredients
-  Generators/UnderstandingFlux
 )
 
 vars_per_batch=3

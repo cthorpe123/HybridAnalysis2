@@ -21,7 +21,8 @@ void Draw2DHist(TH2D* h,std::string name){
 // Draw a set of histograms on one canvas, not stacked together,
 // as lines
 
-void DrawUnstacked(const std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,bool draw_errors,bool dbbw,std::string name){
+// ou_title: y axis title of the underflow/overflow panels
+void DrawUnstacked(const std::vector<TH1D*> h_v,std::vector<int> colors,std::vector<std::string> legs,bool draw_o,bool draw_u,bool draw_errors,bool dbbw,std::string name,std::string ou_title="FE"){
 
   if(!h_v.size()) return;
 
@@ -33,8 +34,8 @@ void DrawUnstacked(const std::vector<TH1D*> h_v,std::vector<int> colors,std::vec
   const std::string title = ";"+string(h_v_clone.at(0)->GetXaxis()->GetTitle())+";"+string(h_v_clone.at(0)->GetYaxis()->GetTitle());
 
   THStack* hs_middle = new THStack("hs_middle",title.c_str());
-  THStack* hs_U = new THStack("hs_U",";;FE");
-  THStack* hs_O = new THStack("hs_O",";;FE");
+  THStack* hs_U = new THStack("hs_U",(";;"+ou_title).c_str());
+  THStack* hs_O = new THStack("hs_O",(";;"+ou_title).c_str());
   //TLegend* l2 = new TLegend(0.75,0.75,0.98,0.98);
   TLegend* l2 = new TLegend(0.0,0.9,1.0,1.0);
   l2->SetNColumns(legs.size());
