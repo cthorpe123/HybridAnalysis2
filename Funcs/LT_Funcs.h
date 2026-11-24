@@ -93,7 +93,9 @@ std::vector<TLorentzVector> RecoPion4MomV(Int_t nTracks,Int_t trackIsSecondary[]
     if(trackIsSecondary[i]) continue;
     if(abs(trackPID[i]) == 211){
       double mom = sqrt(trackRecoE[i]*trackRecoE[i]/1e6 + 2*mpi*trackRecoE[i]/1e3);
-      p4.push_back(TLorentzVector(mom*trackStartDirX[i],mom*trackStartDirY[i],mom*trackStartDirZ[i],sqrt(mom*mom+mpi*mpi)));
+      // Same momentum threshold as the truth pion definition
+      if(mom > thresholds.at(211).first)
+        p4.push_back(TLorentzVector(mom*trackStartDirX[i],mom*trackStartDirY[i],mom*trackStartDirZ[i],sqrt(mom*mom+mpi*mpi)));
     }
   }
   SortTLorentzVector(p4);
