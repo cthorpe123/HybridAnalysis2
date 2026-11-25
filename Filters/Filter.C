@@ -23,21 +23,21 @@ void Filter(){
   double POT_weight,POT;
   int detvar_univ = -1;
 
-  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
+  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/test/";
   
   //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run1/";
-  //detvar_univ = -1;
+  detvar_univ = -1;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_1.root"; POT = 1.545e+20; POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_1.root"; POT = 3.45478e+20; POT_weight = 1.545e+20/3.45478e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false;
-  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_1.root"; POT = 7.38236e+20; POT_weight = 1.545e+20/7.38236e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
+  std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_1.root"; POT = 7.38236e+20; POT_weight = 1.545e+20/7.38236e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_1.root"; POT = 49551151.0; POT_weight = 34522546.0/49551151.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_1_filtered.root"; POT = 2.84397e+20; POT_weight = 1.545e+20/2.84397e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
   
-  const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
-  detvar_univ = -1;
+  //const std::string in_dir = "/exp/uboone/data/users/cthorpe/DIS/Lanpandircell/retupled/run3/";
+  //detvar_univ = -1;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_on_data_surprise_reco2_hist_3.root"; POT = 2.471e+20; POT_weight = 1.0; is_data = true; is_ext = false; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_dirt_overlay_surprise_reco2_hist_3.root"; POT = 3.62877e+20; POT_weight = 2.471e+20/3.62877e+20; is_data = false; is_ext = false; is_dirt = true; load_syst = false;
-  std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root"; POT = 8.6286e+20; POT_weight = 2.471e+20/8.6286e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
+  //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_nu_overlay_surprise_reco2_hist_3.root"; POT = 8.6286e+20; POT_weight = 2.471e+20/8.6286e+20; is_data = false; is_ext = false; is_dirt = false; load_syst = true;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_20_BNB_beam_off_data_surprise_reco2_hist_3.root"; POT = 143426453.0; POT_weight = 58934383.0/143426453.0; is_data = false; is_ext = true; is_dirt = false; load_syst = false;
   //std::string file = "Merged_checkout_MCC9.10_Run123_v10_04_07_23_BNB_nuwro_overlay_surprise_reco2_hist_3_filtered.root"; POT = 3.11421e+20; POT_weight = 2.471e+20/3.11421e+20; detvar_univ = syst::kNuWro; is_data = false; is_ext = false; is_dirt = false; load_syst = false;
  
@@ -433,6 +433,29 @@ void Filter(){
   }
 
   if(calc_weight_funcs) weight::SetWeightFuncs();
+
+  // Recentre the flux universes on the CV. Flux/FluxCVvsMean.C measures, for each neutrino
+  // flavour, the ratio of the mean of the flux universes to the CV in true neutrino energy;
+  // each universe weight is divided by that ratio so the universes average to the CV.
+  // NB: FluxCVvsMean.root must be made from ntuples with the *uncorrected* weights. Remaking
+  // it from ntuples filtered with this correction gives ratios of ~1, which would undo it
+  const bool correct_flux_mean = true;
+  std::map<int,TH1D*> flux_mean_over_cv;
+  if(correct_flux_mean && load_syst){
+    const std::string flux_file = AnalysisDir()+"/../Flux/FluxCVvsMean.root";
+    TFile* f_flux = TFile::Open(flux_file.c_str());
+    if(f_flux == nullptr || f_flux->IsZombie()) throw std::invalid_argument("Can't open "+flux_file+", run Flux/FluxCVvsMean.C first");
+    const std::map<int,std::string> flavours = {{14,"NuMu"},{-14,"NuMuBar"},{12,"NuE"},{-12,"NuEBar"}};
+    for(const auto& fl : flavours){
+      TH1D* h = (TH1D*)f_flux->Get((fl.second+"/h_"+fl.second+"_MeanOverCV").c_str());
+      if(h == nullptr) throw std::invalid_argument("h_"+fl.second+"_MeanOverCV missing from "+flux_file);
+      flux_mean_over_cv[fl.first] = (TH1D*)h->Clone(("h_FluxCorr_"+fl.second).c_str());
+      flux_mean_over_cv[fl.first]->SetDirectory(0);
+    }
+    f_flux->Close();
+    f_out->cd();
+    std::cout << "Recentring flux universes on the CV using " << flux_file << std::endl;
+  }
 
   for(int ievent=0;ievent<t_in->GetEntries();ievent++){
     
@@ -836,6 +859,19 @@ void Filter(){
     }
 
     if(category == -1) std::cout << "Bad event" << std::endl;
+
+    // Divide the flux universe weights by the universe mean/CV ratio at this event's true
+    // energy and flavour. The weights are stored as unsigned short x1000, so round and clamp
+    if(load_syst && correct_flux_mean && flux_mean_over_cv.count(nu_pdg)){
+      TH1D* h_corr = flux_mean_over_cv.at(nu_pdg);
+      const double r = h_corr->GetBinContent(h_corr->FindBin(nu_e));
+      if(r > 0){
+        for(unsigned short& w : *weightsFlux){
+          const double w_new = std::round(w/r);
+          w = (unsigned short)std::min(std::max(w_new,0.0),65535.0);
+        }
+      }
+    }
 
     // Organise unisim systematics
     if(load_syst){
