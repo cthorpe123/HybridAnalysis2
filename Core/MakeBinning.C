@@ -145,8 +145,8 @@ void MakeBinning(std::string var_list=""){
 
   for(const auto &item : h_m){
     std::string var = item.first;
-    MakeMultiChannelTemplate(var,h_reco_m.at(var),false,0.03);
-    MakeMultiChannelTemplate(var,h_true_m.at(var),true,0.03);
+    MakeMultiChannelTemplate(var,h_reco_m.at(var),false,0.02);
+    MakeMultiChannelTemplate(var,h_true_m.at(var),true,0.02);
   }
 
 }
