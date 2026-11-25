@@ -156,6 +156,9 @@ void CVTruthSpecRes(std::string var_list=""){
     // Largest chi2 produced by each weight generator, used to pick out the worst ones
     std::vector<std::pair<double,std::string>> gen_max_chi2;
 
+    // chi2 of the NuWro fake data universe(s): (universe, chi2, ndof)
+    std::vector<std::tuple<std::string,double,int>> nuwro_chi2;
+
     for(std::string s : special_univs){
 
       //std::cout << s << std::endl;
@@ -187,6 +190,7 @@ void CVTruthSpecRes(std::string var_list=""){
 
         std::pair<double,int> chi2 = Chi2(h_CV_Reco,h_CVT_SpecRes,h_Stat_Cov,draw_o,draw_u);
         spec_chi2.push_back(chi2);
+        if(s == "NuWro") nuwro_chi2.push_back(std::make_tuple(spec,chi2.first,chi2.second));
         std::cout << "chi2 = " << chi2.first << " ndof = " << chi2.second << " chi2/ndof = " << chi2.first/chi2.second << std::endl;
 
         // Restore the binnings before drawing
@@ -248,8 +252,39 @@ void CVTruthSpecRes(std::string var_list=""){
       if(draw_chi2_curve) gSystem->Exec(("mv "+plot_dir+gen+"_chi2.png "+others_dir).c_str());
     }
 
+    // Save this variable's NuWro FD chi2, one line per NuWro universe:
+    // <universe> <chi2> <ndof>
+    if(add_nuwro_fd){
+      std::ofstream f_nuwro(plot_dir+"NuWro_chi2.txt");
+      for(const auto& x : nuwro_chi2) f_nuwro << std::get<0>(x) << " " << std::get<1>(x) << " " << std::get<2>(x) << std::endl;
+      f_nuwro.close();
+    }
+
     f_in->Close();
 
+  }
+
+  // Table of the NuWro FD chi2 for every variable tested. Built from the per-variable
+  // files rather than this job's results, so variables processed by other (parallel)
+  // jobs are included too
+  if(add_nuwro_fd){
+    const std::string table_file = AnalysisDir()+"/FFTest_CVTruthSpecRes_NuWroChi2.txt";
+    std::ofstream f_table(table_file);
+    f_table << Form("%-28s %-12s %12s %6s %12s %12s","Variable","Universe","chi2","ndof","chi2/ndof","p-value") << std::endl;
+    std::vector<std::string> table_vars = var_names;
+    for(const std::string& var : vars) if(!in_vec(table_vars,var)) table_vars.push_back(var);
+    if(!in_vec(table_vars,std::string("Enu"))) table_vars.push_back("Enu");
+    for(const std::string& var : table_vars){
+      std::ifstream f_var(AnalysisDir()+"/"+var+"/Plots/FFTest_CVTruthSpecRes/NuWro_chi2.txt");
+      if(!f_var.is_open()) continue;
+      std::string univ;
+      double chi2;
+      int ndof;
+      while(f_var >> univ >> chi2 >> ndof)
+        f_table << Form("%-28s %-12s %12.3f %6d %12.3f %12.4g",var.c_str(),univ.c_str(),chi2,ndof,ndof > 0 ? chi2/ndof : 0.0,TMath::Prob(chi2,ndof)) << std::endl;
+    }
+    f_table.close();
+    std::cout << "Wrote NuWro FD chi2 table to " << table_file << std::endl;
   }
 
 }
